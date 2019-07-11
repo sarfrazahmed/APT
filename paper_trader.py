@@ -30,7 +30,7 @@ def on_ticks(ws, ticks):
 
 def on_connect(ws, response):
     # Callback on successful connect.
-    # Subscribe to a list of instrument_tokens (RELIANCE and ACC here).,
+    # Subscribe to a list of instrument_tokens
     ws.subscribe(tokens)
 
     # Set TITAN to tick in `full` mode.
