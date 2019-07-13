@@ -15,7 +15,8 @@ print("Starting Trading Engine...")
 config = configparser.ConfigParser()
 config_path = 'E:/Stuffs/APT/APT/Paper Trading/config.ini'
 config.read(config_path)
-os.chdir('E:/Stuffs/APT')
+path = 'E:/Stuffs/APT'
+os.chdir(path)
 
 api_key = config['API']['API_KEY']
 api_secret = config['API']['API_SECRET']
