@@ -8,38 +8,50 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import datetime
 import configparser
+import time
+import re
 
+print("Starting Trading Engine...")
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('E:\Stuffs\APT\APT\Paper Trading\config.ini')
+os.chdir('E:\Stuffs\APT')
 
-
-# Authentication
 api_key = config['API']['API_KEY']
 api_secret = config['API']['API_SECRET']
+username = config['USER']['USERNAME']
+password = config['USER']['PASSWORD']
+pin = config['USER']['PIN']
+homepage = 'https://kite.zerodha.com/'
+
+driver = webdriver.Chrome()
+page = driver.get(homepage)
+
+print("Authenticating...")
+# Logging in using Username and Password
+user_id_box = driver.find_element_by_xpath('//*[@id="container"]/div/div/div/form/div[2]/input')
+password_box = driver.find_element_by_xpath('//*[@id="container"]/div/div/div/form/div[3]/input')
+log_in_button = driver.find_element_by_xpath('//*[@id="container"]/div/div/div/form/div[4]/button')
+user_id_box.send_keys(username)
+password_box.send_keys(password)
+log_in_button.click()
+time.sleep(10)
+
+# Logging in using Pin
+pin_box = driver.find_element_by_xpath('//*[@id="container"]/div/div/div/form/div[2]/div/input')
+continue_box = driver.find_element_by_xpath('//*[@id="container"]/div/div/div/form/div[3]/button')
+pin_box.send_keys(pin)
+continue_box.click()
+time.sleep(10)
+
+# Redirecting to Kiteconnect
 kite = KiteConnect(api_key=api_key)
 url = kite.login_url()
-
-# Open chrome tab with the URL
-# chrome_options = webdriver.ChromeOptions()
-# chrome_options.add_argument('--no-sandbox')
-driver = webdriver.Chrome(executable_path='E:/Stuffs/APT/chromedriver.exe')
-driver.get(url)
-
-# Get the 
-username = driver.find_element_by_xpath("//*[@id='container']/div/div/div[2]/form/div[1]/input")
-password = driver.find_element_by_xpath('//*[@id="container"]/div/div/div[2]/form/div[2]/input')
-
-username.send_keys(config['USER']['USERNAME'])
-password.send_keys(config['USER']['PASSWORD'])
-
-submit = driver.find_element_by_xpath('//*[@id="container"]/div/div/div[2]/form/div[4]/button')
-
-
-
-request_token='2AaGdDipi5sehld6gl1wD7CY2AZErAEK'
-KRT=kite.generate_session(request_token,api_secret)
+page = driver.get(url)
+current_url = driver.current_url
+request_token = re.search(('=(.*)&action'), current_url).group(1)
+KRT=kite.generate_session(request_token, api_secret)
 kite.set_access_token(KRT['access_token'])
-print(KRT)
+print("Connection Successful")
 
 tokens = [897537]
 
