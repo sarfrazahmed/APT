@@ -61,16 +61,20 @@ kite.set_access_token(KRT['access_token'])
 print("Connection Successful")
 
 tokens = [897537]
+# tick_data = pd.DataFrame(columns=['token', 'time', 'ltp'])
+tick_data = []
 
 # Initialise
 kws = KiteTicker(api_key, KRT['access_token'])
 
-# tick_data = pd.DataFrame(columns=['token', ])
-# tick = []
+
 def on_ticks(ws, ticks):
     # Callback to receive ticks.
+    token = ticks[0]['instrument_token']
+    ltp = ticks[0]['last_price']
+    time = ticks[0]['timestamp']
+    tick_data.append({'token': token, 'ltp': ltp, 'timestamp': time})
     print(ticks)
-
 
 def on_connect(ws, response):
     # Callback on successful connect.
@@ -78,7 +82,7 @@ def on_connect(ws, response):
     ws.subscribe(tokens)
 
     # Set TITAN to tick in `full` mode.
-    ws.set_mode(ws.MODE_QUOTE, tokens)
+    ws.set_mode(ws.MODE_FULL, tokens)
 
 # def on_close(ws, code, reason):
 #     # On connection close stop the main loop
@@ -100,8 +104,23 @@ kws.connect()
 
 # FULL
 # tick = [{'tradable': True, 'mode': 'full', 'instrument_token': 897537, 'last_price': 1085.6, 'last_quantity': 14, 'average_price': 1089.2, 'volume': 1030686, 'buy_quantity': 863713, 'sell_quantity': 269903, 'ohlc': {'open': 1110.0, 'high': 1110.05, 'low': 1079.0, 'close': 1101.2}, 'change': -1.4166363966582034, 'last_trade_time': datetime.datetime(2019, 7, 15, 11, 6, 11), 'oi': 0, 'oi_day_high': 0, 'oi_day_low': 0, 'timestamp': datetime.datetime(2019, 7, 15, 11, 6, 12), 'depth': {'buy': [{'quantity': 24, 'price': 1085.45, 'orders': 1}, {'quantity': 90, 'price': 1085.4, 'orders': 2}, {'quantity': 23, 'price': 1085.35, 'orders': 1}, {'quantity': 12, 'price': 1085.3, 'orders': 2}, {'quantity': 231, 'price': 1085.25, 'orders': 2}], 'sell': [{'quantity': 41, 'price': 1085.6, 'orders': 4}, {'quantity': 219, 'price': 1086.0, 'orders': 3}, {'quantity': 2, 'price': 1086.1, 'orders': 1}, {'quantity': 9, 'price': 1086.15, 'orders': 1}, {'quantity': 46, 'price': 1086.25, 'orders': 1}]}}]
+# token = tick[0]['instrument_token']
+# ltp = tick[0]['last_price']
+# time = tick[0]['timestamp']
+
+# tick_data = pd.DataFrame(columns=['token', 'time', 'ltp'])
+# tick_data.loc[0] = [token, time, ltp]
+# print(tick_data)
 
 # QUOTE
 # tick = [{'tradable': True, 'mode': 'quote', 'instrument_token': 897537, 'last_price': 1086.2, 'last_quantity': 1, 'average_price': 1089.13, 'volume': 1055785, 'buy_quantity': 864953, 'sell_quantity': 438516, 'ohlc': {'open': 1110.0, 'high': 1110.05, 'low': 1079.0, 'close': 1101.2}, 'change': -1.3621503814021068}]
 
 # tick_data.insert()
+
+tick_df = pd.DataFrame(tick_data)
+tick_df['timestamp']  = pd.to_datetime(tick_df['timestamp'])
+grouped = tick_df.groupby('token')
+ltp = grouped['ltp'].resample('15Min', how='ohlc')
+resampled_tick_data = tick_df.resample('15Min')
+print(resampled_tick_data)
+tick_df
