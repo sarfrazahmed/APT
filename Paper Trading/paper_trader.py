@@ -62,48 +62,80 @@ print("Connection Successful")
 
 tokens = [897537]
 # tick_data = pd.DataFrame(columns=['token', 'time', 'ltp'])
-tick_data = []
 
 # Initialise
 kws = KiteTicker(api_key, KRT['access_token'])
+tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'])
 
 
 def on_ticks(ws, ticks):
     # Callback to receive ticks.
-    token = ticks[0]['instrument_token']
-    ltp = ticks[0]['last_price']
-    time = ticks[0]['timestamp']
-    tick_data.append({'token': token, 'ltp': ltp, 'timestamp': time})
+    global tick_df
+    tick_df = tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
+    tick_df.to_csv('tick_data.csv')
     print(ticks)
 
 def on_connect(ws, response):
     # Callback on successful connect.
     # Subscribe to a list of instrument_tokens
     ws.subscribe(tokens)
-
     # Set TITAN to tick in `full` mode.
     ws.set_mode(ws.MODE_FULL, tokens)
 
-# def on_close(ws, code, reason):
-#     # On connection close stop the main loop
-#     # Reconnection will not happen after executing `ws.stop()`
-#     ws.stop()
+# Callback when current connection is closed.
+def on_close(ws, code, reason):
+    logging.info("Connection closed: {code} - {reason}".format(code=code, reason=reason))
+
+
+# Callback when connection closed with error.
+def on_error(ws, code, reason):
+    logging.info("Connection error: {code} - {reason}".format(code=code, reason=reason))
+
+
+# Callback when reconnect is on progress
+def on_reconnect(ws, attempts_count):
+    logging.info("Reconnecting: {}".format(attempts_count))
+
+
+# Callback when all reconnect failed (exhausted max retries)
+def on_noreconnect(ws):
+    logging.info("Reconnect failed.")
 
 
 # Assign the callbacks.
 kws.on_ticks = on_ticks
+kws.on_close = on_close
+kws.on_error = on_error
 kws.on_connect = on_connect
-# kws.on_close = on_close
+kws.on_reconnect = on_reconnect
+kws.on_noreconnect = on_noreconnect
 
 # Infinite loop on the main thread. Nothing after this will run.
 # You have to use the pre-defined callbacks to manage subscriptions.
-kws.connect()
+kws.connect(threaded=True)
+
+# Block main thread
+logging.info("This is main thread. Will change webosocket mode every 5 seconds.")
+
+count = 0
+while True:
+    count += 1
+    if count % 2 == 0:
+        if kws.is_connected():
+            logging.info("### Set mode to LTP for all tokens")
+            kws.set_mode(kws.MODE_LTP, tokens)
+    else:
+        if kws.is_connected():
+            logging.info("### Set mode to quote for all tokens")
+            kws.set_mode(kws.MODE_QUOTE, tokens)
+
+    time.sleep(5)
 
 # LTP
 # tick = [{'tradable': True, 'mode': 'ltp', 'instrument_token': 897537, 'last_price': 1101.2}]
 
 # FULL
-# tick = [{'tradable': True, 'mode': 'full', 'instrument_token': 897537, 'last_price': 1085.6, 'last_quantity': 14, 'average_price': 1089.2, 'volume': 1030686, 'buy_quantity': 863713, 'sell_quantity': 269903, 'ohlc': {'open': 1110.0, 'high': 1110.05, 'low': 1079.0, 'close': 1101.2}, 'change': -1.4166363966582034, 'last_trade_time': datetime.datetime(2019, 7, 15, 11, 6, 11), 'oi': 0, 'oi_day_high': 0, 'oi_day_low': 0, 'timestamp': datetime.datetime(2019, 7, 15, 11, 6, 12), 'depth': {'buy': [{'quantity': 24, 'price': 1085.45, 'orders': 1}, {'quantity': 90, 'price': 1085.4, 'orders': 2}, {'quantity': 23, 'price': 1085.35, 'orders': 1}, {'quantity': 12, 'price': 1085.3, 'orders': 2}, {'quantity': 231, 'price': 1085.25, 'orders': 2}], 'sell': [{'quantity': 41, 'price': 1085.6, 'orders': 4}, {'quantity': 219, 'price': 1086.0, 'orders': 3}, {'quantity': 2, 'price': 1086.1, 'orders': 1}, {'quantity': 9, 'price': 1086.15, 'orders': 1}, {'quantity': 46, 'price': 1086.25, 'orders': 1}]}}]
+# ticks = [{'tradable': True, 'mode': 'full', 'instrument_token': 897537, 'last_price': 1085.6, 'last_quantity': 14, 'average_price': 1089.2, 'volume': 1030686, 'buy_quantity': 863713, 'sell_quantity': 269903, 'ohlc': {'open': 1110.0, 'high': 1110.05, 'low': 1079.0, 'close': 1101.2}, 'change': -1.4166363966582034, 'last_trade_time': datetime.datetime(2019, 7, 15, 11, 6, 11), 'oi': 0, 'oi_day_high': 0, 'oi_day_low': 0, 'timestamp': datetime.datetime(2019, 7, 15, 11, 6, 12), 'depth': {'buy': [{'quantity': 24, 'price': 1085.45, 'orders': 1}, {'quantity': 90, 'price': 1085.4, 'orders': 2}, {'quantity': 23, 'price': 1085.35, 'orders': 1}, {'quantity': 12, 'price': 1085.3, 'orders': 2}, {'quantity': 231, 'price': 1085.25, 'orders': 2}], 'sell': [{'quantity': 41, 'price': 1085.6, 'orders': 4}, {'quantity': 219, 'price': 1086.0, 'orders': 3}, {'quantity': 2, 'price': 1086.1, 'orders': 1}, {'quantity': 9, 'price': 1086.15, 'orders': 1}, {'quantity': 46, 'price': 1086.25, 'orders': 1}]}}]
 # token = tick[0]['instrument_token']
 # ltp = tick[0]['last_price']
 # time = tick[0]['timestamp']
@@ -117,10 +149,10 @@ kws.connect()
 
 # tick_data.insert()
 
-tick_df = pd.DataFrame(tick_data)
-tick_df['timestamp']  = pd.to_datetime(tick_df['timestamp'])
-grouped = tick_df.groupby('token')
-ltp = grouped['ltp'].resample('15Min', how='ohlc')
-resampled_tick_data = tick_df.resample('15Min')
-print(resampled_tick_data)
-tick_df
+# tick_df = pd.DataFrame(tick_data)
+# tick_df['timestamp']  = pd.to_datetime(tick_df['timestamp'])
+# grouped = tick_df.groupby('token')
+# ltp = grouped['ltp'].resample('15Min', how='ohlc')
+# resampled_tick_data = tick_df.resample('15Min')
+# print(resampled_tick_data)
+# tick_df
