@@ -110,49 +110,31 @@ kws.on_connect = on_connect
 kws.on_reconnect = on_reconnect
 kws.on_noreconnect = on_noreconnect
 
+# count = 0
+# while True:
+#     count += 1
+#     if count % 2 == 0:
+#         if kws.is_connected():
+#             print("### Set mode to LTP for all tokens")
+#             kws.set_mode(kws.MODE_LTP, tokens)
+#     else:
+#         if kws.is_connected():
+#             print("### Set mode to quote for all tokens")
+#             kws.set_mode(kws.MODE_QUOTE, tokens)
+
+#     time.sleep(5)
+
 # Infinite loop on the main thread. Nothing after this will run.
 # You have to use the pre-defined callbacks to manage subscriptions.
 kws.connect(threaded=True)
 
-# Block main thread
-logging.info("This is main thread. Will change webosocket mode every 5 seconds.")
 
-count = 0
-while True:
-    count += 1
-    if count % 2 == 0:
-        if kws.is_connected():
-            logging.info("### Set mode to LTP for all tokens")
-            kws.set_mode(kws.MODE_LTP, tokens)
-    else:
-        if kws.is_connected():
-            logging.info("### Set mode to quote for all tokens")
-            kws.set_mode(kws.MODE_QUOTE, tokens)
-
-    time.sleep(5)
 
 # LTP
 # tick = [{'tradable': True, 'mode': 'ltp', 'instrument_token': 897537, 'last_price': 1101.2}]
 
 # FULL
 # ticks = [{'tradable': True, 'mode': 'full', 'instrument_token': 897537, 'last_price': 1085.6, 'last_quantity': 14, 'average_price': 1089.2, 'volume': 1030686, 'buy_quantity': 863713, 'sell_quantity': 269903, 'ohlc': {'open': 1110.0, 'high': 1110.05, 'low': 1079.0, 'close': 1101.2}, 'change': -1.4166363966582034, 'last_trade_time': datetime.datetime(2019, 7, 15, 11, 6, 11), 'oi': 0, 'oi_day_high': 0, 'oi_day_low': 0, 'timestamp': datetime.datetime(2019, 7, 15, 11, 6, 12), 'depth': {'buy': [{'quantity': 24, 'price': 1085.45, 'orders': 1}, {'quantity': 90, 'price': 1085.4, 'orders': 2}, {'quantity': 23, 'price': 1085.35, 'orders': 1}, {'quantity': 12, 'price': 1085.3, 'orders': 2}, {'quantity': 231, 'price': 1085.25, 'orders': 2}], 'sell': [{'quantity': 41, 'price': 1085.6, 'orders': 4}, {'quantity': 219, 'price': 1086.0, 'orders': 3}, {'quantity': 2, 'price': 1086.1, 'orders': 1}, {'quantity': 9, 'price': 1086.15, 'orders': 1}, {'quantity': 46, 'price': 1086.25, 'orders': 1}]}}]
-# token = tick[0]['instrument_token']
-# ltp = tick[0]['last_price']
-# time = tick[0]['timestamp']
-
-# tick_data = pd.DataFrame(columns=['token', 'time', 'ltp'])
-# tick_data.loc[0] = [token, time, ltp]
-# print(tick_data)
 
 # QUOTE
 # tick = [{'tradable': True, 'mode': 'quote', 'instrument_token': 897537, 'last_price': 1086.2, 'last_quantity': 1, 'average_price': 1089.13, 'volume': 1055785, 'buy_quantity': 864953, 'sell_quantity': 438516, 'ohlc': {'open': 1110.0, 'high': 1110.05, 'low': 1079.0, 'close': 1101.2}, 'change': -1.3621503814021068}]
-
-# tick_data.insert()
-
-# tick_df = pd.DataFrame(tick_data)
-# tick_df['timestamp']  = pd.to_datetime(tick_df['timestamp'])
-# grouped = tick_df.groupby('token')
-# ltp = grouped['ltp'].resample('15Min', how='ohlc')
-# resampled_tick_data = tick_df.resample('15Min')
-# print(resampled_tick_data)
-# tick_df
