@@ -260,33 +260,35 @@ def bband(data,period,multiplier):
 ## Function to calculate Gaps between current close and reqd
 ## indicators (mentioned in the inital input part)
 ###############################################################
-def find_gaps(data, index):
-    deltas = [(data[i][index] - data['Close'][index]) for i in indicator_columns]
+def find_gaps(data, index, indicators):
+    deltas = [(data[i][index] - data['Close'][index]) for i in indicators]
     return np.asarray(deltas)
 
 
 ## Function to Execute Long Entry
 ###############################################################
-def long_entry(data, index):
-    deltas = find_gaps(data, index)
+def long_entry(data, index,qty,sl):
+    deltas = find_gaps(data, index,indicator_columns)
     data.Order_Status[index] = 'Entry'
     data.Order_Signal[index] = 'Buy'
     data.Order_Price[index] = data.Next_Candle_Open[index]
+    data.Quantity = qty
     data.Target[index] = data[indicator_columns[np.where(deltas > 0, deltas, np.inf).argmin()]][index]
-    data.Stop_Loss[index] = data[indicator_columns[np.where(deltas < 0, deltas, -np.inf).argmax()]][index]
+    data.Stop_Loss[index] = sl
     print('Long Entry @' + str(data.Next_Candle_Open[index]))
     return data
 
 
 ## Function to Execute Long Entry
 ###############################################################
-def short_entry(data, index):
-    deltas = find_gaps(data, index)
+def short_entry(data, index,qty,sl):
+    deltas = find_gaps(data, index, indicator_columns)
     data.Order_Status[index] = 'Entry'
     data.Order_Signal[index] = 'Sell'
     data.Order_Price[index] = data.Next_Candle_Open[index]
+    data.Quantity = qty
     data.Target[index] = data[indicator_columns[np.where(deltas < 0, deltas, -np.inf).argmax()]][index]
-    data.Stop_Loss[index] = data[indicator_columns[np.where(deltas > 0, deltas, np.inf).argmin()]][index]
+    data.Stop_Loss[index] = sl
     print('Short Entry @' + str(data.Next_Candle_Open[index]))
     return data
 
@@ -296,6 +298,7 @@ def long_exit(data, index, stop_loss):
     data.Order_Status[index] = 'Exit'
     data.Order_Signal[index] = 'Sell'
     data.Order_Price[index] = stop_loss
+    data.Quantity[index] = 0
     print('Long Exit @' + str(stop_loss))
     return data
 
@@ -304,6 +307,7 @@ def long_exit(data, index, stop_loss):
 def short_exit(data, index, stop_loss):
     data.Order_Status[index] = 'Exit'
     data.Order_Signal[index] = 'Buy'
+    data.Quantity[index] = 0
     data.Order_Price[index] = stop_loss
     print('Short Exit @' + str(stop_loss))
     return data
@@ -312,7 +316,16 @@ def short_exit(data, index, stop_loss):
 ###############################################################
 working_dir = 'F:\APT\Historical Data'
 input_file = 'Adaniports_5min.csv'
+lot_size = 2500
 
+
+indicator_columns = ['R1_Pivot_Fibonacci',
+                     'R2_Pivot_Fibonacci',
+                     'R3_Pivot_Fibonacci',
+                     'PivotPoint',
+                     'S1_Pivot_Fibonacci',
+                     'S2_Pivot_Fibonacci',
+                     'S3_Pivot_Fibonacci']
 sma_period = 12
 ema_period = 20
 
@@ -347,18 +360,12 @@ ads_analysis = bband(ads_analysis,bband_period,bband_multiplier) # Getting Bolli
 ## Gap Day Strategy
 ########################################################################
 
-#+ Strategy Pointers
-indicator_columns = ['R1_Pivot_Fibonacci',
-                     'R2_Pivot_Fibonacci',
-                     'R3_Pivot_Fibonacci',
-                     'PivotPoint',
-                     'S1_Pivot_Fibonacci',
-                     'S2_Pivot_Fibonacci',
-                     'S3_Pivot_Fibonacci']
 
+# Strategy Pointers
 order_status = 'Exit'
 order_signal = ''
 order_price = 0.0
+order_qty = 0
 max_close = 0.0
 entry_high_target = 0.0
 entry_low_target = 0.0
@@ -377,6 +384,7 @@ ads_iteration = ads_analysis[ads_analysis['Date'] >= ads_analysis['Date'].min()+
 ads_iteration['Order_Status'] = ''
 ads_iteration['Order_Signal'] = ''
 ads_iteration['Order_Price'] = 0.0
+ads_iteration['Quantity'] = lot_size * 2
 ads_iteration['Target'] = 0.0
 ads_iteration['Stop_Loss'] = 0.0
 ads_iteration['Next_Candle_Open'] = ads_iteration['Open'].shift(-1)
@@ -388,7 +396,8 @@ print('Data Preparation Completed')
 for i in ads_iteration.index.values:
     # Selecting Tradable Day and Setting Up Initial Stop Loss and Target
     if ads_iteration.Date[i].hour == 9 and ads_iteration.Date[i].minute == 15:
-        min_gap_condition = prev_day_close * 0.01
+        # 0.8% Gap-up or Gap-down
+        min_gap_condition = prev_day_close * 0.008
 
         # Selecting the Tradable Day
         if abs(ads_iteration.Open[i] - prev_day_close) >= min_gap_condition:
@@ -406,16 +415,18 @@ for i in ads_iteration.index.values:
     elif ads_iteration.Date[i].hour == 15 and ads_iteration.Date[i].minute == 20:
         if order_status == 'Entry':
             if order_signal == 'Buy':
-                ads_iteration = long_exit(ads_iteration, i, ads_iteration.Close[i])
+                ads_iteration = long_exit(ads_iteration, i, ads_iteration.Next_Candle_Open[i])
                 order_status = ads_iteration.Order_Status[i]
                 order_signal = ads_iteration.Order_Signal[i]
+                target_cross = 0
                 print('Order Status: ' + order_status)
                 print('Order Signal: ' + order_signal)
                 continue
             else:
-                ads_iteration = short_exit(ads_iteration, i, ads_iteration.Close[i])
+                ads_iteration = short_exit(ads_iteration, i, ads_iteration.Next_Candle_Open[i])
                 order_status = ads_iteration.Order_Status[i]
                 order_signal = ads_iteration.Order_Signal[i]
+                target_cross = 0
                 print('Order Status: ' + order_status)
                 print('Order Signal: ' + order_signal)
                 continue
@@ -433,43 +444,37 @@ for i in ads_iteration.index.values:
             # Check For Order Entry
             if order_status != 'Entry':
 
-                # No Entry Data Points
-                if (ads_iteration.Close[i] < entry_high_target and ads_iteration.Close[i] > entry_low_target):
-                    entry_high_target = ads_iteration.High[i] if ads_iteration.High[i] > entry_high_target else \
-                    entry_high_target
-                    entry_low_target = ads_iteration.Low[i] if ads_iteration.Low[i] < entry_low_target else \
-                        entry_low_target
-                    continue
-
                 # Long Entry Action
-                elif ads_iteration.Close[i] >= entry_high_target:
-                    ads_iteration = long_entry(ads_iteration,i)
+                if ads_iteration.Close[i] >= entry_high_target:
+                    ads_iteration = long_entry(ads_iteration,i,lot_size,entry_low_target)
                     order_status = ads_iteration.Order_Status[i]
                     order_signal = ads_iteration.Order_Signal[i]
                     target = ads_iteration.Target[i]
                     stop_loss = ads_iteration.Stop_Loss[i]
                     order_price = ads_iteration.Order_Price[i]
+                    order_qty = ads_iteration.Quantity[i]
                     print('Order Status: '+order_status)
                     print('Order Signal: '+order_signal)
                     continue
 
                 # Short Entry Action
                 elif ads_iteration.Close[i] <= entry_low_target:
-                    ads_iteration = short_entry(ads_iteration, i)
+                    ads_iteration = short_entry(ads_iteration, i, lot_size, entry_high_target)
                     order_status = ads_iteration.Order_Status[i]
                     order_signal = ads_iteration.Order_Signal[i]
                     target = ads_iteration.Target[i]
-                    stop_loss =ads_iteration.Stop_Loss[i]
+                    stop_loss = ads_iteration.Stop_Loss[i]
                     order_price = ads_iteration.Order_Price[i]
+                    order_qty = ads_iteration.Quantity[i]
                     print('Order Status: ' + order_status)
                     print('Order Signal: ' + order_signal)
                     continue
 
             # Decision Tree For Exiting the Order
-            if order_status == 'Entry':
-                # Holding From Long Position
+            elif order_status == 'Entry':
+                # Exiting From Long Position
                 if order_signal == 'Buy':
-                    deltas = find_gaps(ads_iteration,i)
+                    deltas = find_gaps(ads_iteration,i,indicator_columns)
                     ads_iteration.Target[i] = ads_iteration[indicator_columns[np.where(deltas > 0,
                                                                                        deltas,
                                                                                        np.inf).argmin()]][i]
@@ -480,19 +485,19 @@ for i in ads_iteration.index.values:
                         order_status = ads_iteration.Order_Status[i]
                         order_signal = ads_iteration.Order_Signal[i]
                         target_cross = 0
-                        today_data = ads_iteration[
-                            ads_iteration['Date'] >= ads_iteration['Date'][i].replace(hour=9, minute=15)]
-                        today_data = today_data[ads_iteration['Date'] <= ads_iteration['Date'][i]]
-                        entry_high_target = max(today_data.High)
-                        entry_low_target = min(today_data.Low)
                         print('Order Status: ' + order_status)
                         print('Order Signal: ' + order_signal)
                         continue
 
                     elif ads_iteration.Close[i] > target:
                         target_cross = target_cross + 1
-                        stop_loss = copy.deepcopy(target) if target_cross != 1 else order_price
+
+                        # Semi Exit
+                        ads_iteration.Quantity[i] = int(order_qty * 0.5)
+                        order_qty = ads_iteration.Quantity[i]
+
                         target = ads_iteration.Target[i]
+                        stop_loss = copy.deepcopy(order_price) if target_cross == 2 else stop_loss
                         continue
 
                     else:
@@ -500,22 +505,17 @@ for i in ads_iteration.index.values:
 
                 # Exiting From Short Position
                 if order_signal == 'Sell':
-                    deltas = find_gaps(ads_iteration,i)
+                    deltas = find_gaps(ads_iteration,i,indicator_columns)
                     ads_iteration.Target[i] = ads_iteration[indicator_columns[np.where(deltas < 0,
                                                                                        deltas,
                                                                                        -np.inf).argmax()]][i]
 
                     # Exit Condition
                     if ads_iteration.High[i] > stop_loss:
-                        ads_iteration = short_exit(ads_iteration,i,stop_loss)
+                        ads_iteration = short_exit(ads_iteration, i, stop_loss)
                         order_status = ads_iteration.Order_Status[i]
                         order_signal = ads_iteration.Order_Signal[i]
                         target_cross = 0
-                        today_data = ads_iteration[
-                            ads_iteration['Date'] >= ads_iteration['Date'][i].replace(hour=9, minute=15)]
-                        today_data = today_data[ads_iteration['Date'] <= ads_iteration['Date'][i]]
-                        entry_high_target = max(today_data.High)
-                        entry_low_target = min(today_data.Low)
                         print('Order Status: ' + order_status)
                         print('Order Signal: ' + order_signal)
                         continue
@@ -523,13 +523,27 @@ for i in ads_iteration.index.values:
                     # Order Holding Calculation
                     elif ads_iteration.Close[i] < target:
                         target_cross = target_cross + 1
-                        stop_loss = copy.deepcopy(target) if target_cross != 1 else order_price
+
+
+                        # Semi Exit
+                        order_qty = int(order_qty * 0.5)
+                        ads_iteration.Order_Price[i] = target
+                        ads_iteration.Quantity[i] = order_qty
+
+
                         target = ads_iteration.Target[i]
+                        stop_loss = copy.deepcopy(order_price) if target_cross == 2 else stop_loss
                         continue
 
                     else:
                         continue
 
+                entry_high_target = ads_iteration.High[i] if ads_iteration.High[i] > entry_high_target else \
+                    entry_high_target
+                entry_low_target = ads_iteration.Low[i] if ads_iteration.Low[i] < entry_low_target else \
+                    entry_low_target
 
 # Write to csv
-ads_iteration.to_csv('Gap_Up_Strategy_Output.csv',index=False)
+ads_output = ads_iteration[ads_iteration['Quantity'] != lot_size * 2]
+ads_output['Month'] = [i.month for i in ads_output['Date']]
+ads_output.to_csv('Gap_Up_Strategy_Output.csv',index=False)
