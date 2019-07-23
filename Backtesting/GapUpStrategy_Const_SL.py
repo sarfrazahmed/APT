@@ -321,18 +321,21 @@ def short_exit(data, index, stop_loss):
 ## Initial Inputs
 ###############################################################
 working_dir = 'F:\APT\Historical Data'
-input_file = 'Adaniports_5min.csv'
-lot_size = 2500
-target_profit_1 = 4000
-target_profit_2 = 7000
+input_file = 'Titan_5mins.csv'
+output_file = 'Gap_Up_Strategy_Output_Titan.csv'
+lot_size = 750
+max_one_stock_price = 1400
+target_profit_1 = 5000
+# target_profit_2 = 7000
 
-indicator_columns = ['R1_Pivot_Fibonacci',
-                     'R2_Pivot_Fibonacci',
-                     'R3_Pivot_Fibonacci',
-                     'PivotPoint',
-                     'S1_Pivot_Fibonacci',
-                     'S2_Pivot_Fibonacci',
-                     'S3_Pivot_Fibonacci']
+# indicator_columns = ['R1_Pivot_Fibonacci',
+#                      'R2_Pivot_Fibonacci',
+#                      'R3_Pivot_Fibonacci',
+#                      'PivotPoint',
+#                      'S1_Pivot_Fibonacci',
+#                      'S2_Pivot_Fibonacci',
+#                      'S3_Pivot_Fibonacci']
+
 sma_period = 12
 ema_period = 20
 
@@ -350,17 +353,18 @@ ads_fin.columns = ['Close', 'Date', 'High', 'Low', 'Open', 'Volume']
 ads_fin['Date'] = [i[:i.find('+')] for i in ads_fin['Date']]
 ads_fin['Date'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S') for i in ads_fin['Date']]
 ads_fin['Year'] = [i.year for i in ads_fin['Date']]
+ads_fin['DatePart'] = [i.date() for i in ads_fin['Date']]
 
 # Subset Historical Data For Back Testing
 ads_analysis = ads_fin[ads_fin['Year'] == 2019]
 # ads_analysis = ads_fin
 
 # Include Necessary Technical Indicators in the dataset
-ads_analysis = pivotpoints(ads_analysis)  # Getting Simple Pivot Points
-ads_analysis = pivotpoints(ads_analysis, type='fibonacci')  # Getting Fibonacci Pivot Points
-ads_analysis['SMA_' + str(sma_period)] = sma(ads_analysis, sma_period)  # Getting Simple Moving Average
-ads_analysis['EMA_' + str(ema_period)] = ema(ads_analysis, ema_period, 'Close')  # Getting Simple Moving Average
-ads_analysis = bband(ads_analysis, bband_period, bband_multiplier)  # Getting Bollinger Band
+# ads_analysis = pivotpoints(ads_analysis)  # Getting Simple Pivot Points
+# ads_analysis = pivotpoints(ads_analysis, type='fibonacci')  # Getting Fibonacci Pivot Points
+# ads_analysis['SMA_' + str(sma_period)] = sma(ads_analysis, sma_period)  # Getting Simple Moving Average
+# ads_analysis['EMA_' + str(ema_period)] = ema(ads_analysis, ema_period, 'Close')  # Getting Simple Moving Average
+# ads_analysis = bband(ads_analysis, bband_period, bband_multiplier)  # Getting Bollinger Band
 
 # ads_analysis.to_csv('AdaniPort_Indicators_2019.csv',index=False)
 
@@ -369,7 +373,8 @@ ads_analysis = bband(ads_analysis, bband_period, bband_multiplier)  # Getting Bo
 
 
 # Strategy Pointers
-money = 450 * lot_size
+
+money = max_one_stock_price * lot_size
 order_status = 'Exit'
 order_signal = ''
 order_price = 0.0
@@ -406,12 +411,13 @@ for i in ads_iteration.index.values:
 
     # Selecting Tradable Day and Setting Up Initial Stop Loss and Target
     if ads_iteration.Date[i].hour == 9 and ads_iteration.Date[i].minute == 15:
-        # 0.8% Gap-up or Gap-down
-        min_gap_condition = prev_day_close * 0.008
-
-        # Selecting the Tradable Day
-        day_flag = 'selected' if (abs(ads_iteration.Open[i] - prev_day_close) >= min_gap_condition) else 'not selected'
-        print(day_flag)
+        # day_flag = 'selected' if ((ads_iteration.Open[i] > entry_high_target) or
+        #                          (entry_low_target > ads_iteration.Open[i])) else 'not selected'
+        # skip_date = ads_iteration.DatePart[i] if day_flag == 'not selected' else skip_date
+        entry_high_target = ads_iteration.High[i]
+        entry_low_target = ads_iteration.Low[i]
+        ads_iteration.Money[i] = money
+        continue
 
     # Exit from Ongoing Order, if any (Check)
     elif ads_iteration.Date[i].hour == 15 and ads_iteration.Date[i].minute == 20:
@@ -432,21 +438,23 @@ for i in ads_iteration.index.values:
                 order_status = ads_iteration.Order_Status[i]
                 order_signal = ads_iteration.Order_Signal[i]
                 order_price = ads_iteration.Order_Price[i]
-                money = money + order_qty * order_price
+                money = money - order_qty * order_price
                 target_cross = 0
                 order_qty = 0
                 print('Order Status: ' + order_status)
                 print('Order Signal: ' + order_signal)
 
-    elif ads_iteration.Date[i].hour == 15 and ads_iteration.Date[i].minute == 25:
-        prev_day_close = copy.deepcopy(ads_iteration.Close[i])
+    # elif ads_iteration.Date[i].hour == 15 and ads_iteration.Date[i].minute == 25:
+    #     prev_day_close = copy.deepcopy(ads_iteration.Close[i])
 
     elif ads_iteration.DatePart[i] != skip_date:
 
-            if order_status != 'Entry':
+            if order_status == 'Exit':
 
                 # Long Entry Action
-                if ads_iteration.Close[i] >= entry_high_target:
+                if ((ads_iteration.Close[i] > entry_high_target) and
+                   (ads_iteration.Next_Candle_Open[i] - entry_low_target) < 6):
+                    # calc_stop_loss = max(entry_low_target,ads_iteration.Next_Candle_Open[i] - 5)
                     ads_iteration = long_entry(ads_iteration, i, lot_size, entry_low_target,target_profit_1)
                     order_status = ads_iteration.Order_Status[i]
                     order_signal = ads_iteration.Order_Signal[i]
@@ -458,8 +466,10 @@ for i in ads_iteration.index.values:
                     # ads_iteration.Money[i] = money
 
                 # Short Entry Action
-                elif ads_iteration.Close[i] <= entry_low_target:
-                    ads_iteration = short_entry(ads_iteration, i, lot_size, entry_low_target, target_profit_1)
+                elif ((ads_iteration.Close[i] < entry_low_target) and
+                     (entry_high_target - ads_iteration.Next_Candle_Open[i]) < 6.5):
+                    # calc_stop_loss = min(entry_high_target, ads_iteration.Next_Candle_Open[i] + 5)
+                    ads_iteration = short_entry(ads_iteration, i, lot_size, entry_high_target, target_profit_1)
                     order_status = ads_iteration.Order_Status[i]
                     order_signal = ads_iteration.Order_Signal[i]
                     target = ads_iteration.Target[i]
@@ -480,52 +490,89 @@ for i in ads_iteration.index.values:
                         order_signal = ads_iteration.Order_Signal[i]
                         order_price = ads_iteration.Order_Price[i]
                         money = money + order_qty * order_price
-                        target_cross = 0
+                        # target_cross = 0
                         order_qty = 0
                         print('Order Status: ' + order_status)
                         print('Order Signal: ' + order_signal)
 
                     elif ads_iteration.High[i] > target:
-                        target_cross = target_cross + 1
-
+                        # target_cross = target_cross + 1
+                        ads_iteration = long_exit(ads_iteration, i, target)
+                        order_status = ads_iteration.Order_Status[i]
+                        order_signal = ads_iteration.Order_Signal[i]
+                        order_price = ads_iteration.Order_Price[i]
+                        money = money + order_qty * order_price
+                        # target_cross = 0
+                        order_qty = 0
+                        print('Order Status: ' + order_status)
+                        print('Order Signal: ' + order_signal)
                         # Semi Exit
-                        if target_cross == 1:
-                            ads_iteration.Quantity[i] = int(order_qty * 0.5)
-                            ads_iteration.Order_Price[i] = target
-                            stop_loss = order_price
-                            order_price = target
-                            order_qty = ads_iteration.Quantity[i]
-                            money = money + order_qty * order_price
-                            target = ((target_profit_2 - target_profit_1) / lot_size) + order_price
+                        # if target_cross == 1:
+                        #     ads_iteration.Quantity[i] = int(order_qty * 0.5)
+                        #     ads_iteration.Order_Price[i] = target
+                        #     stop_loss = order_price
+                        #     order_price = target
+                        #     order_qty = ads_iteration.Quantity[i]
+                        #     money = money + order_qty * order_price
+                        #     target = ((target_profit_2 - target_profit_1) / lot_size) + order_price
+                        #
+                        # else:
+                        #     ads_iteration = long_exit(ads_iteration, i, target)
+                        #     order_status = ads_iteration.Order_Status[i]
+                        #     order_signal = ads_iteration.Order_Signal[i]
+                        #     order_price = ads_iteration.Order_Price[i]
+                        #     money = money + order_qty * order_price
+                        #     target_cross = 0
+                        #     order_qty = 0
+                        #     print('Order Status: ' + order_status)
+                        #     print('Order Signal: ' + order_signal)
 
                 # Exiting From Short Position
-                if order_signal == 'Sell':
-
-                    # Exit Condition
+                elif order_signal == 'Sell':
+               # Exit Condition
                     if ads_iteration.High[i] > stop_loss:
                         ads_iteration = short_exit(ads_iteration, i, stop_loss)
                         order_status = ads_iteration.Order_Status[i]
                         order_signal = ads_iteration.Order_Signal[i]
                         order_price = ads_iteration.Order_Price[i]
                         money = money - order_qty * order_price
-                        target_cross = 0
+                        # target_cross = 0
                         order_qty = 0
                         print('Order Status: ' + order_status)
                         print('Order Signal: ' + order_signal)
 
                     # Order Holding Calculation
-                    elif ads_iteration.Target[i] < target:
-                        target_cross = target_cross + 1
-
+                    elif ads_iteration.Low[i] < target:
+                        # target_cross = target_cross + 1
+                        ads_iteration = short_exit(ads_iteration, i, target)
+                        order_status = ads_iteration.Order_Status[i]
+                        order_signal = ads_iteration.Order_Signal[i]
+                        order_price = ads_iteration.Order_Price[i]
+                        money = money - order_qty * order_price
+                        # target_cross = 0
+                        order_qty = 0
+                        print('Order Status: ' + order_status)
+                        print('Order Signal: ' + order_signal)
                         # Semi Exit
-                        if target_cross == 1:
-                            ads_iteration.Quantity[i] = int(order_qty * 0.5)
-                            ads_iteration.Order_Price[i] = target
-                            stop_loss = order_price
-                            order_price = target
-                            order_qty = ads_iteration.Quantity[i]
-                            money = money - order_qty * order_price
-                            target = ((target_profit_2 - target_profit_1) / lot_size) + order_price
+                        # if target_cross == 1:
+                        #     ads_iteration.Quantity[i] = int(order_qty * 0.5)
+                        #     ads_iteration.Order_Price[i] = target
+                        #     stop_loss = order_price
+                        #     order_price = target
+                        #     order_qty = ads_iteration.Quantity[i]
+                        #     money = money - order_qty * order_price
+                        #     target = ((target_profit_2 - target_profit_1) / lot_size) + order_price
+                        #
+                        # else:
+                        #     ads_iteration = short_exit(ads_iteration, i, target)
+                        #     order_status = ads_iteration.Order_Status[i]
+                        #     order_signal = ads_iteration.Order_Signal[i]
+                        #     order_price = ads_iteration.Order_Price[i]
+                        #     money = money - order_qty * order_price
+                        #     target_cross = 0
+                        #     order_qty = 0
+                        #     print('Order Status: ' + order_status)
+                        #     print('Order Signal: ' + order_signal)
 
     entry_high_target = max(entry_high_target,ads_iteration.High[i])
     entry_low_target = min(entry_low_target,ads_iteration.Low[i])
@@ -533,5 +580,5 @@ for i in ads_iteration.index.values:
 # Write to csv
 ads_output = ads_iteration[ads_iteration['Quantity'] != lot_size * 2]
 ads_output['Month'] = [i.month for i in ads_output['Date']]
-ads_output.to_csv('Gap_Up_Strategy_Output.csv', index=False)
-money = ((money - (450 * lot_size)) / (450 * lot_size)) * 100
+ads_output.to_csv(output_file, index=False)
+profit_percentage = ((money - (max_one_stock_price * lot_size)) / (max_one_stock_price * lot_size)) * 100
