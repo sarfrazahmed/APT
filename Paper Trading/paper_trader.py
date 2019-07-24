@@ -65,25 +65,30 @@ tokens = [897537]
 
 # Initialise
 kws = KiteTicker(api_key, KRT['access_token'])
-tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP', 'Volume', 'Buy_Order_1', 'Buy_Order_2', 'Buy_Order_3', 'Buy_Order_4', 'Buy_Order_5', 'Sell_Order_1', 'Sell_Order_2', 'Sell_Order_3', 'Sell_Order_4', 'Sell_Order_5'])
+tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
+last_saved_time = 15
+# tick_df = tick_df.append({'Token': 0, 'Timestamp': 0, 'LTP': 0}, ignore_index=True)
 
 
 def on_ticks(ws, ticks):
     # Callback to receive ticks.
     global tick_df
-    tick_df = tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price'], 'Volume': ticks[0]['volume'],\
-    'Buy_quantity': ticks[0]['buy_quantity'], 'Sell_quantity': ticks[0]['sell_quantity'], \
-    'Buy_Order_1': [ticks[0]['depth']['buy'][0]['price'], ticks[0]['depth']['buy'][0]['orders'], ticks[0]['depth']['buy'][0]['quantity']], \
-    'Buy_Order_2': [ticks[0]['depth']['buy'][1]['price'], ticks[0]['depth']['buy'][1]['orders'], ticks[0]['depth']['buy'][1]['quantity']], \
-    'Buy_Order_3': [ticks[0]['depth']['buy'][2]['price'], ticks[0]['depth']['buy'][2]['orders'], ticks[0]['depth']['buy'][2]['quantity']], \
-    'Buy_Order_4': [ticks[0]['depth']['buy'][3]['price'], ticks[0]['depth']['buy'][3]['orders'], ticks[0]['depth']['buy'][3]['quantity']], \
-    'Buy_Order_5': [ticks[0]['depth']['buy'][4]['price'], ticks[0]['depth']['buy'][4]['orders'], ticks[0]['depth']['buy'][4]['quantity']], \
-    'Sell_Order_1': [ticks[0]['depth']['sell'][0]['price'], ticks[0]['depth']['sell'][0]['orders'], ticks[0]['depth']['sell'][0]['quantity']], \
-    'Sell_Order_2': [ticks[0]['depth']['sell'][1]['price'], ticks[0]['depth']['sell'][1]['orders'], ticks[0]['depth']['sell'][1]['quantity']], \
-    'Sell_Order_3': [ticks[0]['depth']['sell'][2]['price'], ticks[0]['depth']['sell'][2]['orders'], ticks[0]['depth']['sell'][2]['quantity']], \
-    'Sell_Order_4': [ticks[0]['depth']['sell'][3]['price'], ticks[0]['depth']['sell'][3]['orders'], ticks[0]['depth']['sell'][3]['quantity']], \
-    'Sell_Order_5': [ticks[0]['depth']['sell'][4]['price'], ticks[0]['depth']['sell'][4]['orders'], ticks[0]['depth']['sell'][4]['quantity']]}, ignore_index=True)
-    tick_df.to_csv('tick_data' + str(datetime.date.today())  + '.csv')
+    global last_saved_time
+    while True:
+        print(ticks)
+        tick_df = tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
+        
+        if (datetime.datetime.now().minute % 2 == 0) and (datetime.datetime.now().minute != last_saved_time):
+            tick_df = tick_df.set_index(['Timestamp'])
+            tick_df['Timestamp'] = pd.to_datetime(tick_df.index, unit='s')
+            data_ohlc = tick_df['LTP'].resample('5Min').ohlc()
+            data_ohlc.to_csv('sample_ohlc_data.csv')
+            print("Printed at " + str(datetime.datetime.now()))
+            last_saved_time = datetime.datetime.now().minute
+            tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'])
+            tick_df = tick_df.set_index(['Timestamp'])
+            tick_df['Timestamp'] = pd.to_datetime(tick_df.index, unit='s')
+        time.sleep(1)
     
 
 def on_connect(ws, response):
@@ -150,14 +155,17 @@ kws.connect(threaded=True)
 # QUOTE
 # tick = [{'tradable': True, 'mode': 'quote', 'instrument_token': 897537, 'last_price': 1086.2, 'last_quantity': 1, 'average_price': 1089.13, 'volume': 1055785, 'buy_quantity': 864953, 'sell_quantity': 438516, 'ohlc': {'open': 1110.0, 'high': 1110.05, 'low': 1079.0, 'close': 1101.2}, 'change': -1.3621503814021068}]
 
-# tick_df = pd.read_csv('tick_data.csv', parse_dates=['Timestamp'])
+# tick_df = pd.read_csv('data/tick_data.csv', parse_dates=['Timestamp'])
 
 # tick_df = tick_df.set_index(['Timestamp'])
 
 # tick_df.index = pd.to_datetime(tick_df.index, unit='s')
+
 
 # data_ohlc = tick_df['LTP'].resample('5Min').ohlc()
 
 # print(data_ohlc)
 
 # data_ohlc.to_csv('ohlc.csv')
+
+# tick_df = tick_df.append({'Token': 0, 'Timestamp': 0, 'LTP': 0}, ignore_index=True)
