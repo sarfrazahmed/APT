@@ -74,21 +74,19 @@ def on_ticks(ws, ticks):
     # Callback to receive ticks.
     global tick_df
     global last_saved_time
-    while True:
-        print(ticks)
-        tick_df = tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
-        
-        if (datetime.datetime.now().minute % 2 == 0) and (datetime.datetime.now().minute != last_saved_time):
-            tick_df = tick_df.set_index(['Timestamp'])
-            tick_df['Timestamp'] = pd.to_datetime(tick_df.index, unit='s')
-            data_ohlc = tick_df['LTP'].resample('5Min').ohlc()
-            data_ohlc.to_csv('sample_ohlc_data.csv')
-            print("Printed at " + str(datetime.datetime.now()))
-            last_saved_time = datetime.datetime.now().minute
-            tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'])
-            tick_df = tick_df.set_index(['Timestamp'])
-            tick_df['Timestamp'] = pd.to_datetime(tick_df.index, unit='s')
-        time.sleep(1)
+    print(ticks)
+    tick_df = tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
+    
+    if (datetime.datetime.now().minute % 5 == 0) and (datetime.datetime.now().minute != last_saved_time):
+        tick_df = tick_df.set_index(['Timestamp'])
+        tick_df['Timestamp'] = pd.to_datetime(tick_df.index, unit='s')
+        data_ohlc = tick_df['LTP'].resample('5Min').ohlc()
+        data_ohlc.to_csv('sample_ohlc_data.csv')
+        print("Printed at " + str(datetime.datetime.now()))
+        last_saved_time = datetime.datetime.now().minute
+        tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'])
+        tick_df = tick_df.set_index(['Timestamp'])
+        tick_df['Timestamp'] = pd.to_datetime(tick_df.index, unit='s')
     
 
 def on_connect(ws, response):
