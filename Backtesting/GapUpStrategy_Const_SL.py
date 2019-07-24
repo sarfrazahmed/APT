@@ -321,11 +321,19 @@ def short_exit(data, index, stop_loss):
 ## Initial Inputs
 ###############################################################
 working_dir = 'F:\APT\Historical Data'
-input_file = 'Titan_5mins.csv'
-output_file = 'Gap_Up_Strategy_Output_Titan.csv'
-lot_size = 750
-max_one_stock_price = 1400
-target_profit_1 = 5000
+input_file = 'Reliance_5min.csv'
+output_file = 'Gap_Up_Strategy_Output_Reliance.csv'
+lot_size = 500
+max_one_stock_price = 1300
+target_profit_1 = 3500
+semi_target = 2000
+max_stop_loss = 1200
+# max_gap = 4000
+
+# target_profit_percentage =
+# max_stop_loss_percentage = 2
+# semi_target_percentage =
+
 # target_profit_2 = 7000
 
 # indicator_columns = ['R1_Pivot_Fibonacci',
@@ -452,10 +460,10 @@ for i in ads_iteration.index.values:
             if order_status == 'Exit':
 
                 # Long Entry Action
-                if ((ads_iteration.Close[i] > entry_high_target) and
-                   (ads_iteration.Next_Candle_Open[i] - entry_low_target) < 6):
-                    # calc_stop_loss = max(entry_low_target,ads_iteration.Next_Candle_Open[i] - 5)
-                    ads_iteration = long_entry(ads_iteration, i, lot_size, entry_low_target,target_profit_1)
+                if ads_iteration.Close[i] > entry_high_target:
+                    # calc_stop_loss = max(entry_low_target,(ads_iteration.Next_Candle_Open[i] - (max_stop_loss / lot_size)))
+                    calc_stop_loss = ads_iteration.Next_Candle_Open[i] - (max_stop_loss / lot_size)
+                    ads_iteration = long_entry(ads_iteration, i, lot_size, calc_stop_loss,target_profit_1)
                     order_status = ads_iteration.Order_Status[i]
                     order_signal = ads_iteration.Order_Signal[i]
                     target = ads_iteration.Target[i]
@@ -466,10 +474,10 @@ for i in ads_iteration.index.values:
                     # ads_iteration.Money[i] = money
 
                 # Short Entry Action
-                elif ((ads_iteration.Close[i] < entry_low_target) and
-                     (entry_high_target - ads_iteration.Next_Candle_Open[i]) < 6.5):
-                    # calc_stop_loss = min(entry_high_target, ads_iteration.Next_Candle_Open[i] + 5)
-                    ads_iteration = short_entry(ads_iteration, i, lot_size, entry_high_target, target_profit_1)
+                elif ads_iteration.Close[i] < entry_low_target:
+                    # calc_stop_loss = min(entry_high_target, (ads_iteration.Next_Candle_Open[i] + (max_stop_loss / lot_size)))
+                    calc_stop_loss = ads_iteration.Next_Candle_Open[i] + (max_stop_loss / lot_size)
+                    ads_iteration = short_entry(ads_iteration, i, lot_size, calc_stop_loss, target_profit_1)
                     order_status = ads_iteration.Order_Status[i]
                     order_signal = ads_iteration.Order_Signal[i]
                     target = ads_iteration.Target[i]
@@ -504,7 +512,7 @@ for i in ads_iteration.index.values:
                         money = money + order_qty * order_price
                         # target_cross = 0
                         order_qty = 0
-                        print('Order Status: ' + order_status)
+                        print('Order Status: ' +  order_status)
                         print('Order Signal: ' + order_signal)
                         # Semi Exit
                         # if target_cross == 1:
@@ -526,6 +534,8 @@ for i in ads_iteration.index.values:
                         #     order_qty = 0
                         #     print('Order Status: ' + order_status)
                         #     print('Order Signal: ' + order_signal)
+                    elif (ads_iteration.High[i] - order_price) > (semi_target / lot_size):
+                        stop_loss = copy.deepcopy(order_price)
 
                 # Exiting From Short Position
                 elif order_signal == 'Sell':
@@ -573,6 +583,9 @@ for i in ads_iteration.index.values:
                         #     order_qty = 0
                         #     print('Order Status: ' + order_status)
                         #     print('Order Signal: ' + order_signal)
+
+                    elif (order_price - ads_iteration.Low[i]) > (semi_target / lot_size):
+                        stop_loss = copy.deepcopy(order_price)
 
     entry_high_target = max(entry_high_target,ads_iteration.High[i])
     entry_low_target = min(entry_low_target,ads_iteration.Low[i])
