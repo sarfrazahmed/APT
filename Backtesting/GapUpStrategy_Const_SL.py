@@ -283,7 +283,7 @@ def long_entry(data, index, qty, sl,tp):
     return data
 
 
-## Function to Execute Long Entry
+## Function to Execute Short Entry
 ###############################################################
 def short_entry(data, index, qty, sl,tp):
     data.Order_Status[index] = 'Entry'
@@ -307,7 +307,7 @@ def long_exit(data, index, stop_loss):
     return data
 
 
-## Function to Execute Long Exit
+## Function to Execute Short Exit
 ###############################################################
 def short_exit(data, index, stop_loss):
     data.Order_Status[index] = 'Exit'
@@ -320,7 +320,7 @@ def short_exit(data, index, stop_loss):
 
 ## Initial Inputs
 ###############################################################
-working_dir = 'F:\APT\Historical Data'
+working_dir = 'F:/APT/Historical Data'
 input_file = 'Reliance_5min.csv'
 output_file = 'Gap_Up_Strategy_Output_Reliance.csv'
 lot_size = 500
