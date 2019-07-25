@@ -31,8 +31,8 @@ Trade_Dataset = pd.DataFrame(columns= ['Date', 'Open', 'High', 'Low', 'Close', '
 
 while True:
     # Get data after every 5 mins
-    if (datetime.now().minute % 5 == 0) and (datetime.now().second == 1):
-        data = pd.read_csv('ohlc_data.csv')
+    if (datetime.now().minute % 2 == 0) and (datetime.now().second == 1):
+        data = pd.read_csv('E:/Stuffs/APT/ohlc_data.csv')
         data.columns = ['Date','Open','High','Low','Close']
         
         # Date Column Handling
