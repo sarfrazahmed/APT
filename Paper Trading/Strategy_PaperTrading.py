@@ -7,6 +7,7 @@ import copy
 import kiteconnect as kc
 import os
 
+
 ## Function to Execute Long Entry
 ###############################################################
 def long_entry(data, index, lot_size, sl, tp):
@@ -55,10 +56,10 @@ def short_exit(data, index, stop_loss):
 
 ## Gap-Up Strategy Function For Paper Trading
 ###############################################################
-def GapUpStrategy(data, order_status, order_signal,
+def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
+                  order_status, order_signal,
                   order_price, entry_high_target, entry_low_target,
-                  max_stop_loss, target, lot_size, target_profit_1, semi_target, skip_date):
-
+                  stop_loss, target, skip_date):
     if data.Date[0].hour == 9 and data.Date[0].minute == 15:
         # day_flag = 'selected' if ((ads_iteration.Open[i] > entry_high_target) or
         #                          (entry_low_target > ads_iteration.Open[i])) else 'not selected'
@@ -90,14 +91,14 @@ def GapUpStrategy(data, order_status, order_signal,
                 # order_qty = 0
                 print('Order Status: ' + order_status)
                 print('Order Signal: ' + order_signal)
-    
+
     elif data.DatePart[0] != skip_date:
         if order_status == 'Exit':
             # Long Entry Action
             if data.Close[0] > entry_high_target:
                 # calc_stop_loss = max(entry_low_target,(ads_iteration.Next_Candle_Open[i] - (max_stop_loss / lot_size)))
                 calc_stop_loss = data.Close[0] - (max_stop_loss / lot_size)
-                data = long_entry(data, 0, lot_size, calc_stop_loss,target_profit_1)
+                data = long_entry(data, 0, lot_size, calc_stop_loss, target_profit_1)
                 order_status = data.Order_Status[0]
                 order_signal = data.Order_Signal[0]
                 target = data.Target[0]
@@ -146,34 +147,34 @@ def GapUpStrategy(data, order_status, order_signal,
                     # money = money + order_qty * order_price
                     # target_cross = 0
                     # order_qty = 0
-                    print('Order Status: ' +  order_status)
+                    print('Order Status: ' + order_status)
                     print('Order Signal: ' + order_signal)
                 # Semi Exit
-                    # if target_cross == 1:
-                    #     ads_iteration.Quantity[i] = int(order_qty * 0.5)
-                    #     ads_iteration.Order_Price[i] = target
-                    #     stop_loss = order_price
-                    #     order_price = target
-                    #     order_qty = ads_iteration.Quantity[i]
-                    #     money = money + order_qty * order_price
-                    #     target = ((target_profit_2 - target_profit_1) / lot_size) + order_price
-                    #
-                    # else:
-                    #     ads_iteration = long_exit(ads_iteration, i, target)
-                    #     order_status = ads_iteration.Order_Status[i]
-                    #     order_signal = ads_iteration.Order_Signal[i]
-                    #     order_price = ads_iteration.Order_Price[i]
-                    #     money = money + order_qty * order_price
-                    #     target_cross = 0
-                    #     order_qty = 0
-                    #     print('Order Status: ' + order_status)
-                    #     print('Order Signal: ' + order_signal)
+                # if target_cross == 1:
+                #     ads_iteration.Quantity[i] = int(order_qty * 0.5)
+                #     ads_iteration.Order_Price[i] = target
+                #     stop_loss = order_price
+                #     order_price = target
+                #     order_qty = ads_iteration.Quantity[i]
+                #     money = money + order_qty * order_price
+                #     target = ((target_profit_2 - target_profit_1) / lot_size) + order_price
+                #
+                # else:
+                #     ads_iteration = long_exit(ads_iteration, i, target)
+                #     order_status = ads_iteration.Order_Status[i]
+                #     order_signal = ads_iteration.Order_Signal[i]
+                #     order_price = ads_iteration.Order_Price[i]
+                #     money = money + order_qty * order_price
+                #     target_cross = 0
+                #     order_qty = 0
+                #     print('Order Status: ' + order_status)
+                #     print('Order Signal: ' + order_signal)
                 elif (data.High[0] - order_price) > (semi_target / lot_size):
                     stop_loss = copy.deepcopy(order_price)
 
             # Exiting From Short Position
             elif order_signal == 'Sell':
-            # Exit Condition
+                # Exit Condition
                 if data.High[0] > stop_loss:
                     data = short_exit(data, 0, stop_loss)
                     order_status = data.Order_Status[0]
@@ -221,7 +222,10 @@ def GapUpStrategy(data, order_status, order_signal,
                 elif (order_price - data.Low[0]) > (semi_target / lot_size):
                     stop_loss = copy.deepcopy(order_price)
 
-    entry_high_target = max(entry_high_target,data.High[0])
-    entry_low_target = min(entry_low_target,data.Low[0])
-    # ads_iteration.Money[i] = money
-    return data, order_status, order_signal, order_price, entry_high_target, entry_low_target, stop_loss, target, lot_size, target_profit_1, semi_target, skip_date
+    entry_high_target = max(entry_high_target, data.High[0])
+    entry_low_target = min(entry_low_target, data.Low[0])
+
+    result_list = [order_status, order_signal,
+                  order_price, entry_high_target, entry_low_target,
+                  stop_loss, target, skip_date]
+    return data, result_list
