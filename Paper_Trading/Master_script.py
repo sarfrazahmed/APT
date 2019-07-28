@@ -32,7 +32,7 @@ Trade_Dataset = pd.DataFrame(columns= ['Date', 'Open', 'High', 'Low', 'Close', '
 while True:
     # Get data after every 5 mins
     if (datetime.now().minute % 5 == 0) and (datetime.now().second == 1):
-        data = pd.read_csv('ohlc_data.csv')
+        data = pd.read_csv('E:/Stuffs/APT/ohlc_data.csv')
         data.columns = ['Date','Open','High','Low','Close']
         
         # Date Column Handling
@@ -51,11 +51,7 @@ while True:
         print('Data Preparation Completed')
 
         # Implement Strategy
-        data, order_status, order_signal,
-        order_price, entry_high_target, entry_low_target,
-        stop_loss, target, lot_size, target_profit_1, semi_target, skip_date = strategy.GapUpStrategy(data, order_status, order_signal,
-                                                                                        order_price, entry_high_target, entry_low_target,
-                                                                                        stop_loss, target, lot_size, target_profit_1, semi_target, skip_date)
+        data, order_status, order_signal, order_price, entry_high_target, entry_low_target, stop_loss, target, lot_size, target_profit_1, semi_target, skip_date = strategy.GapUpStrategy(data, order_status, order_signal, order_price, entry_high_target, entry_low_target, stop_loss, target, lot_size, target_profit_1, semi_target, skip_date)
         if data.Order_Signal[0] != "": 
             Trade_Dataset = Trade_Dataset.append(data)
             Trade_Dataset.to_csv('PaperTrading_Output.csv', index = False)
