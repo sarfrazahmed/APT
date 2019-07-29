@@ -72,39 +72,32 @@ last_saved_time = 15
 
 
 def on_ticks(ws, ticks):
-    print("In on_ticks")
     # Callback to receive ticks.
     global tick_df
     global last_saved_time
+    print(ticks, flush=True)
+    tick_df = tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
+    if ((tick_df['Timestamp'][len(tick_df)-1].minute % 5 == 0) and (tick_df['Timestamp'][len(tick_df)-1].minute != last_saved_time)):
+        print(len(tick_df))
+        # set timestamp as index
+        tick_df = tick_df.set_index(['Timestamp'])
+        tick_df['Timestamp'] = pd.to_datetime(tick_df.index, unit='s')
+        # convert to OHLC format
+        data_ohlc = tick_df['LTP'].resample('5Min').ohlc()
+        data_ohlc = data_ohlc.tail(1)
+        # save the dataframe to csv
+        data_ohlc.to_csv('ohlc_data.csv')
+        print("Printed at " + str(datetime.datetime.now()))
 
-    while True:
-        print(ticks, flush=True)
-        tick_df = tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
+        # save the last minute
+        last_saved_time = tick_df['Timestamp'][len(tick_df)-1].minute
 
-        if (datetime.datetime.now().minute % 5 == 0) and (datetime.datetime.now().minute != last_saved_time):
-            print(len(tick_df))
-            # set timestamp as index
-            tick_df = tick_df.set_index(['Timestamp'])
-            tick_df['Timestamp'] = pd.to_datetime(tick_df.index, unit='s')
+        # initialize the dataframe
+        tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
+        print(len(data_ohlc))
 
-            # convert to OHLC format
-            data_ohlc = tick_df['LTP'].resample('5Min').ohlc()
-
-            # save the dataframe to csv
-            data_ohlc.to_csv('ohlc_data.csv')
-            print("Printed at " + str(datetime.datetime.now()))
-
-            # save the last minute
-            last_saved_time = datetime.datetime.now().minute
-
-            # initialize the dataframe
-            tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
-            print(len(data_ohlc))
-            data_ohlc = pd.DataFrame()
-        time.sleep(5)
 
 def on_connect(ws, response):
-    print("In on_connect")
     # Callback on successful connect.
     # Subscribe to a list of instrument_tokens
     ws.subscribe(tokens)
@@ -113,36 +106,32 @@ def on_connect(ws, response):
 
 # Callback when current connection is closed.
 def on_close(ws, code, reason):
-    print("In on_close")
     logging.info("Connection closed: {code} - {reason}".format(code=code, reason=reason))
 
 
 # Callback when connection closed with error.
 def on_error(ws, code, reason):
-    print("In on_error")
     logging.info("Connection error: {code} - {reason}".format(code=code, reason=reason))
 
 
 # Callback when reconnect is on progress
 def on_reconnect(ws, attempts_count):
-    print("In on_reconnect")
     logging.info("Reconnecting: {}".format(attempts_count))
 
 
 # Callback when all reconnect failed (exhausted max retries)
 def on_noreconnect(ws):
-    print("In on_noreconnect")
     logging.info("Reconnect failed.")
 
 
-    # Assign the callbacks.
-    kws.on_ticks = on_ticks
-    kws.on_close = on_close
-    kws.on_error = on_error
-    kws.on_connect = on_connect
-    kws.on_reconnect = on_reconnect
-    kws.on_noreconnect = on_noreconnect
-    print("Callbacks assigned")
+# Assign the callbacks.
+kws.on_ticks = on_ticks
+kws.on_close = on_close
+kws.on_error = on_error
+kws.on_connect = on_connect
+kws.on_reconnect = on_reconnect
+kws.on_noreconnect = on_noreconnect
+print("Callbacks assigned")
 
 # count = 0
 # while True:
@@ -160,7 +149,8 @@ def on_noreconnect(ws):
 
 # Infinite loop on the main thread. Nothing after this will run.
 # You have to use the pre-defined callbacks to manage subscriptions.
-kws.connect(threaded=True)
+kws.connect()
+kws.on_ticks()
 print("KWS connected")
 
 
@@ -188,3 +178,5 @@ print("KWS connected")
 # data_ohlc.to_csv('ohlc.csv')
 
 # tick_df = tick_df.append({'Token': 0, 'Timestamp': 0, 'LTP': 0}, ignore_index=True)
+data = pd.read_csv('ohlc_data.csv')
+len(data)

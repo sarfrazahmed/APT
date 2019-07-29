@@ -2,14 +2,15 @@
 import pandas as pd
 import os
 
-os.chdir('E:/Stuffs/APT/APT/Paper_Trading')
+
 from datetime import datetime
 import time
+os.chdir('E:/Stuffs/APT/APT/Paper_Trading')
 import Strategy_PaperTrading as strategy
 
 ## Initial Inputs
 ###############################################################
-
+print("Initialising")
 lot_size = 500
 # max_one_stock_price = 1300
 target_profit_1 = 3500
@@ -30,11 +31,12 @@ result_list = [order_status, order_signal,
 Trade_Dataset = pd.DataFrame(columns=['Date', 'Open', 'High', 'Low', 'Close', 'Year', 'DatePart',
                                       'Order_Status', 'Order_Signal', 'Order_Price', 'Target', 'Stop_Loss',
                                       'Hour', 'Minute'])
-
+print("Going in loop")
 while True:
     # Get data after every 5 mins
     if (datetime.now().minute % 5 == 0) and (datetime.now().second == 1):
         data = pd.read_csv('E:/Stuffs/APT/ohlc_data.csv')
+        print("Data read")
         data.columns = ['Date', 'Open', 'High', 'Low', 'Close']
 
         # Date Column Handling
@@ -69,5 +71,3 @@ while True:
         if data.Order_Signal[0] != "":
             Trade_Dataset = Trade_Dataset.append(data)
             Trade_Dataset.to_csv('PaperTrading_Output.csv', index=False)
-
-        time.sleep(1)

@@ -104,8 +104,6 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                 target = data.Target[0]
                 stop_loss = data.Stop_Loss[0]
                 order_price = data.Order_Price[0]
-                print("Target: "+ str(target))
-                print("Stop Loss: " + str(stop_loss))
                 # order_qty = data.Quantity[i]
                 # money = money - order_qty * order_price
                 # data.Money[i] = money
@@ -120,8 +118,6 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                 target = data.Target[0]
                 stop_loss = data.Stop_Loss[0]
                 order_price = data.Order_Price[0]
-                print("Target: " + str(target))
-                print("Stop Loss: " + str(stop_loss))
                 # order_qty = data.Quantity[0]
                 # money = money + order_qty * order_price
 

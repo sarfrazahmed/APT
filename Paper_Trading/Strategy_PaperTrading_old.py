@@ -104,8 +104,6 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                 target = data.Target[0]
                 stop_loss = data.Stop_Loss[0]
                 order_price = data.Order_Price[0]
-                print("Target: "+ str(target))
-                print("Stop Loss: " + str(stop_loss))
                 # order_qty = data.Quantity[i]
                 # money = money - order_qty * order_price
                 # data.Money[i] = money
@@ -120,8 +118,6 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                 target = data.Target[0]
                 stop_loss = data.Stop_Loss[0]
                 order_price = data.Order_Price[0]
-                print("Target: " + str(target))
-                print("Stop Loss: " + str(stop_loss))
                 # order_qty = data.Quantity[0]
                 # money = money + order_qty * order_price
 
@@ -174,7 +170,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                 #     print('Order Status: ' + order_status)
                 #     print('Order Signal: ' + order_signal)
                 elif (data.High[0] - order_price) > (semi_target / lot_size):
-                    stop_loss = copy.deepcopy(order_price + ((semi_target / lot_size) * 0.5))
+                    stop_loss = copy.deepcopy(order_price)
 
             # Exiting From Short Position
             elif order_signal == 'Sell':
@@ -224,7 +220,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                     #     print('Order Signal: ' + order_signal)
 
                 elif (order_price - data.Low[0]) > (semi_target / lot_size):
-                    stop_loss = copy.deepcopy(order_price - ((semi_target / lot_size) * 0.5))
+                    stop_loss = copy.deepcopy(order_price)
 
     entry_high_target = max(entry_high_target, data.High[0])
     entry_low_target = min(entry_low_target, data.Low[0])
