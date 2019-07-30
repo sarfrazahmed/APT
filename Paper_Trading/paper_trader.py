@@ -77,20 +77,24 @@ def on_ticks(ws, ticks):
     global last_saved_time
     print(ticks, flush=True)
     tick_df = tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
-    if ((tick_df['Timestamp'][len(tick_df)-1].minute % 5 == 0) and (tick_df['Timestamp'][len(tick_df)-1].minute != last_saved_time)):
+    if (tick_df['Timestamp'][len(tick_df) - 1].minute % 5 == 0) and (tick_df['Timestamp'][len(tick_df) - 1].minute != last_saved_time):
+        # save the last minute
+        last_saved_time = tick_df['Timestamp'][len(tick_df) - 1].minute
+
+        # drop last row
+        tick_df.drop(tick_df.tail(1).index, inplace=True)
         print(len(tick_df))
+
         # set timestamp as index
         tick_df = tick_df.set_index(['Timestamp'])
         tick_df['Timestamp'] = pd.to_datetime(tick_df.index, unit='s')
+
         # convert to OHLC format
         data_ohlc = tick_df['LTP'].resample('5Min').ohlc()
-        data_ohlc = data_ohlc.tail(1)
+
         # save the dataframe to csv
         data_ohlc.to_csv('ohlc_data.csv')
         print("Printed at " + str(datetime.datetime.now()))
-
-        # save the last minute
-        last_saved_time = tick_df['Timestamp'][len(tick_df)-1].minute
 
         # initialize the dataframe
         tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
@@ -150,7 +154,6 @@ print("Callbacks assigned")
 # Infinite loop on the main thread. Nothing after this will run.
 # You have to use the pre-defined callbacks to manage subscriptions.
 kws.connect()
-kws.on_ticks()
 print("KWS connected")
 
 
@@ -178,5 +181,3 @@ print("KWS connected")
 # data_ohlc.to_csv('ohlc.csv')
 
 # tick_df = tick_df.append({'Token': 0, 'Timestamp': 0, 'LTP': 0}, ignore_index=True)
-data = pd.read_csv('ohlc_data.csv')
-len(data)

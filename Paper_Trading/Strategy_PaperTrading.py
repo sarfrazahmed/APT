@@ -60,6 +60,10 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                   order_status, order_signal,
                   order_price, entry_high_target, entry_low_target,
                   stop_loss, target, skip_date):
+    print('Time Now: '+ str(data.Date[0]))
+    print('Day High: ' + str(entry_high_target))
+    print('Day Low: ' + str(entry_low_target))
+
     if data.Date[0].hour == 9 and data.Date[0].minute == 15:
         # day_flag = 'selected' if ((ads_iteration.Open[i] > entry_high_target) or
         #                          (entry_low_target > ads_iteration.Open[i])) else 'not selected'
@@ -230,6 +234,6 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
     entry_low_target = min(entry_low_target, data.Low[0])
 
     result_list = [order_status, order_signal,
-                  order_price, entry_high_target, entry_low_target,
-                  stop_loss, target, skip_date]
+                   order_price, entry_high_target, entry_low_target,
+                   stop_loss, target, skip_date]
     return data, result_list
