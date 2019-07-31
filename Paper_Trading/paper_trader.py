@@ -75,7 +75,6 @@ def on_ticks(ws, ticks):
     # Callback to receive ticks.
     global tick_df
     global last_saved_time
-    print(ticks, flush=True)
     tick_df = tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
     if (tick_df['Timestamp'][len(tick_df) - 1].minute % 5 == 0) and (tick_df['Timestamp'][len(tick_df) - 1].minute != last_saved_time):
         # save the last minute
@@ -91,7 +90,7 @@ def on_ticks(ws, ticks):
 
         # convert to OHLC format
         data_ohlc = tick_df['LTP'].resample('5Min').ohlc()
-
+        print(data_ohlc)
         # save the dataframe to csv
         data_ohlc.to_csv('ohlc_data.csv')
         print("Printed at " + str(datetime.datetime.now()))
