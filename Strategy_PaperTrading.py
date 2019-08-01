@@ -28,9 +28,9 @@ def short_entry(data, index, lot_size, sl, tp):
     data.Order_Signal[index] = 'Sell'
     data.Order_Price[index] = data.Close[index]
     # data.Quantity[index] = qty
-    data.Target[index] = data.Close[index] + (tp / lot_size)
+    data.Target[index] = data.Close[index] - (tp / lot_size)
     data.Stop_Loss[index] = sl
-    print('Long Entry @' + str(data.Close[index]))
+    print('Short Entry @' + str(data.Close[index]))
     return data
 
 
@@ -187,7 +187,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                     print('Order Signal: ' + order_signal)
 
                 # Order Holding Calculation
-                elif data.Low[i] < target:
+                elif data.Low[0] < target:
                     # target_cross = target_cross + 1
                     data = short_exit(data, 0, target)
                     order_status = data.Order_Status[0]
