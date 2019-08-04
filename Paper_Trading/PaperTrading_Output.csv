@@ -1,0 +1,2 @@
+Date,Open,High,Low,Close,Year,DatePart,Order_Status,Order_Signal,Order_Price,Target,Stop_Loss,Hour,Minute
+2019-07-30 16:30:00,1079.2,1079.2,1079.2,1079.2,2019,2019-07-30,Entry,Buy,1079.2,1086.2,1078.2,16,30
