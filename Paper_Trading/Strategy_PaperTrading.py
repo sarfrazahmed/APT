@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import copy
 import kiteconnect as kc
 import os
+print('Libraries Imported')
 
 
 ## Function to Execute Long Entry
