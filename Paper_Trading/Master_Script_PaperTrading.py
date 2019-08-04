@@ -75,7 +75,7 @@ def start(name):
                                                        result_list[7])
             if data.Order_Signal[0] != "":
                 Trade_Dataset = Trade_Dataset.append(data)
-                Trade_Dataset.to_csv('PaperTrading_Output.csv', index=False)
+                Trade_Dataset.to_csv('PaperTrading_Output' + name + '.csv', index=False)
             time.sleep(250)
             count = 1
 
