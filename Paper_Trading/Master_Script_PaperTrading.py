@@ -2,15 +2,17 @@
 import pandas as pd
 import os
 import time
+import sys
 
-os.chdir('E:/Stuffs/APT/APT/Paper_Trading')
+os.chdir('D:/APT/APT/Paper_Trading')
 from datetime import datetime
-from Paper_Trading import Strategy_PaperTrading as strategy
+import Strategy_PaperTrading as strategy
 
 ## Initial Inputs
 ###############################################################
 def start(name):
-    print("Master Script started")
+    print("Master Script started", flush=True)
+    print(datetime.now(), flush=True)
     lot_size = 500
     # max_one_stock_price = 1300
     target_profit_1 = 3500
@@ -36,8 +38,9 @@ def start(name):
         # Get data after every 5 mins
         if (datetime.now().minute % 5 == 0) and (datetime.now().second >= 3) and count == 0:
             try:
-                data = pd.read_csv('E:/Stuffs/APT/Paper_Trading/ohlc_data_' + name + '.csv')
+                data = pd.read_csv('D:/APT/APT/Paper_Trading/ohlc_data_' + name + '.csv')
             except:
+                print("OHLC data not found")
                 continue
             data.columns = ['Date', 'Open', 'High', 'Low', 'Close']
 
@@ -78,3 +81,9 @@ def start(name):
 
         else:
             count = 0
+
+if __name__ == '__main__':
+    os.chdir("D:\APT\APT\Paper_Trading")
+    name = sys.argv[1]
+    print(datetime.now(), flush=True)
+    start(name)

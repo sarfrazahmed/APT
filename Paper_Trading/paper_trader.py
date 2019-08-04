@@ -10,11 +10,13 @@ import datetime
 import configparser
 import time
 import re
+import sys
 
 def start(name, token, timeframe):
-    print("Starting Trading Engine...")
+    print("Starting Trading Engine...", flush=True)
+    print(datetime.datetime.now(), flush=True)
     config = configparser.ConfigParser()
-    config_path = 'E:/Stuffs/APT/APT/Paper_Trading/config.ini'
+    config_path = 'D:/APT/APT/Paper_Trading/config.ini'
     config.read(config_path)
 
     api_key = config['API']['API_KEY']
@@ -27,7 +29,8 @@ def start(name, token, timeframe):
     driver = webdriver.Chrome()
     page = driver.get(homepage)
 
-    print("Authenticating...")
+    print("Authenticating...", flush=True)
+    print(datetime.datetime.now(), flush=True)
     # Logging in using Username and Password
     user_id_box = driver.find_element_by_xpath(
         '//*[@id="container"]/div/div/div/form/div[2]/input')
@@ -38,7 +41,7 @@ def start(name, token, timeframe):
     user_id_box.send_keys(username)
     password_box.send_keys(password)
     log_in_button.click()
-    time.sleep(5)
+    time.sleep(3)
 
     # Logging in using Pin
     pin_box = driver.find_element_by_xpath(
@@ -47,7 +50,7 @@ def start(name, token, timeframe):
         '//*[@id="container"]/div/div/div/form/div[3]/button')
     pin_box.send_keys(pin)
     continue_box.click()
-    time.sleep(5)
+    time.sleep(3)
 
     # Redirecting to Kiteconnect
     kite = KiteConnect(api_key=api_key)
@@ -57,7 +60,7 @@ def start(name, token, timeframe):
     request_token = re.search(('request_token=(.*)'), current_url).group(1)[:32]
     KRT = kite.generate_session(request_token, api_secret)
     kite.set_access_token(KRT['access_token'])
-    print("Connection Successful")
+    print("Connection Successful", flush=True)
 
     # tick_data = pd.DataFrame(columns=['token', 'time', 'ltp'])
 
@@ -178,3 +181,12 @@ def start(name, token, timeframe):
     # data_ohlc.to_csv('ohlc.csv')
 
     # tick_df = tick_df.append({'Token': 0, 'Timestamp': 0, 'LTP': 0}, ignore_index=True)
+
+if __name__ == '__main__':
+    os.chdir("D:\APT\APT\Paper_Trading")
+    name = sys.argv[1]
+    token = int(sys.argv[2])
+    print(name, flush=True)
+    print(token, flush=True)
+    print(datetime.datetime.now(), flush=True)
+    start(name, token, timeframe='5min')

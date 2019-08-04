@@ -1,0 +1,12 @@
+[0805/022937.690:ERROR:process_info.cc(359)] UncheckedAllocate
+[0805/023504.082:ERROR:process_info.cc(359)] UncheckedAllocate
+[0805/023504.120:ERROR:registration_protocol_win.cc(84)] TransactNamedPipe: The pipe has been ended. (0x6D)
+[0805/023504.286:ERROR:registration_protocol_win.cc(84)] TransactNamedPipe: The pipe has been ended. (0x6D)
+[0805/023504.297:ERROR:crash_report_database_win.cc(469)] failed to stat report
+[0805/023504.385:ERROR:crash_report_database_win.cc(469)] failed to stat report
+[0805/023525.285:ERROR:process_info.cc(359)] UncheckedAllocate
+[0805/023525.365:ERROR:process_info.cc(359)] UncheckedAllocate
+[0805/023525.676:ERROR:process_info.cc(359)] UncheckedAllocate
+[0805/023525.760:ERROR:process_info.cc(359)] UncheckedAllocate
+[0805/023525.774:ERROR:process_info.cc(359)] UncheckedAllocate
+[0805/023525.780:ERROR:process_info.cc(359)] UncheckedAllocate
