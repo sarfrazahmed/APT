@@ -11,7 +11,7 @@ import configparser
 import time
 import re
 
-print("Starting Trading Engine...")
+print("Connecting to Kite...")
 config = configparser.ConfigParser()
 config_path = 'E:/Stuffs/APT/APT/Paper_Trading/config.ini'
 config.read(config_path)
@@ -63,7 +63,7 @@ print("Connection Successful")
 # Create directory to save data
 
 # Get working directory path
-path = os.getcwd()
+path = "E:\Stuffs\APT\Stock_Data\July"
 
 # Input name of the directory to save the data
 dirName = 'Data'
@@ -74,74 +74,71 @@ if not os.path.exists(dirName):
     print("Directory " , dirName ,  " created ")
 else:    
     print("Directory " , dirName ,  " already exists")
-    
-# Append created directory to path
-path = path + '\\APT'
-path
+
 
 # Give the list of scrips token
 scrip_dict = {
-              # 'ADANIPORTS':'3861249',
-              # 'ASIANPAINT':'60417',
-              # 'AXISBANK':'1510401',
-              # 'BAJAJ-AUTO':'4267265',
-              # 'BAJFINANCE':'81153',
-              # 'BAJAJFINSV':'4268801',
-              # 'BPCL':'134657',
-              # 'BHARTIARTL':'2714625',
-              # 'INFRATEL':'7458561',
-              # 'BRITANNIA':'140033',
-              # 'CIPLA':'177665',
-              # 'COALINDIA':'5215745',
-              # 'DRREDDY':'225537',
-              # 'EICHERMOT':'232961',
-              # 'GAIL':'1207553',
-              # 'GRASIM':'315393',
-              # 'HCLTECH':'1850625',
-              # 'HDFCBANK':'341249',
-              # 'HEROMOTOCO':'345089',
-              # 'HINDALCO':'348929',
-              # 'HINDUNILVR':'356865',
-              # 'HDFC':'340481',
-              # 'ICICIBANK':'1270529',
-              # 'ITC':'424961',
-              # 'IBULHSGFIN':'7712001',
-              # 'IOC':'415745',
-              # 'INDUSINDBK':'1346049',
-              # 'INFY':'408065',
-              # 'JSWSTEEL':'3001089',
-              # 'KOTAKBANK':'492033',
-              # 'LT':'2939649',
-              # 'M&M':'519937',
-              # 'MARUTI':'2815745',
-              # 'NTPC':'2977281',
-              # 'ONGC':'633601',
-              # 'POWERGRID':'3834113',
-              # 'SBIN':'779521',
-              # 'SUNPHARMA':'857857',
-              # 'TCS':'2953217',
-              # 'TATAMOTORS':'884737',
-              # 'TATASTEEL':'895745',
-              # 'TECHM':'3465729',
-              # 'TITAN':'897537',
-              # 'UPL':'2889473',
-              # 'ULTRACEMCO':'2952193',
-              # 'VEDL':'784129',
-              # 'WIPRO':'969473',
-              # 'YESBANK':'3050241',
-              # 'ZEEL':'975873',
+              'ADANIPORTS':'3861249',
+              'ASIANPAINT':'60417',
+              'AXISBANK':'1510401',
+              'BAJAJ-AUTO':'4267265',
+              'BAJFINANCE':'81153',
+              'BAJAJFINSV':'4268801',
+              'BPCL':'134657',
+              'BHARTIARTL':'2714625',
+              'INFRATEL':'7458561',
+              'BRITANNIA':'140033',
+              'CIPLA':'177665',
+              'COALINDIA':'5215745',
+              'DRREDDY':'225537',
+              'EICHERMOT':'232961',
+              'GAIL':'1207553',
+              'GRASIM':'315393',
+              'HCLTECH':'1850625',
+              'HDFCBANK':'341249',
+              'HEROMOTOCO':'345089',
+              'HINDALCO':'348929',
+              'HINDUNILVR':'356865',
+              'HDFC':'340481',
+              'ICICIBANK':'1270529',
+              'ITC':'424961',
+              'IBULHSGFIN':'7712001',
+              'IOC':'415745',
+              'INDUSINDBK':'1346049',
+              'INFY':'408065',
+              'JSWSTEEL':'3001089',
+              'KOTAKBANK':'492033',
+              'LT':'2939649',
+              'M&M':'519937',
+              'MARUTI':'2815745',
+              'NTPC':'2977281',
+              'ONGC':'633601',
+              'POWERGRID':'3834113',
+              'SBIN':'779521',
+              'SUNPHARMA':'857857',
+              'TCS':'2953217',
+              'TATAMOTORS':'884737',
+              'TATASTEEL':'895745',
+              'TECHM':'3465729',
+              'TITAN':'897537',
+              'UPL':'2889473',
+              'ULTRACEMCO':'2952193',
+              'VEDL':'784129',
+              'WIPRO':'969473',
+              'YESBANK':'3050241',
+              'ZEEL':'975873',
               'RELIANCE':'738561'
               }
 date_from = '2019-07-01'
-date_to = '2019-07-30'
+date_to = '2019-07-31'
 interval_list = ['5minute',
-                 # 'minute',
-                 # 'day',
-                 # '3minute',
-                 # '10minute',
-                 # '15minute',
-                 # '30minute',
-                 # '60minute'
+                 'minute',
+                 'day',
+                 '3minute',
+                 '10minute',
+                 '15minute',
+                 '30minute',
+                 '60minute'
                  ]
 
 # Fetch data
@@ -170,5 +167,5 @@ for name, token in scrip_dict.items():
             continue
         data=pd.DataFrame(data)
         print(name + "-" + interval)
-        data.to_csv(in_path + "\\" + interval+'data_july2019.csv')
+        data.to_csv(in_path + "\\" + interval + '.csv')
         print("Data for "+name+" for interval "+interval+" is saved")

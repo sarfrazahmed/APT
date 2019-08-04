@@ -3,8 +3,7 @@ import pandas as pd
 import os
 os.chdir('E:/Stuffs/APT/APT/Paper Trading')
 from datetime import datetime
-import time
-import Strategy_PaperTrading as strategy
+from Paper_Trading import Strategy_PaperTrading as strategy
 
 ## Initial Inputs
 ###############################################################

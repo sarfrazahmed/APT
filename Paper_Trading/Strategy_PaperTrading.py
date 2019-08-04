@@ -28,9 +28,9 @@ def short_entry(data, index, lot_size, sl, tp):
     data.Order_Signal[index] = 'Sell'
     data.Order_Price[index] = data.Close[index]
     # data.Quantity[index] = qty
-    data.Target[index] = data.Close[index] + (tp / lot_size)
+    data.Target[index] = data.Close[index] - (tp / lot_size)
     data.Stop_Loss[index] = sl
-    print('Long Entry @' + str(data.Close[index]))
+    print('Short Entry @' + str(data.Close[index]))
     return data
 
 
@@ -60,10 +60,6 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                   order_status, order_signal,
                   order_price, entry_high_target, entry_low_target,
                   stop_loss, target, skip_date):
-    print('Time Now: '+ str(data.Date[0]))
-    print('Day High: ' + str(entry_high_target))
-    print('Day Low: ' + str(entry_low_target))
-
     if data.Date[0].hour == 9 and data.Date[0].minute == 15:
         # day_flag = 'selected' if ((ads_iteration.Open[i] > entry_high_target) or
         #                          (entry_low_target > ads_iteration.Open[i])) else 'not selected'
@@ -108,8 +104,6 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                 target = data.Target[0]
                 stop_loss = data.Stop_Loss[0]
                 order_price = data.Order_Price[0]
-                print("Target: "+ str(target))
-                print("Stop Loss: " + str(stop_loss))
                 # order_qty = data.Quantity[i]
                 # money = money - order_qty * order_price
                 # data.Money[i] = money
@@ -124,8 +118,6 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                 target = data.Target[0]
                 stop_loss = data.Stop_Loss[0]
                 order_price = data.Order_Price[0]
-                print("Target: " + str(target))
-                print("Stop Loss: " + str(stop_loss))
                 # order_qty = data.Quantity[0]
                 # money = money + order_qty * order_price
 
@@ -195,7 +187,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                     print('Order Signal: ' + order_signal)
 
                 # Order Holding Calculation
-                elif data.Low[i] < target:
+                elif data.Low[0] < target:
                     # target_cross = target_cross + 1
                     data = short_exit(data, 0, target)
                     order_status = data.Order_Status[0]
@@ -234,6 +226,6 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
     entry_low_target = min(entry_low_target, data.Low[0])
 
     result_list = [order_status, order_signal,
-                   order_price, entry_high_target, entry_low_target,
-                   stop_loss, target, skip_date]
+                  order_price, entry_high_target, entry_low_target,
+                  stop_loss, target, skip_date]
     return data, result_list
