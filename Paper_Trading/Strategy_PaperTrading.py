@@ -21,8 +21,8 @@ def long_entry(data, index, lot_size, sl, tp):
     return data
 
 
-## Function to Execute Long Entry
-###############################################################
+# Function to Execute Long Entry
+##############################################################
 def short_entry(data, index, lot_size, sl, tp):
     data.Order_Status[index] = 'Entry'
     data.Order_Signal[index] = 'Sell'
@@ -34,8 +34,8 @@ def short_entry(data, index, lot_size, sl, tp):
     return data
 
 
-## Function to Execute Long Exit
-###############################################################
+# Function to Execute Long Exit
+##############################################################
 def long_exit(data, index, stop_loss):
     data.Order_Status[index] = 'Exit'
     data.Order_Signal[index] = 'Sell'
@@ -44,8 +44,8 @@ def long_exit(data, index, stop_loss):
     return data
 
 
-## Function to Execute Long Exit
-###############################################################
+# Function to Execute Long Exit
+##############################################################
 def short_exit(data, index, stop_loss):
     data.Order_Status[index] = 'Exit'
     data.Order_Signal[index] = 'Buy'
@@ -53,6 +53,70 @@ def short_exit(data, index, stop_loss):
     print('Short Exit @' + str(stop_loss))
     return data
 
+
+## Pivot Point Calculation
+###############################################################
+def pivotpoints(data, type='simple'):
+    type_str = '_Simple' if type == 'simple' else '_Fibonacci'
+    if 'PivotPoint' in data.columns:
+        data = data.drop(['Day_High',
+                          'Day_Low',
+                          'Day_Open',
+                          'Day_Close',
+                          'PivotPoint'], axis=1)
+
+    data['DatePart'] = [i.date() for i in data['Date']]
+
+    aggregation = {
+        'High': {
+            'Day_High': 'max'
+        },
+        'Low': {
+            'Day_Low': 'min'
+        },
+        'Open': {
+            'Day_Open': 'first'
+        },
+        'Close': {
+            'Day_Close': 'last'
+        }
+    }
+    data_datelevel = data.groupby('DatePart').agg(aggregation)
+    data_datelevel.columns = data_datelevel.columns.droplevel()
+    data_datelevel['DatePart'] = data_datelevel.index
+    data_datelevel['PivotPoint'] = (data_datelevel['Day_High'] + data_datelevel['Day_Low'] +
+                                    data_datelevel['Day_Close']) / 3
+    data_datelevel['S1_Pivot' + type_str] = (data_datelevel['PivotPoint'] * 2) - data_datelevel['Day_High'] if \
+        type == 'simple' else data_datelevel['PivotPoint'] - \
+                              (0.382 * (data_datelevel['Day_High'] -
+                                        data_datelevel['Day_Low']))
+    data_datelevel['S2_Pivot' + type_str] = data_datelevel['PivotPoint'] - (data_datelevel['Day_High'] -
+                                                                            data_datelevel['Day_Low']) if \
+        type == 'simple' else data_datelevel['PivotPoint'] - \
+                              (0.618 * (data_datelevel['Day_High'] -
+                                        data_datelevel['Day_Low']))
+    data_datelevel['R1_Pivot' + type_str] = (data_datelevel['PivotPoint'] * 2) - data_datelevel['Day_Low'] if \
+        type == 'simple' else data_datelevel['PivotPoint'] + \
+                              (0.382 * (data_datelevel['Day_High'] -
+                                        data_datelevel['Day_Low']))
+    data_datelevel['R2_Pivot' + type_str] = data_datelevel['PivotPoint'] + (data_datelevel['Day_High'] -
+                                                                            data_datelevel['Day_Low']) if \
+        type == 'simple' else data_datelevel['PivotPoint'] + \
+                              (0.618 * (data_datelevel['Day_High'] -
+                                        data_datelevel['Day_Low']))
+    if type != 'simple':
+        data_datelevel['S3_Pivot' + type_str] = data_datelevel['PivotPoint'] - (data_datelevel['Day_High'] -
+                                                                                data_datelevel['Day_Low'])
+        data_datelevel['R3_Pivot' + type_str] = data_datelevel['PivotPoint'] + (data_datelevel['Day_High'] -
+                                                                                data_datelevel['Day_Low'])
+
+    data_datelevel['PivotDate'] = data_datelevel['DatePart'].shift(-1)
+    data_datelevel = data_datelevel.drop(['DatePart'], axis=1)
+    pivot_data = pd.merge(data, data_datelevel, 'left',
+                          left_on='DatePart',
+                          right_on='PivotDate')
+    pivot_data = pivot_data.drop(['PivotDate'], axis=1)
+    return pivot_data
 
 ## Gap-Up Strategy Function For Paper Trading
 ###############################################################
