@@ -10,14 +10,13 @@ import Strategy_PaperTrading as strategy
 
 ## Initial Inputs
 ###############################################################
-def start(name):
+def start(name, lot_size):
     print("Master Script started", flush=True)
     print(datetime.now(), flush=True)
-    lot_size = 500
     # max_one_stock_price = 1300
-    target_profit_1 = 3500
-    semi_target = 1000
-    max_stop_loss = 500
+    target_profit_1 = lot_size*2
+    semi_target = lot_size
+    max_stop_loss = lot_size
 
     order_status = 'Exit'
     order_signal = ''
@@ -85,5 +84,6 @@ def start(name):
 if __name__ == '__main__':
     os.chdir("D:\APT\APT\Paper_Trading")
     name = sys.argv[1]
+    lot_size = sys.argv[2]
     print(datetime.now(), flush=True)
-    start(name)
+    start(name, lot_size)

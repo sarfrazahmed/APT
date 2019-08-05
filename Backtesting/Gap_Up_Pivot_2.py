@@ -74,48 +74,6 @@ def pivotpoints(data, type='simple'):
     return pivot_data
 
 
-## Function to Execute Long Entry
-###############################################################
-def long_entry(data, index, sl):
-    data.Order_Status[index] = 'Entry'
-    data.Order_Signal[index] = 'Buy'
-    data.Order_Price[index] = data.Next_Candle_Open[index]
-    data.Stop_Loss[index] = sl
-    print('Long Entry @' + str(data.Next_Candle_Open[index]))
-    return data
-
-
-## Function to Execute Long Entry
-###############################################################
-def short_entry(data, index, sl):
-    data.Order_Status[index] = 'Entry'
-    data.Order_Signal[index] = 'Sell'
-    data.Order_Price[index] = data.Next_Candle_Open[index]
-    data.Stop_Loss[index] = sl
-    print('Short Entry @' + str(data.Next_Candle_Open[index]))
-    return data
-
-
-## Function to Execute Long Exit
-###############################################################
-def long_exit(data, index, stop_loss):
-    data.Order_Status[index] = 'Exit'
-    data.Order_Signal[index] = 'Sell'
-    data.Order_Price[index] = stop_loss
-    print('Long Exit @' + str(stop_loss))
-    return data
-
-
-## Function to Execute Long Exit
-###############################################################
-def short_exit(data, index, stop_loss):
-    data.Order_Status[index] = 'Exit'
-    data.Order_Signal[index] = 'Buy'
-    data.Order_Price[index] = stop_loss
-    print('Short Exit @' + str(stop_loss))
-    return data
-
-
 ## Initial Inputs
 ###############################################################
 working_dir = 'F:\APT\Historical Data'

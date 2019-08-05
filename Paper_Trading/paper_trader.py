@@ -186,7 +186,5 @@ if __name__ == '__main__':
     os.chdir("D:\APT\APT\Paper_Trading")
     name = sys.argv[1]
     token = [int(sys.argv[2])]
-    print(name, flush=True)
-    print(token, flush=True)
     print(datetime.datetime.now(), flush=True)
     start(name, token, timeframe='5min')
