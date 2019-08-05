@@ -40,7 +40,7 @@ def start(name):
             try:
                 data = pd.read_csv('D:/APT/APT/Paper_Trading/ohlc_data_' + name + '.csv')
             except:
-                print("OHLC data not found")
+                time.sleep(1)
                 continue
             data.columns = ['Date', 'Open', 'High', 'Low', 'Close']
 

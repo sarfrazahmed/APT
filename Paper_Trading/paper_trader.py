@@ -18,7 +18,9 @@ def start(name, token, timeframe):
     config = configparser.ConfigParser()
     config_path = 'D:/APT/APT/Paper_Trading/config.ini'
     config.read(config_path)
-
+    # name = 'IBULHSGFIN'
+    # token = [7712001]
+    # timeframe = '5min'
     api_key = config['API']['API_KEY']
     api_secret = config['API']['API_SECRET']
     username = config['USER']['USERNAME']
@@ -26,7 +28,7 @@ def start(name, token, timeframe):
     pin = config['USER']['PIN']
     homepage = 'https://kite.zerodha.com/'
 
-    driver = webdriver.Chrome()
+    driver = webdriver.Chrome(executable_path='D:\\APT\\chromedriver.exe')
     page = driver.get(homepage)
 
     print("Authenticating...", flush=True)
@@ -67,39 +69,37 @@ def start(name, token, timeframe):
     # Initialise
     print("Initialising Kite Ticker")
     kws = KiteTicker(api_key, KRT['access_token'])
-    tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
-    last_saved_time = 15
+    start.tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
+    start.last_saved_time = 15
     # tick_df = tick_df.append({'Token': 0, 'Timestamp': 0, 'LTP': 0}, ignore_index=True)
 
 
     def on_ticks(ws, ticks):
         # Callback to receive ticks.
-        global tick_df
-        global last_saved_time
-        tick_df = tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
-        if (tick_df['Timestamp'][len(tick_df) - 1].minute % 5 == 0) and (tick_df['Timestamp'][len(tick_df) - 1].minute != last_saved_time):
+        print(ticks)
+        start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
+        if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
             # save the last minute
-            last_saved_time = tick_df['Timestamp'][len(tick_df) - 1].minute
+            start.last_saved_time = start.tick_df['Timestamp'][len(start.tick_df) - 1].minute
 
             # drop last row
-            tick_df.drop(tick_df.tail(1).index, inplace=True)
-            print(len(tick_df))
+            start.tick_df.drop(start.tick_df.tail(1).index, inplace=True)
+            print(len(start.tick_df))
 
             # set timestamp as index
-            tick_df = tick_df.set_index(['Timestamp'])
-            tick_df['Timestamp'] = pd.to_datetime(tick_df.index, unit='s')
+            start.tick_df = start.tick_df.set_index(['Timestamp'])
+            start.tick_df['Timestamp'] = pd.to_datetime(start.tick_df.index, unit='s')
 
             # convert to OHLC format
-            data_ohlc = tick_df['LTP'].resample(timeframe).ohlc()
+            data_ohlc = start.tick_df['LTP'].resample(timeframe).ohlc()
             print(data_ohlc)
             # save the dataframe to csv
             data_ohlc.to_csv('ohlc_data_' + name +'.csv')
             print("Printed at " + str(datetime.datetime.now()))
 
             # initialize the dataframe
-            tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
+            start.tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
             print(len(data_ohlc))
-
 
     def on_connect(ws, response):
         # Callback on successful connect.
@@ -154,7 +154,7 @@ def start(name, token, timeframe):
     # Infinite loop on the main thread. Nothing after this will run.
     # You have to use the pre-defined callbacks to manage subscriptions.
     kws.connect()
-    print("KWS connected")
+    print("KWS disconnected")
 
 
 
@@ -185,7 +185,7 @@ def start(name, token, timeframe):
 if __name__ == '__main__':
     os.chdir("D:\APT\APT\Paper_Trading")
     name = sys.argv[1]
-    token = int(sys.argv[2])
+    token = [int(sys.argv[2])]
     print(name, flush=True)
     print(token, flush=True)
     print(datetime.datetime.now(), flush=True)
