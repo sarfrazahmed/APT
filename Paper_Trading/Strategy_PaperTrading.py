@@ -8,6 +8,9 @@ import kiteconnect as kc
 import os
 import telebot
 
+bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
+chat_id = '-383311990'
+bot = telebot.TeleBot(token=bot_token)
 
 ## Function to Execute Long Entry
 ###############################################################
@@ -19,7 +22,7 @@ def long_entry(data, index, lot_size, sl, tp):
     data.Target[index] = data.Close[index] + (tp / lot_size)
     data.Stop_Loss[index] = sl
     print('Long Entry @' + str(data.Close[index]))
-    GapUpStrategy.bot.send_message(GapUpStrategy.chat_id, 'Long Entry @' + str(data.Close[index]))
+    bot.send_message(GapUpStrategy.chat_id, 'Long Entry @' + str(data.Close[index]))
     return data
 
 
@@ -33,7 +36,7 @@ def short_entry(data, index, lot_size, sl, tp):
     data.Target[index] = data.Close[index] - (tp / lot_size)
     data.Stop_Loss[index] = sl
     print('Short Entry @' + str(data.Close[index]))
-    GapUpStrategy.bot.send_message(GapUpStrategy.chat, 'Short Entry @' + str(data.Close[index]))
+    bot.send_message(GapUpStrategy.chat, 'Short Entry @' + str(data.Close[index]))
     return data
 
 
@@ -44,7 +47,7 @@ def long_exit(data, index, stop_loss):
     data.Order_Signal[index] = 'Sell'
     data.Order_Price[index] = stop_loss
     print('Long Exit @' + str(stop_loss))
-    GapUpStrategy.bot.send_message(GapUpStrategy.chat, 'Long Exit @' + str(stop_loss))
+    bot.send_message(GapUpStrategy.chat, 'Long Exit @' + str(stop_loss))
     return data
 
 
@@ -55,7 +58,7 @@ def short_exit(data, index, stop_loss):
     data.Order_Signal[index] = 'Buy'
     data.Order_Price[index] = stop_loss
     print('Short Exit @' + str(stop_loss))
-    GapUpStrategy.bot.send_message(GapUpStrategy.chat, 'Short Exit @' + str(stop_loss))
+    bot.send_message(GapUpStrategy.chat, 'Short Exit @' + str(stop_loss))
     return data
 
 
@@ -129,9 +132,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                   order_status, order_signal,
                   order_price, entry_high_target, entry_low_target,
                   stop_loss, target, skip_date):
-    bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
-    GapUpStrategy.chat_id = '-383311990'
-    GapUpStrategy.bot = telebot.TeleBot(token=bot_token)
+
     if data.Date[0].hour == 9 and data.Date[0].minute == 15:
         # day_flag = 'selected' if ((ads_iteration.Open[i] > entry_high_target) or
         #                          (entry_low_target > ads_iteration.Open[i])) else 'not selected'
