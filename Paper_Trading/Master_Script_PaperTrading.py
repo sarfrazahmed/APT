@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import time
 import sys
+import telebot
 
 os.chdir('D:/APT/APT/Paper_Trading')
 from datetime import datetime
@@ -11,8 +12,13 @@ import Strategy_PaperTrading as strategy
 ## Initial Inputs
 ###############################################################
 def start(name, lot_size):
+    bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
+    chat_id = '-383311990'
+    bot = telebot.TeleBot(token=bot_token)
+    message = "Stock selected for today: " + str(name)
+    bot.send_message(chat_id, message)
+
     print("Master Script started", flush=True)
-    print(datetime.now(), flush=True)
     # max_one_stock_price = 1300
     target_profit_1 = lot_size*2
     semi_target = lot_size
@@ -85,5 +91,4 @@ if __name__ == '__main__':
     os.chdir("D:\APT\APT\Paper_Trading")
     name = sys.argv[1]
     lot_size = sys.argv[2]
-    print(datetime.now(), flush=True)
     start(name, lot_size)

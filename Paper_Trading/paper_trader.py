@@ -14,7 +14,6 @@ import sys
 
 def start(name, token, timeframe):
     print("Starting Trading Engine...", flush=True)
-    print(datetime.datetime.now(), flush=True)
     config = configparser.ConfigParser()
     config_path = 'D:/APT/APT/Paper_Trading/config.ini'
     config.read(config_path)
@@ -32,7 +31,6 @@ def start(name, token, timeframe):
     page = driver.get(homepage)
 
     print("Authenticating...", flush=True)
-    print(datetime.datetime.now(), flush=True)
     # Logging in using Username and Password
     user_id_box = driver.find_element_by_xpath(
         '//*[@id="container"]/div/div/div/form/div[2]/input')
@@ -76,7 +74,6 @@ def start(name, token, timeframe):
 
     def on_ticks(ws, ticks):
         # Callback to receive ticks.
-        print(ticks)
         start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
         if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
             # save the last minute
