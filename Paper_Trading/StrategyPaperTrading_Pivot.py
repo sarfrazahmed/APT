@@ -1,0 +1,372 @@
+## Import Libraries
+###############################################################
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+import copy
+import kiteconnect as kc
+import os
+import telebot
+
+## Pivot Point Calculation
+###############################################################
+def pivotpoints(data, type='simple'):
+    pivotpoint = (data['High'][0] + data['Low'][0] +
+                                    data['Close'][0]) / 3
+
+    s1_simple = (pivotpoint * 2) - data['High'][0]
+    s1_fibonacci = pivotpoint - (0.382 * (data['High'] - data['Low']))
+    s2_simple = pivotpoint - (data['High'] - data['Low'])
+    s2_fibonacci = pivotpoint - (0.618 * (data['High'][0] - data['Low'][0]))
+    s3_simple = data['Low'][0] - (2 * (data['High'][0] - pivotpoint))
+
+    r1_simple = (pivotpoint * 2) - data['Low'][0]
+    r1_fibonacci = pivotpoint + (0.382 * (data['High'][0] - data['Low'][0]))
+    r2_simple = pivotpoint + (data['High'][0] - data['Low'][0])
+    r2_fibonacci = pivotpoint + (0.618 * (data['High'][0] - data['Low'][0]))
+    r3_simple = data['High'][0] + (2 * (pivotpoint - data['Low'][0]))
+
+    pivots = list([s3_simple,s2_simple,s2_fibonacci,s1_simple,s1_fibonacci,pivotpoint,
+                   r1_simple,r1_fibonacci,r2_simple,r2_fibonacci,r3_simple])
+    return pivots
+
+## Define Strategy Function
+def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier = 0.0005,
+                        target_buffer_multiplier = 0.0, min_target = 3500, pivots,
+                        order_status, order_signal, order_price, target, stop_loss,
+                        entry_high_target, entry_low_target, long_count, short_count, trade_count,
+                        semi_target_flag, profit, skip_date, prev_day_close):
+
+    # Selecting Tradable Day and Reset Day High and Day Low
+    if data.Date[0].hour == 9 and data.Date[0].minute == 15:
+        day_flag = 'selected' if abs(data.Open[0] - prev_day_close) > (prev_day_close * min_gap) \
+            else 'not selected'
+        skip_date = data.DatePart[0] if day_flag == 'not selected' else skip_date
+        entry_high_target = data.High[0]
+        entry_low_target = data.Low[0]
+
+        # Check if Marubuzu Candle
+        if day_flag == 'selected':
+            trade_count = 1 if (data.Open[0] > prev_day_close) and \
+                               (data.Open[0] - data.Low[0]) <= data.Open[0] * 0.001 \
+                else trade_count
+            trade_count = 1 if (data.Open[0] < prev_day_close) and \
+                               (data.High[0] - data.Open[0]) <= data.Open[0] * 0.001 \
+                else trade_count
+            if trade_count == 1:
+                print('Marubuzu Candle Identified')
+
+        print('Date: ' + str(data.Date[0]))
+        print('Status: ' + day_flag)
+        continue
+
+    # Exit from Ongoing Order, if any at 3:25 PM
+    elif data.Date[0].hour == 15 and data.Date[0].minute == 20:
+
+        # Check If Open Order Exists at 3:20
+        if order_status == 'Entry':
+
+            # Check if the open order is a long entry
+            if order_signal == 'Buy':
+                order_status = 'Exit'
+                order_signal = 'Sell'
+                order_price = data.Close[0]
+                trade_count = trade_count + 1
+                long_count = 1
+                short_count = 0
+                semi_target_flag = 0
+                profit = profit + order_price
+
+                # Print Pointers
+                data.Order_Status[0] = order_status
+                data.Order_Signal[0] = order_signal
+                data.Order_Price[0] = order_price
+                print('Long Exit ---')
+                print('Order Price: ' + str(order_price))
+                print('Remarks: Exit At 3:25 PM')
+
+            # Check If the open order is a short entry
+            elif order_signal == 'Sell':
+                order_status = 'Exit'
+                order_signal = 'Buy'
+                order_price = data.Close[0]
+                trade_count = trade_count + 1
+                long_count = 0
+                short_count = 1
+                semi_target_flag = 0
+                profit = profit - order_price
+
+                # Print Pointers
+                data.Order_Status[0] = order_status
+                data.Order_Signal[0] = order_signal
+                data.Order_Price[0] = order_price
+                print('Short Exit ---')
+                print('Order Price: ' + str(order_price))
+                print('Remarks: Exit At 3:25 PM')
+
+    # Reset Pointers at 3:30 PM
+    elif data.Date[0].hour == 15 and data.Date[0].minute == 25:
+        prev_day_close = data.Close[0]
+        long_count = 0
+        short_count = 0
+        trade_count = 0
+
+    # Iterate over all the data points for the dates that have been selected by Gap Up/Down Condition
+    elif data.DatePart[0] != skip_date:
+
+        # If No Open Order
+        if order_status == 'Exit':
+
+            # First Trade
+            if trade_count == 0:
+
+                # Long Entry Action
+                if data.Close[0] > entry_high_target:
+                    order_status = 'Entry'
+                    order_signal = 'Buy'
+                    semi_target_flag = 0
+                    order_price = data.Close[0]
+                    stop_loss = entry_low_target - (0.00075 * order_price)
+                    profit = profit - order_price
+
+                    # Calculating Target
+                    deltas = [indicator - data['Close'][0] for indicator in pivots]
+                    pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
+                    min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
+                    target = min_pos_delta + order_price + (order_price * target_buffer_multiplier)
+
+                    # Print Pointers
+                    data.Order_Status[0] = order_status
+                    data.Order_Signal[0] = order_signal
+                    data.Order_Price[0] = order_price
+                    data.Target[0] = target
+                    data.Stop_Loss[0] = stop_loss
+                    print('Long Entry ---')
+                    print('Order Price: ' + str(order_price))
+                    print('Target: ' + str(target))
+                    print('Stop Loss: ' + str(stop_loss))
+
+
+                # Short Entry Action
+                elif data.Close[0] < entry_low_target:
+                    order_status = 'Entry'
+                    order_signal = 'Sell'
+                    semi_target_flag = 0
+                    order_price = data.Close[0]
+                    stop_loss = entry_high_target + (0.00075 * order_price)
+                    profit = profit + order_price
+
+                    # Calculating Target
+                    deltas = [indicator - data['Close'][0] for indicator in pivots]
+                    neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
+                    max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
+                    target = order_price + max_neg_delta - (order_price * target_buffer_multiplier)
+
+                    # Print Pointers
+                    data.Order_Status[0] = order_status
+                    data.Order_Signal[0] = order_signal
+                    data.Order_Price[0] = order_price
+                    data.Target[0] = target
+                    data.Stop_Loss[0] = stop_loss
+                    print('Short Entry ---')
+                    print('Order Price: ' + str(order_price))
+                    print('Target: ' + str(target))
+                    print('Stop Loss: ' + str(stop_loss))
+
+            # Other Trade Entries
+            else:
+
+                # Long Entry
+                if (data.High[0] > entry_high_target) and (long_count == 0):
+                    order_status = 'Entry'
+                    order_signal = 'Buy'
+                    semi_target_flag = 0
+                    order_price = entry_high_target
+                    stop_loss = entry_low_target - (0.00075 * order_price)
+                    profit = profit - order_price
+
+                    # Calculating Target
+                    deltas = [indicator - data['Close'][0] for indicator in pivots]
+                    pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
+                    min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
+                    target = min_pos_delta + order_price + (order_price * target_buffer_multiplier)
+
+                    # Print Pointers
+                    data.Order_Status[0] = order_status
+                    data.Order_Signal[0] = order_signal
+                    data.Order_Price[0] = order_price
+                    data.Target[0] = target
+                    data.Stop_Loss[0] = stop_loss
+                    print('Long Entry ---')
+                    print('Order Price: ' + str(order_price))
+                    print('Target: ' + str(target))
+                    print('Stop Loss: ' + str(stop_loss))
+
+                # Short Entry
+                elif (data.Low[0] < entry_low_target) and (short_count == 0):
+                    order_status = 'Entry'
+                    order_signal = 'Sell'
+                    semi_target_flag = 0
+                    order_price = entry_low_target
+                    stop_loss = entry_high_target + (0.00075 * order_price)
+                    profit = profit + order_price
+
+                    # Calculating Target
+                    deltas = [indicator - data['Close'][0] for indicator in pivots]
+                    neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
+                    max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
+                    target = order_price + max_neg_delta - (order_price * target_buffer_multiplier)
+
+                    # Print Pointers
+                    data.Order_Status[0] = order_status
+                    data.Order_Signal[0] = order_signal
+                    data.Order_Price[0] = order_price
+                    data.Target[0] = target
+                    data.Stop_Loss[0] = stop_loss
+                    print('Short Entry ---')
+                    print('Order Price: ' + str(order_price))
+                    print('Target: ' + str(target))
+                    print('Stop Loss: ' + str(stop_loss))
+
+        # If Open Order Exists
+        else:
+
+            # If Long Entry Exists
+            if order_signal == 'Buy':
+
+                # Exit From Stop Loss
+                if data.Low[0] <= stop_loss:
+                    order_status = 'Exit'
+                    order_signal = 'Sell'
+                    order_price = stop_loss
+                    trade_count = trade_count + 1
+                    long_count = 1
+                    short_count = 0
+                    profit = profit + order_price
+
+                    # Print Pointers
+                    data.Order_Status[0] = order_status
+                    data.Order_Signal[0] = order_signal
+                    data.Order_Price[0] = order_price
+                    print('Long Exit ---')
+                    print('Order Price: ' + str(order_price))
+                    print('Remarks: Loss')
+
+                    ## Take Short Entry if semi target is not hit
+                    if semi_target_flag == 0:
+                        order_status = 'Entry'
+                        order_signal = 'Sell'
+                        semi_target_flag = 0
+                        stop_loss = entry_high_target + (0.00075 * order_price)
+                        profit = profit + order_price
+
+                        # Calculating Target
+                        deltas = [indicator - data['Close'][0] for indicator in pivots]
+                        neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
+                        max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
+                        target = order_price + max_neg_delta - (order_price * target_buffer_multiplier)
+
+                        # Print Pointers
+                        data.Target[0] = target
+                        data.Stop_Loss[0] = stop_loss
+                        print('Short Entry ---')
+                        print('Order Price: ' + str(order_price))
+                        print('Target: ' + str(target))
+                        print('Stop Loss: ' + str(stop_loss))
+
+                # Exit From Target
+                elif data.High[0] >= target:
+                    order_status = 'Exit'
+                    order_signal = 'Sell'
+                    order_price = target
+                    trade_count = trade_count + 1
+                    long_count = 1
+                    short_count = 0
+                    profit = profit + order_price
+
+                    # Print Pointers
+                    data.Order_Status[0] = order_status
+                    data.Order_Signal[0] = order_signal
+                    data.Order_Price[0] = order_price
+                    print('Long Exit ---')
+                    print('Order Price: ' + str(order_price))
+                    print('Remarks: Profit')
+
+                # Action on Semi Target
+                elif data.High[0] >= (order_price + (order_price * semi_target_multiplier)):
+                    stop_loss = (order_price + (order_price * semi_target_multiplier))
+                    semi_target_flag = 1
+
+            # If Short Entry Exists
+            elif order_signal == 'Sell':
+
+                # Exit From Stop Loss
+                if data.High[0] >= stop_loss:
+                    order_status = 'Exit'
+                    order_signal = 'Buy'
+                    order_price = stop_loss
+                    trade_count = trade_count + 1
+                    long_count = 0
+                    short_count = 1
+                    profit = profit - order_price
+
+                    # Print Pointers
+                    data.Order_Status[0] = order_status
+                    data.Order_Signal[0] = order_signal
+                    data.Order_Price[0] = order_price
+                    print('Short Exit ---')
+                    print('Order Price: ' + str(order_price))
+                    print('Remarks: Loss')
+
+                    ## Take Long Entry if semi target is not hit
+                    if semi_target_flag == 0:
+                        order_status = 'Entry'
+                        order_signal = 'Buy'
+                        stop_loss = entry_low_target - (0.00075 * order_price)
+                        profit = profit - order_price
+
+                        # Calculating Target
+                        deltas = [indicator - data['Close'][0] for indicator in pivots]
+                        pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
+                        min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
+                        target = min_pos_delta + order_price + (order_price * target_buffer_multiplier)
+
+                        # Print Pointers
+                        data.Target[0] = target
+                        data.Stop_Loss[0] = stop_loss
+                        print('Long Entry ---')
+                        print('Order Price: ' + str(order_price))
+                        print('Target: ' + str(target))
+                        print('Stop Loss: ' + str(stop_loss))
+
+                # Exit From Target
+                elif data.Low[0] <= target:
+                    order_status = 'Exit'
+                    order_signal = 'Buy'
+                    order_price = target
+                    trade_count = trade_count + 1
+                    long_count = 0
+                    short_count = 1
+                    profit = profit - order_price
+
+                    # Print Pointers
+                    data.Order_Status[0] = order_status
+                    data.Order_Signal[0] = order_signal
+                    data.Order_Price[0] = order_price
+                    print('Short Exit ---')
+                    print('Order Price: ' + str(order_price))
+                    print('Remarks: Profit')
+
+                # Action on Semi Target
+                elif data.Low[0] <= (order_price - (order_price * semi_target_multiplier)):
+                    stop_loss = (order_price - (order_price * semi_target_multiplier))
+                    semi_target_flag = 1
+
+    entry_high_target = max(entry_high_target, data.High[0])
+    entry_low_target = min(entry_low_target, data.Low[0])
+
+    # Combining all the required pointers in a list
+    result = [order_status, order_signal, order_price, target, stop_loss,
+              entry_high_target, entry_low_target, long_count, short_count, trade_count,
+              semi_target_flag, profit, skip_date]
+    return result
