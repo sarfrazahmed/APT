@@ -86,7 +86,7 @@ for j in info_data.index.values:
     input_file = 'F:/APT/Historical Data/Data/July/' + info_data.Company[j] + '/5minute.csv'
     output_file = 'F:/APT/Historical Data/Pivot Strategy Output/' + info_data.Company[j] + '_pivot_July.csv'
     lot_size = info_data['Lot Size'][j]
-    min_gap = 0.01
+    min_gap = 0.001
     semi_target_multiplier = 0.0005
     target_buffer_multiplier = 0.0
     min_target = 3500

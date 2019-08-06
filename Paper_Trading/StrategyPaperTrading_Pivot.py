@@ -3,35 +3,11 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-import copy
-import kiteconnect as kc
-import os
-import telebot
 
-## Pivot Point Calculation
-###############################################################
-def pivotpoints(data, type='simple'):
-    pivotpoint = (data['High'][0] + data['Low'][0] +
-                                    data['Close'][0]) / 3
 
-    s1_simple = (pivotpoint * 2) - data['High'][0]
-    s1_fibonacci = pivotpoint - (0.382 * (data['High'] - data['Low']))
-    s2_simple = pivotpoint - (data['High'] - data['Low'])
-    s2_fibonacci = pivotpoint - (0.618 * (data['High'][0] - data['Low'][0]))
-    s3_simple = data['Low'][0] - (2 * (data['High'][0] - pivotpoint))
-
-    r1_simple = (pivotpoint * 2) - data['Low'][0]
-    r1_fibonacci = pivotpoint + (0.382 * (data['High'][0] - data['Low'][0]))
-    r2_simple = pivotpoint + (data['High'][0] - data['Low'][0])
-    r2_fibonacci = pivotpoint + (0.618 * (data['High'][0] - data['Low'][0]))
-    r3_simple = data['High'][0] + (2 * (pivotpoint - data['Low'][0]))
-
-    pivots = list([s3_simple,s2_simple,s2_fibonacci,s1_simple,s1_fibonacci,pivotpoint,
-                   r1_simple,r1_fibonacci,r2_simple,r2_fibonacci,r3_simple])
-    return pivots
 
 ## Define Strategy Function
-def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier = 0.0005,
+def GapUpStrategy_Pivot(data, name, lot_size, min_gap = 0.01, semi_target_multiplier = 0.0005,
                         target_buffer_multiplier = 0.0, min_target = 3500, pivots,
                         order_status, order_signal, order_price, target, stop_loss,
                         entry_high_target, entry_low_target, long_count, short_count, trade_count,
@@ -54,11 +30,10 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                                (data.High[0] - data.Open[0]) <= data.Open[0] * 0.001 \
                 else trade_count
             if trade_count == 1:
-                print('Marubuzu Candle Identified')
+                print('Stock Name: ' + name + '\n Marubuzu Candle Identified')
 
-        print('Date: ' + str(data.Date[0]))
-        print('Status: ' + day_flag)
-        continue
+        # print('Date: ' + str(data.Date[0]))
+        # print('Status: ' + day_flag)
 
     # Exit from Ongoing Order, if any at 3:25 PM
     elif data.Date[0].hour == 15 and data.Date[0].minute == 20:
@@ -81,7 +56,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                 data.Order_Status[0] = order_status
                 data.Order_Signal[0] = order_signal
                 data.Order_Price[0] = order_price
-                print('Long Exit ---')
+                print('Stock Name: ' + name + '\n Long Exit ---')
                 print('Order Price: ' + str(order_price))
                 print('Remarks: Exit At 3:25 PM')
 
@@ -100,7 +75,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                 data.Order_Status[0] = order_status
                 data.Order_Signal[0] = order_signal
                 data.Order_Price[0] = order_price
-                print('Short Exit ---')
+                print('Stock Name: ' + name + '\n Short Exit ---')
                 print('Order Price: ' + str(order_price))
                 print('Remarks: Exit At 3:25 PM')
 
@@ -141,7 +116,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                     data.Order_Price[0] = order_price
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
-                    print('Long Entry ---')
+                    print('Stock Name: ' + name + '\n Long Entry ---')
                     print('Order Price: ' + str(order_price))
                     print('Target: ' + str(target))
                     print('Stop Loss: ' + str(stop_loss))
@@ -168,7 +143,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                     data.Order_Price[0] = order_price
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
-                    print('Short Entry ---')
+                    print('Stock Name: ' + name + '\n Short Entry ---')
                     print('Order Price: ' + str(order_price))
                     print('Target: ' + str(target))
                     print('Stop Loss: ' + str(stop_loss))
@@ -197,7 +172,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                     data.Order_Price[0] = order_price
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
-                    print('Long Entry ---')
+                    print('Stock Name: ' + name + '\n Long Entry ---')
                     print('Order Price: ' + str(order_price))
                     print('Target: ' + str(target))
                     print('Stop Loss: ' + str(stop_loss))
@@ -223,7 +198,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                     data.Order_Price[0] = order_price
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
-                    print('Short Entry ---')
+                    print('Stock Name: ' + name + '\n Short Entry ---')
                     print('Order Price: ' + str(order_price))
                     print('Target: ' + str(target))
                     print('Stop Loss: ' + str(stop_loss))
@@ -248,7 +223,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    print('Long Exit ---')
+                    print('Stock Name: ' + name + '\n Long Exit ---')
                     print('Order Price: ' + str(order_price))
                     print('Remarks: Loss')
 
@@ -269,7 +244,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                         # Print Pointers
                         data.Target[0] = target
                         data.Stop_Loss[0] = stop_loss
-                        print('Short Entry ---')
+                        print('Stock Name: ' + name + '\n Short Entry ---')
                         print('Order Price: ' + str(order_price))
                         print('Target: ' + str(target))
                         print('Stop Loss: ' + str(stop_loss))
@@ -288,7 +263,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    print('Long Exit ---')
+                    print('Stock Name: ' + name + '\n Long Exit ---')
                     print('Order Price: ' + str(order_price))
                     print('Remarks: Profit')
 
@@ -314,7 +289,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    print('Short Exit ---')
+                    print('Stock Name: ' + name + '\n Short Exit ---')
                     print('Order Price: ' + str(order_price))
                     print('Remarks: Loss')
 
@@ -334,7 +309,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                         # Print Pointers
                         data.Target[0] = target
                         data.Stop_Loss[0] = stop_loss
-                        print('Long Entry ---')
+                        print('Stock Name: ' + name + '\n Long Entry ---')
                         print('Order Price: ' + str(order_price))
                         print('Target: ' + str(target))
                         print('Stop Loss: ' + str(stop_loss))
@@ -353,7 +328,7 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    print('Short Exit ---')
+                    print('Stock Name: ' + name + '\n Short Exit ---')
                     print('Order Price: ' + str(order_price))
                     print('Remarks: Profit')
 
@@ -369,4 +344,5 @@ def GapUpStrategy_Pivot(data,  lot_size, min_gap = 0.01, semi_target_multiplier 
     result = [order_status, order_signal, order_price, target, stop_loss,
               entry_high_target, entry_low_target, long_count, short_count, trade_count,
               semi_target_flag, profit, skip_date]
-    return result
+
+    return data, result
