@@ -138,6 +138,6 @@ if __name__ == '__main__':
 
     # Get User Input from Bash File
     name = sys.argv[1]
-    lot_size = sys.argv[2]
+    lot_size = int(sys.argv[2])
     start(name, lot_size)
 
