@@ -77,7 +77,8 @@ def start(name, lot_size):
                                                        result_list[4],
                                                        result_list[5],
                                                        result_list[6],
-                                                       result_list[7])
+                                                       result_list[7],
+                                                       name)
             if data.Order_Signal[0] != "":
                 Trade_Dataset = Trade_Dataset.append(data)
                 Trade_Dataset.to_csv('PaperTrading_Output' + name + '.csv', index=False)
@@ -90,5 +91,5 @@ def start(name, lot_size):
 if __name__ == '__main__':
     os.chdir("D:\APT\APT\Paper_Trading")
     name = sys.argv[1]
-    lot_size = sys.argv[2]
+    lot_size = int(sys.argv[2])
     start(name, lot_size)

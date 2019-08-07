@@ -8,13 +8,15 @@ import kiteconnect as kc
 import os
 import telebot
 
+global chat_id
+global bot
 bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
 chat_id = '-383311990'
 bot = telebot.TeleBot(token=bot_token)
 
 ## Function to Execute Long Entry
 ###############################################################
-def long_entry(data, index, lot_size, sl, tp):
+def long_entry(data, index, lot_size, sl, tp, name):
     data.Order_Status[index] = 'Entry'
     data.Order_Signal[index] = 'Buy'
     data.Order_Price[index] = data.Close[index]
@@ -22,13 +24,13 @@ def long_entry(data, index, lot_size, sl, tp):
     data.Target[index] = data.Close[index] + (tp / lot_size)
     data.Stop_Loss[index] = sl
     print('Long Entry @' + str(data.Close[index]))
-    bot.send_message(GapUpStrategy.chat_id, 'Long Entry @' + str(data.Close[index]))
+    bot.send_message(chat_id, name + ': Long Entry @' + str(data.Close[index]))
     return data
 
 
 # Function to Execute Long Entry
 ##############################################################
-def short_entry(data, index, lot_size, sl, tp):
+def short_entry(data, index, lot_size, sl, tp, name):
     data.Order_Status[index] = 'Entry'
     data.Order_Signal[index] = 'Sell'
     data.Order_Price[index] = data.Close[index]
@@ -36,29 +38,29 @@ def short_entry(data, index, lot_size, sl, tp):
     data.Target[index] = data.Close[index] - (tp / lot_size)
     data.Stop_Loss[index] = sl
     print('Short Entry @' + str(data.Close[index]))
-    bot.send_message(GapUpStrategy.chat, 'Short Entry @' + str(data.Close[index]))
+    bot.send_message(chat_id, name + ': Short Entry @' + str(data.Close[index]))
     return data
 
 
 # Function to Execute Long Exit
 ##############################################################
-def long_exit(data, index, stop_loss):
+def long_exit(data, index, stop_loss, name):
     data.Order_Status[index] = 'Exit'
     data.Order_Signal[index] = 'Sell'
     data.Order_Price[index] = stop_loss
     print('Long Exit @' + str(stop_loss))
-    bot.send_message(GapUpStrategy.chat, 'Long Exit @' + str(stop_loss))
+    bot.send_message(chat_id, name + ': Long Exit @' + str(stop_loss))
     return data
 
 
 # Function to Execute Long Exit
 ##############################################################
-def short_exit(data, index, stop_loss):
+def short_exit(data, index, stop_loss, name):
     data.Order_Status[index] = 'Exit'
     data.Order_Signal[index] = 'Buy'
     data.Order_Price[index] = stop_loss
     print('Short Exit @' + str(stop_loss))
-    bot.send_message(GapUpStrategy.chat, 'Short Exit @' + str(stop_loss))
+    bot.send_message(chat_id, name + ': Short Exit @' + str(stop_loss))
     return data
 
 
@@ -131,7 +133,10 @@ def pivotpoints(data, type='simple'):
 def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                   order_status, order_signal,
                   order_price, entry_high_target, entry_low_target,
-                  stop_loss, target, skip_date):
+                  stop_loss, target, skip_date, name):
+    bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
+    chat_id = '-383311990'
+    bot = telebot.TeleBot(token=bot_token)
 
     if data.Date[0].hour == 9 and data.Date[0].minute == 15:
         # day_flag = 'selected' if ((ads_iteration.Open[i] > entry_high_target) or
@@ -144,7 +149,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
     elif data.Date[0].hour == 15 and data.Date[0].minute == 20:
         if order_status == 'Entry':
             if order_signal == 'Buy':
-                data = long_exit(data, 0, data.Close[0])
+                data = long_exit(data, 0, data.Close[0], name)
                 order_status = data.Order_Status[0]
                 order_signal = data.Order_Signal[0]
                 order_price = data.Order_Price[0]
@@ -155,7 +160,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                 print('Order Signal: ' + order_signal)
 
             else:
-                data = short_exit(data, 0, data.Close[0])
+                data = short_exit(data, 0, data.Close[0], name)
                 order_status = data.Order_Status[0]
                 order_signal = data.Order_Signal[0]
                 order_price = data.Order_Price[0]
@@ -171,7 +176,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
             if data.Close[0] > entry_high_target:
                 # calc_stop_loss = max(entry_low_target,(ads_iteration.Next_Candle_Open[i] - (max_stop_loss / lot_size)))
                 calc_stop_loss = data.Close[0] - (max_stop_loss / lot_size)
-                data = long_entry(data, 0, lot_size, calc_stop_loss, target_profit_1)
+                data = long_entry(data, 0, lot_size, calc_stop_loss, target_profit_1, name)
                 order_status = data.Order_Status[0]
                 order_signal = data.Order_Signal[0]
                 target = data.Target[0]
@@ -185,7 +190,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
             elif data.Close[0] < entry_low_target:
                 # calc_stop_loss = min(entry_high_target, (ads_iteration.Next_Candle_Open[i] + (max_stop_loss / lot_size)))
                 calc_stop_loss = data.Close[0] + (max_stop_loss / lot_size)
-                data = short_entry(data, 0, lot_size, calc_stop_loss, target_profit_1)
+                data = short_entry(data, 0, lot_size, calc_stop_loss, target_profit_1, name)
                 order_status = data.Order_Status[0]
                 order_signal = data.Order_Signal[0]
                 target = data.Target[0]
@@ -201,7 +206,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
 
                 # Exit Condition
                 if data.Low[0] < stop_loss:
-                    data = long_exit(data, 0, stop_loss)
+                    data = long_exit(data, 0, stop_loss, name)
                     order_status = data.Order_Status[0]
                     order_signal = data.Order_Signal[0]
                     order_price = data.Order_Price[0]
@@ -213,7 +218,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
 
                 elif data.High[0] > target:
                     # target_cross = target_cross + 1
-                    data = long_exit(data, 0, target)
+                    data = long_exit(data, 0, target, name)
                     order_status = data.Order_Status[0]
                     order_signal = data.Order_Signal[0]
                     order_price = data.Order_Price[0]
@@ -249,7 +254,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
             elif order_signal == 'Sell':
                 # Exit Condition
                 if data.High[0] > stop_loss:
-                    data = short_exit(data, 0, stop_loss)
+                    data = short_exit(data, 0, stop_loss, name)
                     order_status = data.Order_Status[0]
                     order_signal = data.Order_Signal[0]
                     order_price = data.Order_Price[0]
@@ -262,7 +267,7 @@ def GapUpStrategy(data, target_profit_1, semi_target, max_stop_loss, lot_size,
                 # Order Holding Calculation
                 elif data.Low[0] < target:
                     # target_cross = target_cross + 1
-                    data = short_exit(data, 0, target)
+                    data = short_exit(data, 0, target, name)
                     order_status = data.Order_Status[0]
                     order_signal = data.Order_Signal[0]
                     order_price = data.Order_Price[0]
