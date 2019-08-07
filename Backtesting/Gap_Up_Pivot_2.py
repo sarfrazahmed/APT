@@ -60,10 +60,10 @@ def pivotpoints(data, type='simple'):
                               (0.618 * (data_datelevel['Day_High'] -
                                         data_datelevel['Day_Low']))
     if type != 'simple':
-        data_datelevel['S3_Pivot' + type_str] = data_datelevel['PivotPoint'] - (data_datelevel['Day_High'] -
-                                                                                data_datelevel['Day_Low'])
-        data_datelevel['R3_Pivot' + type_str] = data_datelevel['PivotPoint'] + (data_datelevel['Day_High'] -
-                                                                                data_datelevel['Day_Low'])
+        data_datelevel['S3_Pivot' + type_str] = data_datelevel['Day_Low'] - 2 * (data_datelevel['Day_High'] -
+                                                                                 data_datelevel['PivotPoint'])
+        data_datelevel['R3_Pivot' + type_str] = data_datelevel['Day_High'] + 2 * (data_datelevel['PivotPoint'] -
+                                                                                  data_datelevel['Day_Low'])
 
     data_datelevel['PivotDate'] = data_datelevel['DatePart'].shift(-1)
     data_datelevel = data_datelevel.drop(['DatePart'], axis=1)
@@ -77,6 +77,7 @@ def pivotpoints(data, type='simple'):
 ## Initial Inputs
 ###############################################################
 working_dir = 'F:\APT\Historical Data'
+os.chdir(working_dir)
 info_data = pd.read_csv('Nifty50_Lot_Size.csv')
 info_data['Profit'] = 0
 info_data['Trades'] = 0
@@ -85,9 +86,9 @@ for j in info_data.index.values:
     input_file = 'F:/APT/Historical Data/Data/July/' + info_data.Company[j] + '/5minute.csv'
     output_file = 'F:/APT/Historical Data/Pivot Strategy Output/' + info_data.Company[j] + '_pivot_July.csv'
     lot_size = info_data['Lot Size'][j]
-    min_gap = 0.01
+    min_gap = 0.001
     semi_target_multiplier = 0.0005
-    target_buffer_multiplier = 0.00075
+    target_buffer_multiplier = 0.0
     min_target = 3500
     # max_stop_loss = 3500
     # semi_target = 1500
@@ -167,6 +168,18 @@ for j in info_data.index.values:
             skip_date = ads_iteration.DatePart[i] if day_flag == 'not selected' else skip_date
             entry_high_target = ads_iteration.High[i]
             entry_low_target = ads_iteration.Low[i]
+
+            # Check if Marubuzu Candle
+            if day_flag == 'selected':
+                trade_count = 1 if (ads_iteration.Open[i] > prev_day_close) and \
+                                   (ads_iteration.Open[i] - ads_iteration.Low[i]) <=  ads_iteration.Open[i] * 0.001 \
+                                else trade_count
+                trade_count = 1 if (ads_iteration.Open[i] < prev_day_close) and \
+                                   (ads_iteration.High[i] - ads_iteration.Open[i]) <= ads_iteration.Open[i] * 0.001 \
+                                else trade_count
+                if trade_count == 1:
+                    print('Marubuzu Candle Identified')
+
             print('Date: ' + str(ads_iteration.Date[i]))
             print('Status: ' + day_flag)
             continue
@@ -223,8 +236,8 @@ for j in info_data.index.values:
             trade_count = 0
             continue
 
-        # Iterate over all the data points for the dates that have been selected by Gap Up/Down Condition
-        elif ads_iteration.DatePart[i] != skip_date:
+       # Iterate over all the data points for the dates that have been selected by Gap Up/Down Condition
+        elif ads_iteration.DatePart[ i] != skip_date:
 
             # If No Open Order
             if order_status == 'Exit':
@@ -412,7 +425,7 @@ for j in info_data.index.values:
                     # Action on Semi Target
                     elif ads_iteration.High[i] >= (order_price + (order_price * semi_target_multiplier)):
                         stop_loss = (order_price + (order_price * semi_target_multiplier))
-                        semi_target_flag = 1
+                        # semi_target_flag = 1
 
                 # If Short Entry Exists
                 elif order_signal == 'Sell':
@@ -478,6 +491,7 @@ for j in info_data.index.values:
                     # Action on Semi Target
                     elif ads_iteration.Low[i] <= (order_price - (order_price * semi_target_multiplier)):
                         stop_loss = (order_price - (order_price * semi_target_multiplier))
+                        # semi_target_flag = 1
 
         entry_high_target = max(entry_high_target, ads_iteration.High[i])
         entry_low_target = min(entry_low_target, ads_iteration.Low[i])
@@ -488,4 +502,5 @@ for j in info_data.index.values:
     print('Completed For: ' + info_data['Company'][j])
 
 # Write Backtesting Summary
-info_data.to_csv('F:/APT/Historical Data/Pivot Strategy Output/BackTest_Summary.csv',index=False)
+info_data['Net Profit'] = info_data['Lot Size'] * info_data['Profit'] - (info_data['Trades'] * 200)
+info_data.to_csv('F:/APT/Historical Data/Pivot Strategy Output/BackTest_Summary_Pivot_Marubuzu.csv',index=False)
