@@ -7,6 +7,7 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import datetime
+from datetime import date, timedelta
 import configparser
 import time
 import re
@@ -18,9 +19,6 @@ def start(name, token, timeframe):
     config = configparser.ConfigParser()
     config_path = 'D:/APT/APT/Paper_Trading/config.ini'
     config.read(config_path)
-    # name = 'IBULHSGFIN'
-    # token = [7712001]
-    # timeframe = '5min'
     api_key = config['API']['API_KEY']
     api_secret = config['API']['API_SECRET']
     username = config['USER']['USERNAME']
@@ -63,7 +61,18 @@ def start(name, token, timeframe):
     kite.set_access_token(KRT['access_token'])
     print("Connection Successful", flush=True)
 
-    # tick_data = pd.DataFrame(columns=['token', 'time', 'ltp'])
+    # Get previous day candle
+    def prev_weekday(adate):
+        adate -= timedelta(days=1)
+        while adate.weekday() > 4:
+            adate -= timedelta(days=1)
+        return adate
+    date_from = prev_weekday(date.today())
+    date_to = date_from
+    interval = 'day'
+    previous_day_data = kite.historical_data(instrument_token=token, from_date=date_from, to_date=date_to, interval=interval)
+    previous_day_data = pd.DataFrame(previous_day_data)
+    previous_day_data.to_csv("previous_day_data_"+ name +'.csv')
 
     # Initialise
     print("Initialising Kite Ticker")
@@ -74,6 +83,7 @@ def start(name, token, timeframe):
 
     def on_ticks(ws, ticks):
         # Callback to receive ticks.
+        print(ticks)
         start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
         if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
             # save the last minute
@@ -181,7 +191,10 @@ def start(name, token, timeframe):
 
 if __name__ == '__main__':
     os.chdir("D:\APT\APT\Paper_Trading")
-    name = sys.argv[1]
-    token = [int(sys.argv[2])]
+    # name = sys.argv[1]
+    # token = [int(sys.argv[2])]
+    name = 'IBULHSGFIN'
+    token = [7712001]
+    timeframe = '5min'
     print(datetime.datetime.now(), flush=True)
     start(name, token, timeframe='5min')
