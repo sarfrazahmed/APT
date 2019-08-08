@@ -12,7 +12,6 @@ import configparser
 import time
 import re
 import sys
-import telebot
 
 def start(name, token, timeframe):
     print("Starting Trading Engine...", flush=True)
@@ -70,7 +69,7 @@ def start(name, token, timeframe):
     date_from = prev_weekday(date.today())
     date_to = date_from
     interval = 'day'
-    previous_day_data = kite.historical_data(instrument_token=token, from_date=date_from, to_date=date_to, interval=interval)
+    previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to, interval=interval)
     previous_day_data = pd.DataFrame(previous_day_data)
     previous_day_data.to_csv("previous_day_data_"+ name +'.csv')
 
@@ -79,11 +78,11 @@ def start(name, token, timeframe):
     kws = KiteTicker(api_key, KRT['access_token'])
     start.tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
     start.last_saved_time = 15
-    # tick_df = tick_df.append({'Token': 0, 'Timestamp': 0, 'LTP': 0}, ignore_index=True)
+
 
     def on_ticks(ws, ticks):
         # Callback to receive ticks.
-        print(ticks)
+        # print(ticks)
         start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
         if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
             # save the last minute
@@ -164,7 +163,6 @@ def start(name, token, timeframe):
     print("KWS disconnected")
 
 
-
     # LTP
     # tick = [{'tradable': True, 'mode': 'ltp', 'instrument_token': 897537, 'last_price': 1101.2}]
 
@@ -174,27 +172,13 @@ def start(name, token, timeframe):
     # QUOTE
     # tick = [{'tradable': True, 'mode': 'quote', 'instrument_token': 897537, 'last_price': 1086.2, 'last_quantity': 1, 'average_price': 1089.13, 'volume': 1055785, 'buy_quantity': 864953, 'sell_quantity': 438516, 'ohlc': {'open': 1110.0, 'high': 1110.05, 'low': 1079.0, 'close': 1101.2}, 'change': -1.3621503814021068}]
 
-    # tick_df = pd.read_csv('data/tick_data.csv', parse_dates=['Timestamp'])
-
-    # tick_df = tick_df.set_index(['Timestamp'])
-
-    # tick_df.index = pd.to_datetime(tick_df.index, unit='s')
-
-
-    # data_ohlc = tick_df['LTP'].resample('5Min').ohlc()
-
-    # print(data_ohlc)
-
-    # data_ohlc.to_csv('ohlc.csv')
-
-    # tick_df = tick_df.append({'Token': 0, 'Timestamp': 0, 'LTP': 0}, ignore_index=True)
 
 if __name__ == '__main__':
     os.chdir("D:\APT\APT\Paper_Trading")
-    # name = sys.argv[1]
-    # token = [int(sys.argv[2])]
-    name = 'IBULHSGFIN'
-    token = [7712001]
-    timeframe = '5min'
+    name = sys.argv[1]
+    token = [int(sys.argv[2])]
+    # name = 'IBULHSGFIN'
+    # token = [7712001]
+    # timeframe = '5min'
     print(datetime.datetime.now(), flush=True)
     start(name, token, timeframe='5min')

@@ -69,7 +69,7 @@ def start(name, lot_size):
         if (datetime.now().minute % 5 == 0) and (datetime.now().second >= 3) and count == 0:
             try:
                 data = pd.read_csv('D:/APT/APT/Paper_Trading/ohlc_data_' + name + '.csv')
-                prev_day_data = pd.read_csv()
+                prev_day_data = pd.read_csv('D:/APT/APT/Paper_Trading/previous_day_data_' + name + '.csv', columns=['Close', 'Date', 'High', 'Low', 'Open', 'Volume'])
             except:
                 time.sleep(1)
                 continue
@@ -98,7 +98,7 @@ def start(name, lot_size):
             data['Minute'] = [j.minute for j in data['Date']]
 
             pivots = pivotpoints(prev_day_data)
-            print('Data Preparation Completed')
+            print('Data Preparation Completed', flush=True)
 
             # Implement Strategy
             data, result_list = strategy.GapUpStrategy_Pivot(data = data, name = name, lot_size = lot_size,
