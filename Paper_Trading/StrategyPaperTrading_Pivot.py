@@ -9,8 +9,9 @@ from datetime import datetime, timedelta
 ## Define Strategy Function
 def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal, order_price, target, stop_loss,
                         entry_high_target, entry_low_target, long_count, short_count, trade_count,
-                        semi_target_flag, profit, skip_date, prev_day_close, min_gap=0.01,
-                        semi_target_multiplier=0.0005, target_buffer_multiplier=0.0, min_target=3500,):
+                        semi_target_flag, profit, skip_date, prev_day_close, min_gap=0.000001,
+                        semi_target_multiplier=0.0005, target_buffer_multiplier=0.0, min_target=4000,
+                        candle_error = 0.00075):
 
     # Selecting Tradable Day and Reset Day High and Day Low
     if data.Date[0].hour == 9 and data.Date[0].minute == 15:
@@ -22,12 +23,12 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
         # Check if Marubuzu Candle
         if day_flag == 'selected':
-            trade_count = 1 if (data.Open[0] > prev_day_close) and \
-                               (data.Open[0] - data.Low[0]) <= data.Open[0] * 0.001 \
-                else trade_count
-            trade_count = 1 if (data.Open[0] < prev_day_close) and \
-                               (data.High[0] - data.Open[0]) <= data.Open[0] * 0.001 \
-                else trade_count
+            trade_count = 1 if ((data.Open[0] - data.Low[0]) <= data.Open[0] * candle_error
+                                and (data.High[0] - data.Close[0]) <= data.Open[0] *
+                                candle_error) or ((data.High[0] - data.Open[0]) <=
+                                                  data.Open[0] * candle_error and (data.Close[0] -
+                                                                                            data.Low[0]) <=
+                                                  data.Open[0] * candle_error) else trade_count
             if trade_count == 1:
                 print('Stock Name: ' + name + '\n Marubuzu Candle Identified')
 
@@ -100,7 +101,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_signal = 'Buy'
                     semi_target_flag = 0
                     order_price = data.Close[0]
-                    stop_loss = entry_low_target - (0.00075 * order_price)
+                    stop_loss = entry_low_target - (target_buffer_multiplier * order_price)
                     profit = profit - order_price
 
                     # Calculating Target
@@ -127,7 +128,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_signal = 'Sell'
                     semi_target_flag = 0
                     order_price = data.Close[0]
-                    stop_loss = entry_high_target + (0.00075 * order_price)
+                    stop_loss = entry_high_target + (target_buffer_multiplier * order_price)
                     profit = profit + order_price
 
                     # Calculating Target
@@ -156,7 +157,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_signal = 'Buy'
                     semi_target_flag = 0
                     order_price = entry_high_target
-                    stop_loss = entry_low_target - (0.00075 * order_price)
+                    stop_loss = entry_low_target - (target_buffer_multiplier * order_price)
                     profit = profit - order_price
 
                     # Calculating Target
@@ -182,7 +183,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_signal = 'Sell'
                     semi_target_flag = 0
                     order_price = entry_low_target
-                    stop_loss = entry_high_target + (0.00075 * order_price)
+                    stop_loss = entry_high_target + (target_buffer_multiplier * order_price)
                     profit = profit + order_price
 
                     # Calculating Target
@@ -231,7 +232,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         order_status = 'Entry'
                         order_signal = 'Sell'
                         semi_target_flag = 0
-                        stop_loss = entry_high_target + (0.00075 * order_price)
+                        stop_loss = entry_high_target + (target_buffer_multiplier * order_price)
                         profit = profit + order_price
 
                         # Calculating Target
@@ -296,7 +297,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     if semi_target_flag == 0:
                         order_status = 'Entry'
                         order_signal = 'Buy'
-                        stop_loss = entry_low_target - (0.00075 * order_price)
+                        stop_loss = entry_low_target - (target_buffer_multiplier * order_price)
                         profit = profit - order_price
 
                         # Calculating Target

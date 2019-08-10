@@ -6,7 +6,7 @@ import time
 import sys
 import telebot
 from datetime import datetime
-import StrategyPaperTrading_Pivot as strategy
+from Paper_Trading import StrategyPaperTrading_Pivot as strategy
 
 ## Pivot Point Calculation
 ###############################################################
@@ -15,8 +15,8 @@ def pivotpoints(data):
                                     data['Close'][0]) / 3
 
     s1_simple = (pivotpoint * 2) - data['High'][0]
-    s1_fibonacci = pivotpoint - (0.382 * (data['High'] - data['Low']))
-    s2_simple = pivotpoint - (data['High'] - data['Low'])
+    s1_fibonacci = pivotpoint - (0.382 * (data['High'][0] - data['Low'][0]))
+    s2_simple = pivotpoint - (data['High'][0] - data['Low'][0])
     s2_fibonacci = pivotpoint - (0.618 * (data['High'][0] - data['Low'][0]))
     s3_simple = data['Low'][0] - (2 * (data['High'][0] - pivotpoint))
 
@@ -36,10 +36,10 @@ def pivotpoints(data):
 def start(name, lot_size):
     bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
     chat_id = '-383311990'
-    bot = telebot.TeleBot(token=bot_token)
+    bot = telebot.TeleBot(bot_token)
+    bot.config['api_key'] = bot_token
     message = "Stock selected for today: " + str(name)
     bot.send_message(chat_id, message)
-
     print("Master Script started", flush=True)
 
     # Set Initial Pointers Value
@@ -57,9 +57,9 @@ def start(name, lot_size):
     profit = 0
     skip_date = datetime.strptime('2019-08-06','%Y-%m-%d').date()
 
-    result_list = [order_status, order_signal,
-                      order_price, entry_high_target, entry_low_target,
-                      stop_loss, target, skip_date]
+    result_list = [order_status, order_signal, order_price, target, stop_loss,
+              entry_high_target, entry_low_target, long_count, short_count, trade_count,
+              semi_target_flag, profit, skip_date]
     Trade_Dataset = pd.DataFrame(columns=['Date', 'Open', 'High', 'Low', 'Close', 'Year', 'DatePart',
                                           'Order_Status', 'Order_Signal', 'Order_Price', 'Target', 'Stop_Loss',
                                           'Hour', 'Minute'])
