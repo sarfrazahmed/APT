@@ -1,1 +1,0 @@
-"C:\Users\Sarfraz\AppData\Local\Programs\Python\Python37-32\python.exe" "D:\APT\APT\Paper_Trading\paper_trader.py"

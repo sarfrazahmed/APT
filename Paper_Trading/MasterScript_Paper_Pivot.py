@@ -69,7 +69,7 @@ def start(name, lot_size):
         if (datetime.now().minute % 5 == 0) and (datetime.now().second >= 3) and count == 0:
             try:
                 data = pd.read_csv('D:/APT/APT/Paper_Trading/ohlc_data_' + name + '.csv')
-                prev_day_data = pd.read_csv('D:/APT/APT/Paper_Trading/previous_day_data_' + name + '.csv', columns=['Close', 'Date', 'High', 'Low', 'Open', 'Volume'])
+                prev_day_data = pd.read_csv('D:/APT/APT/Paper_Trading/previous_day_data_' + name + '.csv')
             except:
                 time.sleep(1)
                 continue
