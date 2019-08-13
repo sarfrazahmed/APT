@@ -133,7 +133,7 @@ def start(name, lot_size):
             count = 0
 
 if __name__ == '__main__':
-    os.chdir("D:\APT\APT\Paper_Trading")
+    os.chdir("/home/ubuntu/APT/APT/Paper_Trading")
 
     # Get User Input from Bash File
     name = sys.argv[1]

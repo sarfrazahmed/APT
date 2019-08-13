@@ -1,22 +1,24 @@
 # Import dependencies
+import datetime
+print('Start Time : ' + str(datetime.datetime.now()))
 import logging
+
 from kiteconnect import KiteTicker
 from kiteconnect import KiteConnect
 import pandas as pd
 import os
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-import datetime
+import time
 from datetime import date, timedelta
 import configparser
-import time
 import re
 import sys
 
 def start(name, token, timeframe):
     print("Starting Trading Engine...", flush=True)
     config = configparser.ConfigParser()
-    config_path = 'D:/APT/APT/Paper_Trading/config.ini'
+    config_path = '/home/ubuntu/APT/APT/Paper_Trading/config.ini'
     config.read(config_path)
     api_key = config['API']['API_KEY']
     api_secret = config['API']['API_SECRET']
@@ -24,8 +26,12 @@ def start(name, token, timeframe):
     password = config['USER']['PASSWORD']
     pin = config['USER']['PIN']
     homepage = 'https://kite.zerodha.com/'
-
-    driver = webdriver.Chrome(executable_path='D:\\APT\\chromedriver.exe')
+    
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    driver = webdriver.Chrome(chrome_options=chrome_options)
     page = driver.get(homepage)
 
     print("Authenticating...", flush=True)
@@ -85,7 +91,8 @@ def start(name, token, timeframe):
 
     def on_ticks(ws, ticks):
         # Callback to receive ticks.
-        # print(ticks)
+        print('End Time: ' + str(datetime.datetime.now()))
+        print(ticks)
         start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
         if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
             # save the last minute
@@ -177,7 +184,7 @@ def start(name, token, timeframe):
 
 
 if __name__ == '__main__':
-    os.chdir("D:\APT\APT\Paper_Trading")
+    os.chdir("/home/ubuntu/APT/APT/Paper_Trading")
     name = sys.argv[1]
     token = [int(sys.argv[2])]
     # name = 'IBULHSGFIN'
