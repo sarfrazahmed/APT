@@ -69,8 +69,11 @@ def start(name, token, timeframe):
     date_from = prev_weekday(date.today())
     date_to = date_from
     interval = 'day'
+    date_from = '2019-08-09'
+    date_to = '2019-08-09'
     previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to, interval=interval)
     previous_day_data = pd.DataFrame(previous_day_data)
+    previous_day_data.columns = ['Close', 'Date', 'High', 'Low', 'Open', 'Volume']
     previous_day_data.to_csv("previous_day_data_"+ name +'.csv')
 
     # Initialise
