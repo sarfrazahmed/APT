@@ -6,7 +6,7 @@ import time
 import sys
 import telebot
 from datetime import datetime
-from Paper_Trading import StrategyPaperTrading_Pivot as strategy
+import StrategyPaperTrading_Pivot as strategy
 
 ## Pivot Point Calculation
 ###############################################################
@@ -134,7 +134,7 @@ def start(name, lot_size):
             count = 0
 
 if __name__ == '__main__':
-    os.chdir("D:\APT\APT\Paper_Trading")
+    os.chdir("/home/ubuntu/APT/APT/Paper_Trading")
 
     # Get User Input from Bash File
     name = sys.argv[1]
