@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal, order_price, target, stop_loss,
                         entry_high_target, entry_low_target, long_count, short_count, trade_count,
                         semi_target_flag, profit, skip_date, prev_day_close, min_gap=0.000001,
-                        semi_target_multiplier=0.0005, target_buffer_multiplier=0.0, min_target=4000,
+                        semi_target_multiplier=0.005, target_buffer_multiplier=0.0, min_target=5000,
                         candle_error = 0.00075):
 
     # Selecting Tradable Day and Reset Day High and Day Low
