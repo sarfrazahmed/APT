@@ -33,11 +33,12 @@ def pivotpoints(data):
 ## Initial Inputs
 ###############################################################
 def start(name, lot_size):
+    print("Inside start")
     bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
     chat_id = '-383311990'
     bot = telebot.TeleBot(bot_token)
-    # bot.config['api_key'] = bot_token
-    message = "Stock selected for today: " + str(name)
+    #bot.config['api_key'] = bot_token
+    message = ("Stock selected for today: " + str(name))
     bot.send_message(chat_id, message)
     print("Master Script started", flush=True)
 
@@ -55,7 +56,7 @@ def start(name, lot_size):
     semi_target_flag = 0
     profit = 0
     skip_date = datetime.strptime('2019-08-06','%Y-%m-%d').date()
-
+    print("Initialised variables")
     result_list = [order_status, order_signal, order_price, target, stop_loss,
               entry_high_target, entry_low_target, long_count, short_count, trade_count,
               semi_target_flag, profit, skip_date]
@@ -66,9 +67,10 @@ def start(name, lot_size):
     while True:
         # Get data after every 5 mins
         if (datetime.now().minute % 5 == 0) and (datetime.now().second >= 3) and count == 0:
+            print("Inside if")
             try:
-                data = pd.read_csv('D:/APT/APT/Paper_Trading/ohlc_data_' + name + '.csv')
-                prev_day_data = pd.read_csv('D:/APT/APT/Paper_Trading/previous_day_data_' + name + '.csv')
+                data = pd.read_csv('/home/ubuntu/APT/APT/Paper_Trading/ohlc_data_' + name + '.csv')
+                prev_day_data = pd.read_csv('/home/ubuntu/APT/APT/Paper_Trading/previous_day_data_' + name + '.csv')
             except:
                 time.sleep(1)
                 continue
@@ -134,9 +136,8 @@ def start(name, lot_size):
 
 if __name__ == '__main__':
     os.chdir("/home/ubuntu/APT/APT/Paper_Trading")
-
     # Get User Input from Bash File
     name = sys.argv[1]
-    lot_size = int(sys.argv[2])
+    lot_size = int(sys.argv[3])
     start(name, lot_size)
 

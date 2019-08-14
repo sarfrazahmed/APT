@@ -1,8 +1,6 @@
 # Import dependencies
 import datetime
-print('Start Time : ' + str(datetime.datetime.now()))
 import logging
-
 from kiteconnect import KiteTicker
 from kiteconnect import KiteConnect
 import pandas as pd
@@ -16,7 +14,7 @@ import re
 import sys
 
 def start(name, token, timeframe):
-    print("Starting Trading Engine...", flush=True)
+    print("Starting Trading Engine...", flush=True)      
     config = configparser.ConfigParser()
     config_path = '/home/ubuntu/APT/APT/Paper_Trading/config.ini'
     config.read(config_path)
@@ -65,6 +63,7 @@ def start(name, token, timeframe):
     KRT = kite.generate_session(request_token, api_secret)
     kite.set_access_token(KRT['access_token'])
     print("Connection Successful", flush=True)
+    driver.quit()
 
     # Get previous day candle
     def prev_weekday(adate):
@@ -74,12 +73,12 @@ def start(name, token, timeframe):
         return adate
     date_from = prev_weekday(date.today())
     date_to = date_from
+    date_from = '2019-08-13'
+    date_to = '2019-08-13'
     interval = 'day'
-    date_from = '2019-08-09'
-    date_to = '2019-08-09'
     previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to, interval=interval)
     previous_day_data = pd.DataFrame(previous_day_data)
-    previous_day_data.columns = ['Close', 'Date', 'High', 'Low', 'Open', 'Volume']
+    previous_day_data.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
     previous_day_data.to_csv("previous_day_data_"+ name +'.csv')
 
     # Initialise
@@ -91,8 +90,7 @@ def start(name, token, timeframe):
 
     def on_ticks(ws, ticks):
         # Callback to receive ticks.
-        print('End Time: ' + str(datetime.datetime.now()))
-        print(ticks)
+        # print(ticks)
         start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
         if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
             # save the last minute
@@ -187,8 +185,10 @@ if __name__ == '__main__':
     os.chdir("/home/ubuntu/APT/APT/Paper_Trading")
     name = sys.argv[1]
     token = [int(sys.argv[2])]
+    sleep_time = int(sys.argv[4])
+    time.sleep(sleep_time)
     # name = 'IBULHSGFIN'
     # token = [7712001]
     # timeframe = '5min'
-    print(datetime.datetime.now(), flush=True)
+    print('Stock Name: ' + name, flush=True)
     start(name, token, timeframe='5min')
