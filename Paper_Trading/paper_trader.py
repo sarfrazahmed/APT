@@ -6,65 +6,70 @@ from kiteconnect import KiteConnect
 import pandas as pd
 import os
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 import time
 from datetime import date, timedelta
 import configparser
 import re
 import sys
 
-def start(name, token, timeframe):
-    print("Starting Trading Engine...", flush=True)      
+def start(name, token, access_token, timeframe):
+    # print("Starting Trading Engine...", flush=True)
     config = configparser.ConfigParser()
-    config_path = '/home/ubuntu/APT/APT/Paper_Trading/config.ini'
+    path = os.getcwd()
+    config_path = path + '\\config.ini'
     config.read(config_path)
     api_key = config['API']['API_KEY']
     api_secret = config['API']['API_SECRET']
-    username = config['USER']['USERNAME']
-    password = config['USER']['PASSWORD']
-    pin = config['USER']['PIN']
-    homepage = 'https://kite.zerodha.com/'
-    
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(chrome_options=chrome_options)
-    page = driver.get(homepage)
-
-    print("Authenticating...", flush=True)
-    # Logging in using Username and Password
-    user_id_box = driver.find_element_by_xpath(
-        '//*[@id="container"]/div/div/div/form/div[2]/input')
-    password_box = driver.find_element_by_xpath(
-        '//*[@id="container"]/div/div/div/form/div[3]/input')
-    log_in_button = driver.find_element_by_xpath(
-        '//*[@id="container"]/div/div/div/form/div[4]/button')
-    user_id_box.send_keys(username)
-    password_box.send_keys(password)
-    log_in_button.click()
-    time.sleep(3)
-
-    # Logging in using Pin
-    pin_box = driver.find_element_by_xpath(
-        '//*[@id="container"]/div/div/div/form/div[2]/div/input')
-    continue_box = driver.find_element_by_xpath(
-        '//*[@id="container"]/div/div/div/form/div[3]/button')
-    pin_box.send_keys(pin)
-    continue_box.click()
-    time.sleep(3)
-
-    # Redirecting to Kiteconnect
+    # username = config['USER']['USERNAME']
+    # password = config['USER']['PASSWORD']
+    # pin = config['USER']['PIN']
+    # homepage = 'https://kite.zerodha.com/'
+    #
+    # # chrome_options = webdriver.ChromeOptions()
+    # # chrome_options.add_argument('--headless')
+    # # chrome_options.add_argument('--no-sandbox')
+    # # chrome_options.add_argument('--disable-dev-shm-usage')
+    # # driver = webdriver.Chrome(chrome_options=chrome_options)
+    # driver = webdriver.Chrome(executable_path='D:\\DevAPT\\APT\\chromedriver.exe')
+    # page = driver.get(homepage)
+    #
+    # print("Authenticating...", flush=True)
+    # # Logging in using Username and Password
+    # user_id_box = driver.find_element_by_xpath(
+    #     '//*[@id="container"]/div/div/div/form/div[2]/input')
+    # password_box = driver.find_element_by_xpath(
+    #     '//*[@id="container"]/div/div/div/form/div[3]/input')
+    # log_in_button = driver.find_element_by_xpath(
+    #     '//*[@id="container"]/div/div/div/form/div[4]/button')
+    # user_id_box.send_keys(username)
+    # password_box.send_keys(password)
+    # log_in_button.click()
+    # time.sleep(3)
+    #
+    # # Logging in using Pin
+    # pin_box = driver.find_element_by_xpath(
+    #     '//*[@id="container"]/div/div/div/form/div[2]/div/input')
+    # continue_box = driver.find_element_by_xpath(
+    #     '//*[@id="container"]/div/div/div/form/div[3]/button')
+    # pin_box.send_keys(pin)
+    # continue_box.click()
+    # time.sleep(3)
+    #
+    # # Redirecting to Kiteconnect
+    # kite = KiteConnect(api_key=api_key)
+    # url = kite.login_url()
+    # page = driver.get(url)
+    # current_url = driver.current_url
+    # request_token = re.search(('request_token=(.*)'), current_url).group(1)[:32]
+    # print('Request token', request_token)
+    # KRT = kite.generate_session(request_token, api_secret)
+    # kite.set_access_token(KRT['access_token'])
+    # print('Access token: ', KRT['access_token'])
+    # print("Connection Successful", flush=True)
+    # driver.close()
     kite = KiteConnect(api_key=api_key)
-    url = kite.login_url()
-    page = driver.get(url)
-    current_url = driver.current_url
-    request_token = re.search(('request_token=(.*)'), current_url).group(1)[:32]
-    KRT = kite.generate_session(request_token, api_secret)
-    kite.set_access_token(KRT['access_token'])
-    print("Connection Successful", flush=True)
-    driver.quit()
-
+    # kite.generate_session(access_token, api_secret)
+    kite.set_access_token(access_token)
     # Get previous day candle
     def prev_weekday(adate):
         adate -= timedelta(days=1)
@@ -83,14 +88,14 @@ def start(name, token, timeframe):
 
     # Initialise
     print("Initialising Kite Ticker")
-    kws = KiteTicker(api_key, KRT['access_token'])
+    kws = KiteTicker(api_key, access_token)
     start.tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
     start.last_saved_time = 15
 
 
     def on_ticks(ws, ticks):
         # Callback to receive ticks.
-        # print(ticks)
+        print(ticks)
         start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
         if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
             # save the last minute
@@ -151,19 +156,6 @@ def start(name, token, timeframe):
     kws.on_noreconnect = on_noreconnect
     print("Callbacks assigned")
 
-    # count = 0
-    # while True:
-    #     count += 1
-    #     if count % 2 == 0:
-    #         if kws.is_connected():
-    #             print("### Set mode to LTP for all tokens")
-    #             kws.set_mode(kws.MODE_LTP, tokens)
-    #     else:
-    #         if kws.is_connected():
-    #             print("### Set mode to quote for all tokens")
-    #             kws.set_mode(kws.MODE_QUOTE, tokens)
-
-    #     time.sleep(5)
 
     # Infinite loop on the main thread. Nothing after this will run.
     # You have to use the pre-defined callbacks to manage subscriptions.
@@ -171,24 +163,14 @@ def start(name, token, timeframe):
     print("KWS disconnected")
 
 
-    # LTP
-    # tick = [{'tradable': True, 'mode': 'ltp', 'instrument_token': 897537, 'last_price': 1101.2}]
-
-    # FULL
-    # ticks = [{'tradable': True, 'mode': 'full', 'instrument_token': 897537, 'last_price': 1085.6, 'last_quantity': 14, 'average_price': 1089.2, 'volume': 1030686, 'buy_quantity': 863713, 'sell_quantity': 269903, 'ohlc': {'open': 1110.0, 'high': 1110.05, 'low': 1079.0, 'close': 1101.2}, 'change': -1.4166363966582034, 'last_trade_time': datetime.datetime(2019, 7, 15, 11, 6, 11), 'oi': 0, 'oi_day_high': 0, 'oi_day_low': 0, 'timestamp': datetime.datetime(2019, 7, 15, 11, 6, 12), 'depth': {'buy': [{'quantity': 24, 'price': 1085.45, 'orders': 1}, {'quantity': 90, 'price': 1085.4, 'orders': 2}, {'quantity': 23, 'price': 1085.35, 'orders': 1}, {'quantity': 12, 'price': 1085.3, 'orders': 2}, {'quantity': 231, 'price': 1085.25, 'orders': 2}], 'sell': [{'quantity': 41, 'price': 1085.6, 'orders': 4}, {'quantity': 219, 'price': 1086.0, 'orders': 3}, {'quantity': 2, 'price': 1086.1, 'orders': 1}, {'quantity': 9, 'price': 1086.15, 'orders': 1}, {'quantity': 46, 'price': 1086.25, 'orders': 1}]}}]
-
-    # QUOTE
-    # tick = [{'tradable': True, 'mode': 'quote', 'instrument_token': 897537, 'last_price': 1086.2, 'last_quantity': 1, 'average_price': 1089.13, 'volume': 1055785, 'buy_quantity': 864953, 'sell_quantity': 438516, 'ohlc': {'open': 1110.0, 'high': 1110.05, 'low': 1079.0, 'close': 1101.2}, 'change': -1.3621503814021068}]
-
-
 if __name__ == '__main__':
-    os.chdir("/home/ubuntu/APT/APT/Paper_Trading")
+    path = os.getcwd()
+    os.chdir(path)
     name = sys.argv[1]
     token = [int(sys.argv[2])]
-    sleep_time = int(sys.argv[4])
-    time.sleep(sleep_time)
+    access_token = sys.argv[3]
     # name = 'IBULHSGFIN'
     # token = [7712001]
-    # timeframe = '5min'
+    # access_token = 'Aiz2qrsvSQEgaPIcayZiS1lqy5YyVZnL'
     print('Stock Name: ' + name, flush=True)
-    start(name, token, timeframe='5min')
+    start(name, token, access_token, timeframe='5min')
