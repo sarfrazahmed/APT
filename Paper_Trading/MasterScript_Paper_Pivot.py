@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import time
 import sys
-import telebot
+import requests
 from datetime import datetime
 import StrategyPaperTrading_Pivot as strategy
 
@@ -35,9 +35,8 @@ def pivotpoints(data):
 def start(name, lot_size):
     bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
     chat_id = '-383311990'
-    bot = telebot.TeleBot(bot_token)
     message = ("Stock selected for today: " + str(name))
-    bot.send_message(chat_id, message)
+    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
     print("Master Script started", flush=True)
     path = os.getcwd()
     # Set Initial Pointers Value
@@ -118,7 +117,7 @@ def start(name, lot_size):
                 message = 'Stock Name: ' + name + '\n Order Status: ' + result_list[0] + \
                     '\n Order Signal: ' + result_list[1] + '\n Order Price: ' + str(result_list[2]) + \
                           '\n Target: ' + str(result_list[3]) + '\n Stop Loss: ' + str(result_list[4])
-                bot.send_message(chat_id, message)
+                requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Write Updated Trade History as CSV
                 Trade_Dataset.to_csv('PaperTrading_Output' + name + '.csv', index=False)
