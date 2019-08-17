@@ -19,7 +19,7 @@ def start(name, token, access_token, timeframe):
     config_path = path + '\\config.ini'
     config.read(config_path)
     api_key = config['API']['API_KEY']
-    api_secret = config['API']['API_SECRET']
+    # api_secret = config['API']['API_SECRET']
     # username = config['USER']['USERNAME']
     # password = config['USER']['PASSWORD']
     # pin = config['USER']['PIN']
@@ -67,19 +67,21 @@ def start(name, token, access_token, timeframe):
     # print('Access token: ', KRT['access_token'])
     # print("Connection Successful", flush=True)
     # driver.close()
+
     kite = KiteConnect(api_key=api_key)
     # kite.generate_session(access_token, api_secret)
     kite.set_access_token(access_token)
     # Get previous day candle
-    def prev_weekday(adate):
-        adate -= timedelta(days=1)
-        while adate.weekday() > 4:
-            adate -= timedelta(days=1)
-        return adate
-    date_from = prev_weekday(date.today())
-    date_to = date_from
-    date_from = '2019-08-13'
-    date_to = '2019-08-13'
+    # def prev_weekday(adate):
+    #     adate -= timedelta(days=1)
+    #     while adate.weekday() > 4:
+    #         adate -= timedelta(days=1)
+    #     return adate
+    # date_from = prev_weekday(date.today())
+    # date_to = date_from
+
+    date_from = '2019-08-14'
+    date_to = '2019-08-14'
     interval = 'day'
     previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to, interval=interval)
     previous_day_data = pd.DataFrame(previous_day_data)
@@ -95,7 +97,7 @@ def start(name, token, access_token, timeframe):
 
     def on_ticks(ws, ticks):
         # Callback to receive ticks.
-        print(ticks)
+        # print(ticks)
         start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
         if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
             # save the last minute

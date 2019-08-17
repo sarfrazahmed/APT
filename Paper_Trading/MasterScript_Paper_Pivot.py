@@ -6,6 +6,7 @@ import time
 import sys
 import requests
 from datetime import datetime
+sys.path.insert(1, 'D:\DevAPT\APT\Paper_Trading')
 import StrategyPaperTrading_Pivot as strategy
 
 ## Pivot Point Calculation
@@ -62,6 +63,9 @@ def start(name, lot_size):
     count = 0
     while True:
         # Get data after every 5 mins
+        if datetime.now() <= datetime.strptime(str(datetime.now().date()) + ' 09:20:00', '%Y-%m-%d %H:%M:%S'):
+            time.sleep(2)
+            continue
         if (datetime.now().minute % 5 == 0) and (datetime.now().second >= 3) and count == 0:
             try:
                 data = pd.read_csv(path + '\\ohlc_data_' + name + '.csv')
@@ -128,13 +132,14 @@ def start(name, lot_size):
 
         else:
             count = 0
+            time.sleep(2)
 
 if __name__ == '__main__':
     path = os.getcwd()
     os.chdir(path)
     # Get User Input from Bash File
     name = sys.argv[1]
-    print(name)
+    print('Start Time: ' + str(datetime.now()))
     lot_size = int(sys.argv[2])
     print(lot_size)
     start(name, lot_size)
