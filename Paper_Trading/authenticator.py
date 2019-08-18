@@ -11,6 +11,7 @@ import pandas as pd
 print("Starting Trading Engine...", flush=True)
 config = configparser.ConfigParser()
 path = os.getcwd()
+path = 'D:/DevAPT/APT/Paper_Trading'
 os.chdir(path)
 config_path = path + '\\config.ini'
 config.read(config_path)
@@ -64,6 +65,7 @@ page = driver.get(url)
 current_url = driver.current_url
 request_token = re.search('request_token=(.*)', current_url).group(1)[:32]
 KRT = kite.generate_session(request_token, api_secret)
+print("Connection Successful")
 driver.close()
 
 # Write access token
@@ -71,3 +73,7 @@ stock_list = pd.read_csv('stocks_info.csv', header=None)
 stock_list[3] = KRT['access_token']
 stock_list[4] = 0
 stock_list.to_csv('stock_list_updated.csv', header=None, index=False)
+
+df = pd.DataFrame()
+df.at[0, 0] = KRT['access_token']
+df.to_csv('access_token.csv')
