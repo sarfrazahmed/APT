@@ -17,7 +17,7 @@ def start(name, date, interval):
     config = configparser.ConfigParser()
     config_path = 'D:/APT/APT/Paper_Trading/config.ini'
     config.read(config_path)
-    path = 'D:\DevAPT\APT\Simulation'
+    path = 'D:/DevAPT/APT/Simulation'
     os.chdir(path)
 
     api_key = config['API']['API_KEY']
@@ -27,7 +27,7 @@ def start(name, date, interval):
     pin = config['USER']['PIN']
     homepage = 'https://kite.zerodha.com/'
 
-    driver = webdriver.Chrome()
+    driver = webdriver.Chrome(executable_path='D:/DevAPT/APT/chromedriver.exe')
     page = driver.get(homepage)
 
     print("Authenticating...")
@@ -41,7 +41,7 @@ def start(name, date, interval):
     user_id_box.send_keys(username)
     password_box.send_keys(password)
     log_in_button.click()
-    time.sleep(5)
+    time.sleep(3)
 
     # Logging in using Pin
     pin_box = driver.find_element_by_xpath(
@@ -50,7 +50,7 @@ def start(name, date, interval):
         '//*[@id="container"]/div/div/div/form/div[3]/button')
     pin_box.send_keys(pin)
     continue_box.click()
-    time.sleep(5)
+    time.sleep(3)
 
     # Redirecting to Kiteconnect
     kite = KiteConnect(api_key=api_key)
@@ -121,21 +121,22 @@ def start(name, date, interval):
             adate -= timedelta(days=1)
         return adate
     prev_date = prev_weekday(datetime.datetime.strptime(date, "%Y-%m-%d").date())
+    data = kite.historical_data(instrument_token=int(scrip_dict[name]), from_date=date, to_date=date, interval=interval)
+    data = pd.DataFrame(data)
 
-    data = kite.historical_data(instrument_token=scrip_dict[name], from_date=date, to_date=date, interval=interval)
-
-    prev_day_data = kite.historical_data(instrument_token=scrip_dict[name], from_date=prev_date, to_date=prev_date, interval='day')
+    prev_day_data = kite.historical_data(instrument_token=int(scrip_dict[name]), from_date=prev_date, to_date=prev_date, interval='day')
+    prev_day_data = pd.DataFrame(prev_day_data)
     prev_day_data.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
     prev_day_data.to_csv("previous_day_data_" + name + '.csv')
 
 
-    for index, row in date.iterrows():
-        single_candle = pd.DataFrame(row)
+    for i in range(len(data)):
+        single_candle = data.iloc[[i]]
         single_candle.to_csv('ohlc_data_' + name +'.csv')
         time.sleep(60)
 
 if __name__ == '__main__':
     name = 'LT'
     date = '2019-08-21'
-    interval = '5min'
+    interval = '5minute'
     start(name, date, interval)
