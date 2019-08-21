@@ -72,13 +72,13 @@ def start(name, token, access_token, timeframe):
     # kite.generate_session(access_token, api_secret)
     kite.set_access_token(access_token)
     # Get previous day candle
-    # def prev_weekday(adate):
-    #     adate -= timedelta(days=1)
-    #     while adate.weekday() > 4:
-    #         adate -= timedelta(days=1)
-    #     return adate
-    # date_from = prev_weekday(date.today())
-    # date_to = date_from
+    def prev_weekday(adate):
+        adate -= timedelta(days=1)
+        while adate.weekday() > 4:
+            adate -= timedelta(days=1)
+        return adate
+    date_from = prev_weekday(date.today())
+    date_to = date_from
 
     date_from = '2019-08-14'
     date_to = '2019-08-14'
