@@ -11,6 +11,7 @@ from datetime import date, timedelta
 import configparser
 import time
 import re
+import sys
 
 def start(name, date, interval):
     print("Connecting to Kite...")
@@ -144,7 +145,9 @@ def start(name, date, interval):
         time.sleep(60)
 
 if __name__ == '__main__':
-    name = 'LT'
-    date = '2019-08-21'
+    name = sys.argv[1]
+    date = sys.argv[2]
+    # name = 'LT'
+    # date = '2019-08-21'
     interval = '5minute'
     start(name, date, interval)
