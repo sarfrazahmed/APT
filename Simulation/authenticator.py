@@ -10,13 +10,13 @@ import pandas as pd
 # Get all info
 print("Starting Trading Engine...", flush=True)
 config = configparser.ConfigParser()
-# For Windows
-# path = os.getcwd()
-# path = '/home/ubuntu/APT/APT/Paper_Trading'
-
 # For Ubuntu
 path = os.getcwd()
-path = 'D:/DevAPT/APT/Paper_Trading'
+path = '/home/ubuntu/APT/APT/Simulation'
+
+## For Windows
+# path = os.getcwd()
+# path = 'D:/DevAPT/APT/Paper_Trading'
 
 os.chdir(path)
 config_path = path + '/config.ini'
