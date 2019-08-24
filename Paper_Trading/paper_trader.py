@@ -20,54 +20,6 @@ def start(name, token, access_token, timeframe):
     config_path = path + '/config.ini'
     config.read(config_path)
     api_key = config['API']['API_KEY']
-    # api_secret = config['API']['API_SECRET']
-    # username = config['USER']['USERNAME']
-    # password = config['USER']['PASSWORD']
-    # pin = config['USER']['PIN']
-    # homepage = 'https://kite.zerodha.com/'
-    #
-    # # chrome_options = webdriver.ChromeOptions()
-    # # chrome_options.add_argument('--headless')
-    # # chrome_options.add_argument('--no-sandbox')
-    # # chrome_options.add_argument('--disable-dev-shm-usage')
-    # # driver = webdriver.Chrome(chrome_options=chrome_options)
-    # driver = webdriver.Chrome(executable_path='D:\\DevAPT\\APT\\chromedriver.exe')
-    # page = driver.get(homepage)
-    #
-    # print("Authenticating...", flush=True)
-    # # Logging in using Username and Password
-    # user_id_box = driver.find_element_by_xpath(
-    #     '//*[@id="container"]/div/div/div/form/div[2]/input')
-    # password_box = driver.find_element_by_xpath(
-    #     '//*[@id="container"]/div/div/div/form/div[3]/input')
-    # log_in_button = driver.find_element_by_xpath(
-    #     '//*[@id="container"]/div/div/div/form/div[4]/button')
-    # user_id_box.send_keys(username)
-    # password_box.send_keys(password)
-    # log_in_button.click()
-    # time.sleep(3)
-    #
-    # # Logging in using Pin
-    # pin_box = driver.find_element_by_xpath(
-    #     '//*[@id="container"]/div/div/div/form/div[2]/div/input')
-    # continue_box = driver.find_element_by_xpath(
-    #     '//*[@id="container"]/div/div/div/form/div[3]/button')
-    # pin_box.send_keys(pin)
-    # continue_box.click()
-    # time.sleep(3)
-    #
-    # # Redirecting to Kiteconnect
-    # kite = KiteConnect(api_key=api_key)
-    # url = kite.login_url()
-    # page = driver.get(url)
-    # current_url = driver.current_url
-    # request_token = re.search(('request_token=(.*)'), current_url).group(1)[:32]
-    # print('Request token', request_token)
-    # KRT = kite.generate_session(request_token, api_secret)
-    # kite.set_access_token(KRT['access_token'])
-    # print('Access token: ', KRT['access_token'])
-    # print("Connection Successful", flush=True)
-    # driver.close()
 
     kite = KiteConnect(api_key=api_key)
     # kite.generate_session(access_token, api_secret)
@@ -80,12 +32,6 @@ def start(name, token, access_token, timeframe):
         return adate
     date_from = prev_weekday(date.today())
     date_to = date_from
-<<<<<<< HEAD
-=======
-
-    date_from = '2019-08-14'
-    date_to = '2019-08-14'
->>>>>>> f4f3904002ab1ca4b95bdbc27db428881fc1c712
     interval = 'day'
     previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to, interval=interval)
     previous_day_data = pd.DataFrame(previous_day_data)

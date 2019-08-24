@@ -10,13 +10,14 @@ import pandas as pd
 # Get all info
 print("Starting Trading Engine...", flush=True)
 config = configparser.ConfigParser()
-<<<<<<< HEAD
+# For Windows
 # path = os.getcwd()
-path = '/home/ubuntu/APT/APT/Paper_Trading'
-=======
+# path = '/home/ubuntu/APT/APT/Paper_Trading'
+
+# For Ubuntu
 path = os.getcwd()
 path = 'D:/DevAPT/APT/Paper_Trading'
->>>>>>> f4f3904002ab1ca4b95bdbc27db428881fc1c712
+
 os.chdir(path)
 config_path = path + '/config.ini'
 config.read(config_path)
@@ -78,11 +79,4 @@ stock_list = pd.read_csv('stocks_info.csv', header=None)
 stock_list[3] = KRT['access_token']
 stock_list[4] = 0
 stock_list.to_csv('stock_list_updated.csv', header=None, index=False)
-<<<<<<< HEAD
 print("Connection succesful", flush=True)
-=======
-
-df = pd.DataFrame()
-df.at[0, 0] = KRT['access_token']
-df.to_csv('access_token.csv')
->>>>>>> f4f3904002ab1ca4b95bdbc27db428881fc1c712
