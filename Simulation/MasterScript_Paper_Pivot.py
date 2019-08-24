@@ -34,6 +34,7 @@ def pivotpoints(data):
 ###############################################################
 def start(name, lot_size):
     time.sleep(14)
+    # time.sleep(70)
     message = ("Stock selected for today: " + str(name))
     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
     print("Master Script started", flush=True)
@@ -64,7 +65,8 @@ def start(name, lot_size):
     counter = 0
     while True:
         # Get data after every 5 mins
-        if (datetime.now().second >= 3) and (datetime.now().second <= 6) and count == 0:
+        if (datetime.now().minute % 5 == 0) and \
+                (datetime.now().second >= 3) and (datetime.now().second <= 6) and count == 0:
             try:
                 data = pd.read_csv(path + '/ohlc_data_' + name + '.csv')
                 prev_day_data = pd.read_csv(path + '/previous_day_data_' + name + '.csv')
@@ -73,9 +75,12 @@ def start(name, lot_size):
                 continue
 
             data.columns = ['Close', 'Date', 'High', 'Low', 'Open','Volume']
+            # data.columns = ['Date', 'Open', 'High', 'Low', 'Close']
 
             # Date Column Handling
             data['Date'] = [datetime.strptime(i[:i.find('+')], '%Y-%m-%d %H:%M:%S') for i in data['Date']]
+            # data['Date'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S') + timedelta(hours=5, minutes=30) for i in
+            #                 data['Date']]
             data['Year'] = [i.year for i in data['Date']]
             data['DatePart'] = [i.date() for i in data['Date']]
 
@@ -122,12 +127,14 @@ def start(name, lot_size):
                 Trade_Dataset.to_csv('PaperTrading_Output' + name + '.csv', index=False)
 
             # Sleep for 4 min
+            # time.sleep(240)
             time.sleep(30)
             count = 1
 
         else:
             count = 0
             time.sleep(1)
+            # time.sleep(2)
 
 if __name__ == '__main__':
     # path = os.getcwd()

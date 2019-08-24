@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-
+import requests
 
 
 ## Define Strategy Function
@@ -22,12 +22,10 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
         # Check if Marubuzu Candle
         if day_flag == 'selected':
-            trade_count = 1 if ((data.Open[0] - data.Low[0]) <= data.Open[0] * candle_error
-                                and (data.High[0] - data.Close[0]) <= data.Open[0] *
-                                candle_error) or ((data.High[0] - data.Open[0]) <=
-                                                  data.Open[0] * candle_error and (data.Close[0] -
-                                                                                            data.Low[0]) <=
-                                                  data.Open[0] * candle_error) else trade_count
+            trade_count = 1 if ((data.Open[0] - data.Low[0]) <= data.Open[0] * candle_error or 
+                    (data.High[0] - data.Close[0]) <= data.Open[0] * candle_error or
+                    (data.High[0] - data.Open[0]) <= data.Open[0] * candle_error or
+                    (data.Close[0] - data.Low[0]) <= data.Open[0] * candle_error) else trade_count
             if trade_count == 1:
                  message = 'Stock Name: ' + name + '\nMarubuzu Candle Identified'
                  requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
@@ -109,7 +107,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     profit = profit - order_price
 
                     # Calculating Target
-                    deltas = [indicator - data['Close'][0] for indicator in pivots]
+                    deltas = [indicator - order_price for indicator in pivots]
                     pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
                     min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
                     target = min_pos_delta + order_price + (order_price * target_buffer_multiplier)
@@ -134,7 +132,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     profit = profit + order_price
 
                     # Calculating Target
-                    deltas = [indicator - data['Close'][0] for indicator in pivots]
+                    deltas = [indicator - order_price for indicator in pivots]
                     neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
                     max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
                     target = order_price + max_neg_delta - (order_price * target_buffer_multiplier)
@@ -161,7 +159,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     profit = profit - order_price
 
                     # Calculating Target
-                    deltas = [indicator - data['Close'][0] for indicator in pivots]
+                    deltas = [indicator - order_price for indicator in pivots]
                     pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
                     min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
                     target = min_pos_delta + order_price + (order_price * target_buffer_multiplier)
@@ -185,7 +183,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     profit = profit + order_price
 
                     # Calculating Target
-                    deltas = [indicator - data['Close'][0] for indicator in pivots]
+                    deltas = [indicator - order_price for indicator in pivots]
                     neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
                     max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
                     target = order_price + max_neg_delta - (order_price * target_buffer_multiplier)
@@ -231,7 +229,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         profit = profit + order_price
 
                         # Calculating Target
-                        deltas = [indicator - data['Close'][0] for indicator in pivots]
+                        deltas = [indicator - order_price for indicator in pivots]
                         neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
                         max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
                         target = order_price + max_neg_delta - (order_price * target_buffer_multiplier)
@@ -294,7 +292,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         profit = profit - order_price
 
                         # Calculating Target
-                        deltas = [indicator - data['Close'][0] for indicator in pivots]
+                        deltas = [indicator - order_price for indicator in pivots]
                         pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
                         min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
                         target = min_pos_delta + order_price + (order_price * target_buffer_multiplier)
@@ -325,7 +323,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 # Action on Semi Target
                 elif data.Low[0] <= (order_price - (order_price * semi_target_multiplier)):
                     stop_loss = (order_price - (order_price * semi_target_multiplier))
-                    semi_target_flag = 1
+                    # semi_target_flag = 1
                     message = 'Stock Name: ' + name + '\n Semi Target Crossed and Stop Loss Modified  --- \nStop Loss: ' + str(stop_loss)
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
