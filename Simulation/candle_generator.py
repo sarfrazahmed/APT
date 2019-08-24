@@ -16,10 +16,17 @@ import sys
 def start(name, date, interval):
     print("Connecting to Kite...")
     config = configparser.ConfigParser()
-    config_path = 'D:/APT/APT/Paper_Trading/config.ini'
+    # For Ubuntu
+    config_path = '/home/ubuntu/APT/APT/Simulation/config.ini'
     config.read(config_path)
-    path = 'D:/DevAPT/APT/Simulation'
+    path = '/home/ubuntu/APT/APT/Simulation'
     os.chdir(path)
+    
+    # For windows
+    # config_path = 'D:/APT/APT/Paper_Trading/config.ini'
+    # config.read(config_path)
+    # path = 'D:/DevAPT/APT/Simulation'
+    # os.chdir(path)
 
     api_key = config['API']['API_KEY']
     api_secret = config['API']['API_SECRET']
@@ -29,15 +36,16 @@ def start(name, date, interval):
     homepage = 'https://kite.zerodha.com/'
 
     ## Selenium for ubuntu
-    # chrome_options = webdriver.ChromeOptions()
-    # chrome_options.add_argument('--headless')
-    # chrome_options.add_argument('--no-sandbox')
-    # chrome_options.add_argument('--disable-dev-shm-usage')
-    # driver = webdriver.Chrome(chrome_options=chrome_options)
-    # page = driver.get(homepage)
-
-    driver = webdriver.Chrome(executable_path='D:/DevAPT/APT/chromedriver.exe')
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    driver = webdriver.Chrome(chrome_options=chrome_options)
     page = driver.get(homepage)
+
+    # For windows
+    # driver = webdriver.Chrome(executable_path='D:/DevAPT/APT/chromedriver.exe')
+    # page = driver.get(homepage)
 
     print("Authenticating...")
     # Logging in using Username and Password
@@ -141,7 +149,8 @@ def start(name, date, interval):
 
     for i in range(len(data)):
         single_candle = data.iloc[[i]]
-        single_candle.to_csv('ohlc_data_' + name +'.csv')
+        single_candle.to_csv('ohlc_data_' + name +'.csv',index= False)
+        print(single_candle, flush= True)
         time.sleep(60)
 
 if __name__ == '__main__':

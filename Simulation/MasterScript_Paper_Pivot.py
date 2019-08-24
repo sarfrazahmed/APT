@@ -34,13 +34,11 @@ def pivotpoints(data):
 ###############################################################
 def start(name, lot_size):
     time.sleep(14)
-    message = ("Stock selected for today: " + str(name)
-    bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
-    chat_id = '-383311990'
     message = ("Stock selected for today: " + str(name))
     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
     print("Master Script started", flush=True)
-    path = '/home/ubuntu/APT/APT/Paper_Trading'
+    # For Ubuntu
+    path = '/home/ubuntu/APT/APT/Simulation'
 
     # Set Initial Pointers Value
     order_status = 'Exit'
@@ -73,10 +71,10 @@ def start(name, lot_size):
                 time.sleep(1)
                 continue
 
-            data.columns = ['Date', 'Open', 'High', 'Low', 'Close']
+            data.columns = ['Close', 'Date', 'High', 'Low', 'Open','Volume']
 
             # Date Column Handling
-            data['Date'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S') + timedelta(hours=5,minutes=30) for i in data['Date']]
+            data['Date'] = [datetime.strptime(i[:i.find('+')], '%Y-%m-%d %H:%M:%S') for i in data['Date']]
             data['Year'] = [i.year for i in data['Date']]
             data['DatePart'] = [i.date() for i in data['Date']]
 
@@ -129,7 +127,7 @@ def start(name, lot_size):
 
 if __name__ == '__main__':
     # path = os.getcwd()
-    path = '/home/ubuntu/APT/APT/Paper_Trading'
+    path = '/home/ubuntu/APT/APT/Simulation'
     os.chdir(path)
     # Get User Input from Bash File
     name = sys.argv[1]
