@@ -65,8 +65,7 @@ def start(name, lot_size):
     counter = 0
     while True:
         # Get data after every 5 mins
-        if (datetime.now().minute % 5 == 0) and \
-                (datetime.now().second >= 3) and (datetime.now().second <= 6) and count == 0:
+        if (datetime.now().second >= 3) and (datetime.now().second <= 6) and count == 0:
             try:
                 data = pd.read_csv(path + '/ohlc_data_' + name + '.csv')
                 prev_day_data = pd.read_csv(path + '/previous_day_data_' + name + '.csv')
