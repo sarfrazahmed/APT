@@ -61,6 +61,7 @@ def start(name, lot_size):
                                           'Order_Status', 'Order_Signal', 'Order_Price', 'Target', 'Stop_Loss',
                                           'Hour', 'Minute'])
     count = 0
+    counter = 0
     while True:
         # Get data after every 5 mins
         if (datetime.now().second >= 3) and (datetime.now().second <= 6) and count == 0:
@@ -95,6 +96,9 @@ def start(name, lot_size):
             data['Minute'] = [j.minute for j in data['Date']]
 
             pivots = pivotpoints(prev_day_data)
+            if counter == 0:
+                print(pivots,flush = True)
+                counter = 1
             print('Data Preparation Completed', flush=True)
 
             # Implement Strategy
