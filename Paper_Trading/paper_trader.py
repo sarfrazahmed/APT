@@ -22,7 +22,6 @@ def start(name, token, access_token, timeframe):
     api_key = config['API']['API_KEY']
 
     kite = KiteConnect(api_key=api_key)
-    # kite.generate_session(access_token, api_secret)
     kite.set_access_token(access_token)
     # Get previous day candle
     def prev_weekday(adate):

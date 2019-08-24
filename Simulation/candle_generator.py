@@ -13,70 +13,17 @@ import time
 import re
 import sys
 
-def start(name, date, interval):
-    print("Connecting to Kite...")
+def start(name, date, access_token, interval):
+    # print("Starting Trading Engine...", flush=True)
     config = configparser.ConfigParser()
-    # For Ubuntu
-    config_path = '/home/ubuntu/APT/APT/Simulation/config.ini'
+    # path = os.getcwd()
+    path = '/home/ubuntu/APT/APT/Paper_Trading'
+    config_path = path + '/config.ini'
     config.read(config_path)
-    path = '/home/ubuntu/APT/APT/Simulation'
-    os.chdir(path)
-    
-    # For windows
-    # config_path = 'D:/APT/APT/Paper_Trading/config.ini'
-    # config.read(config_path)
-    # path = 'D:/DevAPT/APT/Simulation'
-    # os.chdir(path)
-
     api_key = config['API']['API_KEY']
-    api_secret = config['API']['API_SECRET']
-    username = config['USER']['USERNAME']
-    password = config['USER']['PASSWORD']
-    pin = config['USER']['PIN']
-    homepage = 'https://kite.zerodha.com/'
 
-    ## Selenium for ubuntu
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(chrome_options=chrome_options)
-    page = driver.get(homepage)
-
-    # For windows
-    # driver = webdriver.Chrome(executable_path='D:/DevAPT/APT/chromedriver.exe')
-    # page = driver.get(homepage)
-
-    print("Authenticating...")
-    # Logging in using Username and Password
-    user_id_box = driver.find_element_by_xpath(
-        '//*[@id="container"]/div/div/div/form/div[2]/input')
-    password_box = driver.find_element_by_xpath(
-        '//*[@id="container"]/div/div/div/form/div[3]/input')
-    log_in_button = driver.find_element_by_xpath(
-        '//*[@id="container"]/div/div/div/form/div[4]/button')
-    user_id_box.send_keys(username)
-    password_box.send_keys(password)
-    log_in_button.click()
-    time.sleep(3)
-
-    # Logging in using Pin
-    pin_box = driver.find_element_by_xpath(
-        '//*[@id="container"]/div/div/div/form/div[2]/div/input')
-    continue_box = driver.find_element_by_xpath(
-        '//*[@id="container"]/div/div/div/form/div[3]/button')
-    pin_box.send_keys(pin)
-    continue_box.click()
-    time.sleep(3)
-
-    # Redirecting to Kiteconnect
     kite = KiteConnect(api_key=api_key)
-    url = kite.login_url()
-    page = driver.get(url)
-    current_url = driver.current_url
-    request_token = re.search(('request_token=(.*)'), current_url).group(1)[:32]
-    KRT = kite.generate_session(request_token, api_secret)
-    kite.set_access_token(KRT['access_token'])
+    kite.set_access_token(access_token)
     print("Connection Successful")
 
     scrip_dict = {
@@ -155,8 +102,9 @@ def start(name, date, interval):
 
 if __name__ == '__main__':
     name = sys.argv[1]
-    # date = sys.argv[2]
+    date = sys.argv[2]
+    access_token = sys.argv[4]
     # name = 'LT'
-    date = '2019-08-08'
+    # date = '2019-08-08'
     interval = '5minute'
-    start(name, date, interval)
+    start(name, date, access_token, interval)
