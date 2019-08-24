@@ -5,8 +5,13 @@ import os
 import time
 import sys
 import requests
+<<<<<<< HEAD
 # import telebot
 from datetime import datetime, timedelta
+=======
+from datetime import datetime
+sys.path.insert(1, 'D:\DevAPT\APT\Paper_Trading')
+>>>>>>> f4f3904002ab1ca4b95bdbc27db428881fc1c712
 import StrategyPaperTrading_Pivot as strategy
 
 ## Pivot Point Calculation
@@ -34,12 +39,18 @@ def pivotpoints(data):
 ## Initial Inputs
 ###############################################################
 def start(name, lot_size):
+<<<<<<< HEAD
     # bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
     # chat_id = '-383311990'
     # bot = telebot.TeleBot(bot_token)
     time.sleep(70)
     message = ("Stock selected for today: " + str(name))
     # bot.send_message(chat_id, message)
+=======
+    bot_token = '823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA'
+    chat_id = '-383311990'
+    message = ("Stock selected for today: " + str(name))
+>>>>>>> f4f3904002ab1ca4b95bdbc27db428881fc1c712
     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
     print("Master Script started", flush=True)
     path = '/home/ubuntu/APT/APT/Paper_Trading'
@@ -66,6 +77,9 @@ def start(name, lot_size):
     count = 0
     while True:
         # Get data after every 5 mins
+        if datetime.now() <= datetime.strptime(str(datetime.now().date()) + ' 09:20:00', '%Y-%m-%d %H:%M:%S'):
+            time.sleep(2)
+            continue
         if (datetime.now().minute % 5 == 0) and (datetime.now().second >= 3) and count == 0:
             try:
                 data = pd.read_csv(path + '/ohlc_data_' + name + '.csv')
@@ -118,8 +132,15 @@ def start(name, lot_size):
                 Trade_Dataset = Trade_Dataset.append(data)
 
                 # Generate Message for telegram
+<<<<<<< HEAD
                 # message = 'Stock Name: ' + name + '\n Order Status: ' + result_list[0] + '\n Order Signal: ' + result_list[1] + '\n Order Price: ' + str(result_list[2]) + '\n Target: ' + str(result_list[3]) + '\n Stop Loss: ' + str(result_list[4])
                 # requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+=======
+                message = 'Stock Name: ' + name + '\n Order Status: ' + result_list[0] + \
+                    '\n Order Signal: ' + result_list[1] + '\n Order Price: ' + str(result_list[2]) + \
+                          '\n Target: ' + str(result_list[3]) + '\n Stop Loss: ' + str(result_list[4])
+                requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+>>>>>>> f4f3904002ab1ca4b95bdbc27db428881fc1c712
 
                 # Write Updated Trade History as CSV
                 Trade_Dataset.to_csv('PaperTrading_Output' + name + '.csv', index=False)
@@ -130,6 +151,7 @@ def start(name, lot_size):
 
         else:
             count = 0
+            time.sleep(2)
 
 if __name__ == '__main__':
     # path = os.getcwd()
@@ -137,7 +159,7 @@ if __name__ == '__main__':
     os.chdir(path)
     # Get User Input from Bash File
     name = sys.argv[1]
-    print(name)
+    print('Start Time: ' + str(datetime.now()))
     lot_size = int(sys.argv[2])
     print(lot_size)
     start(name, lot_size)

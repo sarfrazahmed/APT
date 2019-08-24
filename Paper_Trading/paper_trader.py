@@ -20,7 +20,7 @@ def start(name, token, access_token, timeframe):
     config_path = path + '/config.ini'
     config.read(config_path)
     api_key = config['API']['API_KEY']
-    api_secret = config['API']['API_SECRET']
+    # api_secret = config['API']['API_SECRET']
     # username = config['USER']['USERNAME']
     # password = config['USER']['PASSWORD']
     # pin = config['USER']['PIN']
@@ -68,6 +68,7 @@ def start(name, token, access_token, timeframe):
     # print('Access token: ', KRT['access_token'])
     # print("Connection Successful", flush=True)
     # driver.close()
+
     kite = KiteConnect(api_key=api_key)
     # kite.generate_session(access_token, api_secret)
     kite.set_access_token(access_token)
@@ -79,6 +80,12 @@ def start(name, token, access_token, timeframe):
         return adate
     date_from = prev_weekday(date.today())
     date_to = date_from
+<<<<<<< HEAD
+=======
+
+    date_from = '2019-08-14'
+    date_to = '2019-08-14'
+>>>>>>> f4f3904002ab1ca4b95bdbc27db428881fc1c712
     interval = 'day'
     previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to, interval=interval)
     previous_day_data = pd.DataFrame(previous_day_data)

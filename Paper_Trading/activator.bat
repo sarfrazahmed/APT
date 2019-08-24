@@ -1,0 +1,1 @@
+"C:\Program Files\Git\bin\sh.exe" "D:\DevAPT\APT\Paper_Trading\controller.sh"
