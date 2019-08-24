@@ -1,0 +1,3 @@
+#source activate algotrading
+conda activate algotrading
+/home/ubuntu/anaconda3/bin/python test.py

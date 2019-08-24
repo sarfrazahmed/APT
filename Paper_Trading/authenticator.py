@@ -10,9 +10,10 @@ import pandas as pd
 # Get all info
 print("Starting Trading Engine...", flush=True)
 config = configparser.ConfigParser()
-path = os.getcwd()
+# path = os.getcwd()
+path = '/home/ubuntu/APT/APT/Paper_Trading'
 os.chdir(path)
-config_path = path + '\\config.ini'
+config_path = path + '/config.ini'
 config.read(config_path)
 api_key = config['API']['API_KEY']
 api_secret = config['API']['API_SECRET']
@@ -23,16 +24,16 @@ homepage = 'https://kite.zerodha.com/'
 
 
 ## Selenium for ubuntu
-# chrome_options = webdriver.ChromeOptions()
-# chrome_options.add_argument('--headless')
-# chrome_options.add_argument('--no-sandbox')
-# chrome_options.add_argument('--disable-dev-shm-usage')
-# driver = webdriver.Chrome(chrome_options=chrome_options)
-# page = driver.get(homepage)
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+driver = webdriver.Chrome(chrome_options=chrome_options)
+page = driver.get(homepage)
 
 # Selenium for windows
-driver = webdriver.Chrome(executable_path='D:\\DevAPT\\APT\\chromedriver.exe')
-page = driver.get(homepage)
+# driver = webdriver.Chrome(executable_path='D:\\DevAPT\\APT\\chromedriver.exe')
+# page = driver.get(homepage)
 
 # Login using username and password
 print("Authenticating...", flush=True)
@@ -71,3 +72,4 @@ stock_list = pd.read_csv('stocks_info.csv', header=None)
 stock_list[3] = KRT['access_token']
 stock_list[4] = 0
 stock_list.to_csv('stock_list_updated.csv', header=None, index=False)
+print("Connection succesful", flush=True)

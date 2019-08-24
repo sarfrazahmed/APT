@@ -15,8 +15,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
     # Selecting Tradable Day and Reset Day High and Day Low
     if data.Date[0].hour == 9 and data.Date[0].minute == 15:
-        day_flag = 'selected' if abs(data.Open[0] - prev_day_close) > (prev_day_close * min_gap) \
-            else 'not selected'
+        day_flag = 'selected' if abs(data.Open[0] - prev_day_close) > (prev_day_close * min_gap) else 'not selected'
         skip_date = data.DatePart[0] if day_flag == 'not selected' else skip_date
         entry_high_target = data.High[0]
         entry_low_target = data.Low[0]
@@ -30,7 +29,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                                             data.Low[0]) <=
                                                   data.Open[0] * candle_error) else trade_count
             if trade_count == 1:
-                print('Stock Name: ' + name + '\n Marubuzu Candle Identified')
+                 message = 'Stock Name: ' + name + '\nMarubuzu Candle Identified'
+                 requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
         # print('Date: ' + str(data.Date[0]))
         # print('Status: ' + day_flag)
@@ -56,9 +56,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 data.Order_Status[0] = order_status
                 data.Order_Signal[0] = order_signal
                 data.Order_Price[0] = order_price
-                print('Stock Name: ' + name + '\n Long Exit ---')
-                print('Order Price: ' + str(order_price))
-                print('Remarks: Exit At 3:25 PM')
+                message = 'Stock Name: ' + name + '\n Long Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit At 3:25 PM'
+                requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
             # Check If the open order is a short entry
             elif order_signal == 'Sell':
@@ -75,6 +74,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 data.Order_Status[0] = order_status
                 data.Order_Signal[0] = order_signal
                 data.Order_Price[0] = order_price
+                message = 'Stock Name: ' + name + '\n Short Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit At 3:25 PM'
+                requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
                 print('Stock Name: ' + name + '\n Short Exit ---')
                 print('Order Price: ' + str(order_price))
                 print('Remarks: Exit At 3:25 PM')
@@ -85,6 +86,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
         long_count = 0
         short_count = 0
         trade_count = 0
+        skip_date = data.DatePart[0]
+        message = 'Stock Name: ' + name + '\nRemarks: Enough For Today'+ '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+        requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
     # Iterate over all the data points for the dates that have been selected by Gap Up/Down Condition
     elif data.DatePart[0] != skip_date:
@@ -116,10 +120,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Price[0] = order_price
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
-                    print('Stock Name: ' + name + '\n Long Entry ---')
-                    print('Order Price: ' + str(order_price))
-                    print('Target: ' + str(target))
-                    print('Stop Loss: ' + str(stop_loss))
+                    message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
 
                 # Short Entry Action
@@ -143,10 +145,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Price[0] = order_price
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
-                    print('Stock Name: ' + name + '\n Short Entry ---')
-                    print('Order Price: ' + str(order_price))
-                    print('Target: ' + str(target))
-                    print('Stop Loss: ' + str(stop_loss))
+                    message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
             # Other Trade Entries
             else:
@@ -172,10 +172,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Price[0] = order_price
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
-                    print('Stock Name: ' + name + '\n Long Entry ---')
-                    print('Order Price: ' + str(order_price))
-                    print('Target: ' + str(target))
-                    print('Stop Loss: ' + str(stop_loss))
+                    message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Short Entry
                 elif (data.Low[0] < entry_low_target) and (short_count == 0):
@@ -198,10 +196,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Price[0] = order_price
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
-                    print('Stock Name: ' + name + '\n Short Entry ---')
-                    print('Order Price: ' + str(order_price))
-                    print('Target: ' + str(target))
-                    print('Stop Loss: ' + str(stop_loss))
+                    message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
         # If Open Order Exists
         else:
@@ -223,9 +219,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    print('Stock Name: ' + name + '\n Long Exit ---')
-                    print('Order Price: ' + str(order_price))
-                    print('Remarks: Loss')
+                    message = 'Stock Name: ' + name + '\n Long Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit From Stop Loss'
+                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                     ## Take Short Entry if semi target is not hit
                     if semi_target_flag == 0:
@@ -244,10 +239,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         # Print Pointers
                         data.Target[0] = target
                         data.Stop_Loss[0] = stop_loss
-                        print('Stock Name: ' + name + '\n Short Entry ---')
-                        print('Order Price: ' + str(order_price))
-                        print('Target: ' + str(target))
-                        print('Stop Loss: ' + str(stop_loss))
+                        message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                        requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Exit From Target
                 elif data.High[0] >= target:
@@ -263,14 +256,15 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    print('Stock Name: ' + name + '\n Long Exit ---')
-                    print('Order Price: ' + str(order_price))
-                    print('Remarks: Profit')
+                    message = 'Stock Name: ' + name + '\n Long Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit From Target'
+                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Action on Semi Target
                 elif data.High[0] >= (order_price + (order_price * semi_target_multiplier)):
                     stop_loss = (order_price + (order_price * semi_target_multiplier))
                     semi_target_flag = 1
+                    message = 'Stock Name: ' + name + '\nRemarks: Semi Target Crossed and Stop Loss Modified --- \nStop Loss: ' + str(stop_loss)
+                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
             # If Short Entry Exists
             elif order_signal == 'Sell':
@@ -289,9 +283,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    print('Stock Name: ' + name + '\n Short Exit ---')
-                    print('Order Price: ' + str(order_price))
-                    print('Remarks: Loss')
+                    message = 'Stock Name: ' + name + '\n Short Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit From Stop Loss'
+                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                     ## Take Long Entry if semi target is not hit
                     if semi_target_flag == 0:
@@ -309,10 +302,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         # Print Pointers
                         data.Target[0] = target
                         data.Stop_Loss[0] = stop_loss
-                        print('Stock Name: ' + name + '\n Long Entry ---')
-                        print('Order Price: ' + str(order_price))
-                        print('Target: ' + str(target))
-                        print('Stop Loss: ' + str(stop_loss))
+                        message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                        requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Exit From Target
                 elif data.Low[0] <= target:
@@ -328,14 +319,15 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    print('Stock Name: ' + name + '\n Short Exit ---')
-                    print('Order Price: ' + str(order_price))
-                    print('Remarks: Profit')
+                    message = 'Stock Name: ' + name + '\n Short Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit From Target'
+                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Action on Semi Target
                 elif data.Low[0] <= (order_price - (order_price * semi_target_multiplier)):
                     stop_loss = (order_price - (order_price * semi_target_multiplier))
                     semi_target_flag = 1
+                    message = 'Stock Name: ' + name + '\n Semi Target Crossed and Stop Loss Modified  --- \nStop Loss: ' + str(stop_loss)
+                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
     entry_high_target = max(entry_high_target, data.High[0])
     entry_low_target = min(entry_low_target, data.Low[0])

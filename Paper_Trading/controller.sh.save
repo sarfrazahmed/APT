@@ -1,0 +1,6 @@
+source /home/ubuntu/anaconda3/bin/activate enticator.py
+IFS=","
+cat stock_list_updated.csv | while read -r a b c d;
+do /home/ubuntu/anaconda3/bin/python /home/ubuntu/APT/APT/Paper_Trading/paper_trader.py $a $b $d & /home/ubuntu/anaconda3/bin/python /home/ubuntu/APT/APT/Paper_Trading/MasterScript_Paper_Pivot.py $a $c &
+done
+$SHELL
