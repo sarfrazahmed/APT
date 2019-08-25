@@ -102,8 +102,8 @@ def start(name, date, access_token, interval):
 
 if __name__ == '__main__':
     name = sys.argv[1]
-    date = sys.argv[2]
-    access_token = sys.argv[4]
+    date = str(sys.argv[2])
+    access_token = sys.argv[3]
     # name = 'LT'
     # date = '2019-08-08'
     interval = '5minute'
