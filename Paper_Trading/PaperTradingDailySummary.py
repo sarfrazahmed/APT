@@ -65,17 +65,18 @@ def send_mail(mail_from,mail_to,subject,message,file_path,password):
 ## Initial Inputs
 ###############################################################
 # Windows
-folder_path = 'F:/DevAPT/APT/Simulation'
+folder_path = 'F:/DevAPT/APT/Paper_Trading'
 wkhtmltopdf_path = 'F:/DevAPT/APT/Paper_Trading/wkhtmltopdf/bin/wkhtmltopdf.exe'
 
 # For Ubuntu
 # folder_path = '/home/ubuntu/APT/APT/Simulation'
 # wkhtmltopdf_path = '/home/ubuntu/APT/APT/Simulation/wkhtmltopdf/bin/wkhtmltopdf.exe'
 
-file_phrase = 'Simulation_Output'
+file_phrase = 'PaperTrading_Output'
 stock_list_path = 'stock_list_updated.csv'
 
-body_text = 'Hi All,\n\nPFA the summary of simulation of paper trading for ' + time_now + '\n\nRegards,\nAPT BOT'
+time_now = str(datetime.now().date())
+body_text = 'Hi All,\n\nPFA the summary of paper trading for ' + time_now + '\n\nRegards,\nAPT BOT'
 bot_mail_id = 'apt.automated@gmail.com'
 bot_mail_password = 'algotrading2019'
 recipients = ['anubhab.ghosh95@gmail.com','sarfraz.contact@gmail.com','arkajeet75@gmail.com']
@@ -118,7 +119,7 @@ total_trades = summary_df.Trades.sum()
 total_summary = pd.DataFrame([['Total',np.nan,total_trades,total_profit]],
                              columns = ['Company','Profit','Trades','Net_Profit'])
 summary_df = pd.concat([summary_df,total_summary])
-time_now = str(datetime.now().date())
+
 
 # write Summary as CSV
 print('Writing Summary as CSV',flush=True)

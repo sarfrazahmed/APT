@@ -17,13 +17,14 @@ def start(name, date, access_token, interval):
     # print("Starting Trading Engine...", flush=True)
     config = configparser.ConfigParser()
     # path = os.getcwd()
-    path = '/home/ubuntu/APT/APT/Paper_Trading'
+    path = '/home/ubuntu/APT/APT/Simulation'
     config_path = path + '/config.ini'
     config.read(config_path)
     api_key = config['API']['API_KEY']
 
     kite = KiteConnect(api_key=api_key)
     kite.set_access_token(access_token)
+    os.chdir(path)
     print("Connection Successful")
 
     scrip_dict = {

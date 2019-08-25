@@ -75,6 +75,7 @@ wkhtmltopdf_path = 'F:/DevAPT/APT/Paper_Trading/wkhtmltopdf/bin/wkhtmltopdf.exe'
 file_phrase = 'Simulation_Output'
 stock_list_path = 'stock_list_updated.csv'
 
+time_now = str(datetime.strptime(stock_list['Date'][0],'%m/%d/%Y').date())
 body_text = 'Hi All,\n\nPFA the summary of simulation of paper trading for ' + time_now + '\n\nRegards,\nAPT BOT'
 bot_mail_id = 'apt.automated@gmail.com'
 bot_mail_password = 'algotrading2019'
@@ -122,7 +123,7 @@ time_now = str(datetime.now().date())
 
 # write Summary as CSV
 print('Writing Summary as CSV',flush=True)
-output_file_path = 'Simulation_Summary_' + str(datetime.strptime(stock_list['Date'][0],'%m/%d/%Y').date()) + '.csv'
+output_file_path = 'Simulation_Summary_' + time_now + '.csv'
 summary_df.to_csv(output_file_path,index= False)
 
 # Send csv as Mail
