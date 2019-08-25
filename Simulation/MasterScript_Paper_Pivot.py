@@ -125,8 +125,12 @@ def start(name, lot_size):
                 # Write Updated Trade History as CSV
                 Trade_Dataset.to_csv('PaperTrading_Output' + name + '.csv', index=False)
 
-            # Sleep for 4 min
-            # time.sleep(240)
+
+            # Stop the script at 3:30 PM
+            if data.Date[0].hour == 15 and data.Date[0].minute == 25:
+                break
+
+            # Sleep for 30 sec
             time.sleep(30)
             count = 1
 
