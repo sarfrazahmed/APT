@@ -65,12 +65,12 @@ def send_mail(mail_from,mail_to,subject,message,file_path,password):
 ## Initial Inputs
 ###############################################################
 # Windows
-folder_path = 'F:/DevAPT/APT/Paper_Trading'
-wkhtmltopdf_path = 'F:/DevAPT/APT/Paper_Trading/wkhtmltopdf/bin/wkhtmltopdf.exe'
+# folder_path = 'F:/DevAPT/APT/Paper_Trading'
+# wkhtmltopdf_path = 'F:/DevAPT/APT/Paper_Trading/wkhtmltopdf/bin/wkhtmltopdf.exe'
 
 # For Ubuntu
-# folder_path = '/home/ubuntu/APT/APT/Simulation'
-# wkhtmltopdf_path = '/home/ubuntu/APT/APT/Simulation/wkhtmltopdf/bin/wkhtmltopdf.exe'
+folder_path = '/home/ubuntu/APT/APT/Simulation'
+wkhtmltopdf_path = '/home/ubuntu/anaconda3/bin/wkhtmltopdf'
 
 file_phrase = 'PaperTrading_Output'
 stock_list_path = 'stock_list_updated.csv'
@@ -144,5 +144,5 @@ pdf_summary = open(output_pdf_path, 'rb')
 requests.post("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendDocument?chat_id=-383311990",
               files={'document': pdf_summary})
 message = 'csv file of daily report is sent in email'
-
+requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 

@@ -65,18 +65,16 @@ def send_mail(mail_from,mail_to,subject,message,file_path,password):
 ## Initial Inputs
 ###############################################################
 # Windows
-folder_path = 'F:/DevAPT/APT/Simulation'
-wkhtmltopdf_path = 'F:/DevAPT/APT/Paper_Trading/wkhtmltopdf/bin/wkhtmltopdf.exe'
+# folder_path = 'F:/DevAPT/APT/Simulation'
+# wkhtmltopdf_path = 'F:/DevAPT/APT/Paper_Trading/wkhtmltopdf/bin/wkhtmltopdf.exe'
 
 # For Ubuntu
-# folder_path = '/home/ubuntu/APT/APT/Simulation'
-# wkhtmltopdf_path = '/home/ubuntu/APT/APT/Simulation/wkhtmltopdf/bin/wkhtmltopdf.exe'
+folder_path = '/home/ubuntu/APT/APT/Simulation'
+wkhtmltopdf_path = '/home/ubuntu/anaconda3/bin/wkhtmltopdf'
 
 file_phrase = 'Simulation_Output'
 stock_list_path = 'stock_list_updated.csv'
 
-time_now = str(datetime.strptime(stock_list['Date'][0],'%m/%d/%Y').date())
-body_text = 'Hi All,\n\nPFA the summary of simulation of paper trading for ' + time_now + '\n\nRegards,\nAPT BOT'
 bot_mail_id = 'apt.automated@gmail.com'
 bot_mail_password = 'algotrading2019'
 recipients = ['anubhab.ghosh95@gmail.com','sarfraz.contact@gmail.com','arkajeet75@gmail.com']
@@ -84,6 +82,7 @@ recipients = ['anubhab.ghosh95@gmail.com','sarfraz.contact@gmail.com','arkajeet7
 ## Main Body
 ###############################################################
 stock_list = pd.read_csv(folder_path + '/' + stock_list_path)
+time_now = str(datetime.strptime(stock_list['Date'][0],'%m/%d/%Y').date())
 print('Stock List Imported',flush=True)
 
 os.chdir(folder_path)
@@ -128,6 +127,7 @@ summary_df.to_csv(output_file_path,index= False)
 
 # Send csv as Mail
 print('Sending CSV as Email',flush=True)
+body_text = 'Hi All,\n\nPFA the summary of simulation of paper trading for ' + time_now + '\n\nRegards,\nAPT BOT'
 for target_mail_id in recipients:
     send_mail(bot_mail_id, 'anubhab.ghosh95@gmail.com', 'Paper Trading Result of The Day',
               body_text, output_file_path, bot_mail_password)
@@ -144,5 +144,6 @@ pdf_summary = open(output_pdf_path, 'rb')
 requests.post("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendDocument?chat_id=-383311990",
               files={'document': pdf_summary})
 message = 'csv file of daily report is sent in email'
+requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
 
