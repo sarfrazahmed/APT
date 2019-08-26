@@ -69,7 +69,7 @@ def send_mail(mail_from,mail_to,subject,message,file_path,password):
 # wkhtmltopdf_path = 'F:/DevAPT/APT/Paper_Trading/wkhtmltopdf/bin/wkhtmltopdf.exe'
 
 # For Ubuntu
-folder_path = '/home/ubuntu/APT/APT/Simulation'
+folder_path = '/home/ubuntu/APT/APT/Paper_Trading'
 wkhtmltopdf_path = '/home/ubuntu/anaconda3/bin/wkhtmltopdf'
 
 file_phrase = 'PaperTrading_Output'
@@ -123,13 +123,14 @@ summary_df = pd.concat([summary_df,total_summary])
 
 # write Summary as CSV
 print('Writing Summary as CSV',flush=True)
-output_file_path = 'Simulation_Summary_' + str(datetime.strptime(stock_list['Date'][0],'%m/%d/%Y').date()) + '.csv'
+time_now = str(datetime.now().date())
+output_file_path = 'Paper_Trading_Summary_' + time_now +'.csv'
 summary_df.to_csv(output_file_path,index= False)
 
 # Send csv as Mail
 print('Sending CSV as Email',flush=True)
 for target_mail_id in recipients:
-    send_mail(bot_mail_id, 'anubhab.ghosh95@gmail.com', 'Paper Trading Result of The Day',
+    send_mail(bot_mail_id, target_mail_id, 'Paper Trading Result of The Day',
               body_text, output_file_path, bot_mail_password)
 
 # Save csv as PDF
