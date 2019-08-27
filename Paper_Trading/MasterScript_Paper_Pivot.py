@@ -17,13 +17,13 @@ def pivotpoints(data):
     s1_fibonacci = pivotpoint - (0.382 * (data['High'][0] - data['Low'][0]))
     s2_simple = pivotpoint - (data['High'][0] - data['Low'][0])
     s2_fibonacci = pivotpoint - (0.618 * (data['High'][0] - data['Low'][0]))
-    s3_simple = data['Low'][0] - (2 * (data['High'][0] - pivotpoint))
+    s3_simple = pivotpoint - (2 * (data['High'][0] - data['Low'][0]))
 
     r1_simple = (pivotpoint * 2) - data['Low'][0]
     r1_fibonacci = pivotpoint + (0.382 * (data['High'][0] - data['Low'][0]))
     r2_simple = pivotpoint + (data['High'][0] - data['Low'][0])
     r2_fibonacci = pivotpoint + (0.618 * (data['High'][0] - data['Low'][0]))
-    r3_simple = data['High'][0] + (2 * (pivotpoint - data['Low'][0]))
+    r3_simple = pivotpoint + (2 * (data['High'][0] - data['Low'][0]))
 
     pivots = list([s3_simple,s2_simple,s2_fibonacci,s1_simple,s1_fibonacci,pivotpoint,
                    r1_simple,r1_fibonacci,r2_simple,r2_fibonacci,r3_simple])
@@ -34,7 +34,7 @@ def pivotpoints(data):
 ###############################################################
 def start(name, lot_size):
     # time.sleep(14)
-    time.sleep(70)
+    time.sleep(130)
     message = ("Stock selected for today: " + str(name))
     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
     print("Master Script started", flush=True)

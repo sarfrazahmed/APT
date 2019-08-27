@@ -7,10 +7,11 @@ import pandas as pd
 import os
 from selenium import webdriver
 import time
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import configparser
 import re
 import sys
+import requests
 
 def start(name, token, access_token, timeframe):
     # print("Starting Trading Engine...", flush=True)
@@ -37,11 +38,18 @@ def start(name, token, access_token, timeframe):
     previous_day_data.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
     previous_day_data.to_csv("previous_day_data_"+ name +'.csv')
 
+    # Sleep till 9:15
+    time_now = datetime.now()
+    sleep_time = 60 - time_now.second
+    time.sleep(sleep_time)
+    time_now = datetime.now()
+    print('Script Started at ' + str(time_now),flush=True)
+
     # Initialise
     print("Initialising Kite Ticker")
     kws = KiteTicker(api_key, access_token)
     start.tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
-    start.last_saved_time = 15
+    start.last_saved_time = 10
 
 
     def on_ticks(ws, ticks):

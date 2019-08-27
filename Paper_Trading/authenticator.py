@@ -75,8 +75,8 @@ print("Connection Successful")
 driver.close()
 
 # Write access token
-stock_list = pd.read_csv('stocks_info.csv', header=None)
-stock_list[3] = KRT['access_token']
-stock_list[4] = 0
+stock_list = pd.read_csv('stock_list_updated.csv', header=None)
+stock_list['Access_Token'] = KRT['access_token']
+stock_list['Extra'] = 0
 stock_list.to_csv('stock_list_updated.csv', header=None, index=False)
 print("Connection succesful", flush=True)

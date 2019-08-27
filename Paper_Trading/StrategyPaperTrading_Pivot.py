@@ -85,7 +85,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
         short_count = 0
         trade_count = 0
         skip_date = data.DatePart[0]
-        message = 'Stock Name: ' + name + '\nRemarks: Enough For Today'+ '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+        message = 'Stock Name: ' + name + '\nRemarks: Enough For Today'
         requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
     # Iterate over all the data points for the dates that have been selected by Gap Up/Down Condition
@@ -260,7 +260,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 # Action on Semi Target
                 elif data.High[0] >= (order_price + (order_price * semi_target_multiplier)):
                     stop_loss = (order_price + (order_price * semi_target_multiplier))
-                    semi_target_flag = 1
+                    # semi_target_flag = 1
                     message = 'Stock Name: ' + name + '\nRemarks: Semi Target Crossed and Stop Loss Modified --- \nStop Loss: ' + str(stop_loss)
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
