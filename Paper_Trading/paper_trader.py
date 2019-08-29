@@ -73,7 +73,7 @@ def start(name, token, access_token, timeframe):
             print(data_ohlc)
             # save the dataframe to csv
             data_ohlc.to_csv('ohlc_data_' + name +'.csv')
-            print("Printed at " + str(datetime.datetime.now()))
+            print("Printed at " + str(datetime.now()))
 
             # initialize the dataframe
             start.tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
