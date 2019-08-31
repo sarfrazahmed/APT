@@ -19,7 +19,7 @@ import pdfkit
 
 ## Function to send mail
 ###############################################################
-def send_mail(mail_from,mail_to,subject,message,file_path,password):
+def send_mail(mail_from,mail_to,subject,message,file_paths,password):
     msg = MIMEMultipart()
     msg["From"] = mail_from
     msg["To"] = mail_to
@@ -28,20 +28,22 @@ def send_mail(mail_from,mail_to,subject,message,file_path,password):
     msg.attach(MIMEText(message, 'plain'))
 
     # open the file to be sent
-    attachment = open(file_path, "rb")
-    # instance of MIMEBase and named as p
-    p = MIMEBase('application', 'octet-stream')
+    for file_path in file_paths:
+        attachment = open(file_path, "rb")
+        
+        # instance of MIMEBase and named as p
+        p = MIMEBase('application', 'octet-stream')
 
-    # To change the payload into encoded form
-    p.set_payload((attachment).read())
+        # To change the payload into encoded form
+        p.set_payload((attachment).read())
 
-    # encode into base64
-    encoders.encode_base64(p)
+        # encode into base64
+        encoders.encode_base64(p)
 
-    p.add_header('Content-Disposition', "attachment; filename= %s" % file_path)
+        p.add_header('Content-Disposition', "attachment; filename= %s" % file_path)
 
-    # attach the instance 'p' to instance 'msg'
-    msg.attach(p)
+        # attach the instance 'p' to instance 'msg'
+        msg.attach(p)
 
     # creates SMTP session
     s = smtplib.SMTP('smtp.gmail.com', 587)
@@ -129,9 +131,12 @@ summary_df.to_csv(output_file_path,index= False)
 
 # Send csv as Mail
 print('Sending CSV as Email',flush=True)
+attachments = [file_phrase + stock_name + '.csv' for stock_name in stock_list['Company']]
+attachments = attachments.append(output_file_path)
+
 for target_mail_id in recipients:
     send_mail(bot_mail_id, target_mail_id, 'Paper Trading Result of The Day',
-              body_text, output_file_path, bot_mail_password)
+              body_text, attachments, bot_mail_password)
 
 # Save csv as PDF
 output_pdf_path = output_file_path[:(len(output_file_path) - 3)] + 'pdf'
