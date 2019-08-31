@@ -33,6 +33,7 @@ def on_order_update(ws, data):
 
 kws.connect()
 
+#check if order is generated from Strategy
 filename = 'D:/DevAPT/APT/Paper_Trading/access_token.csv'
 old_time = os.stat(filename).st_mtime
 while True:
@@ -40,3 +41,11 @@ while True:
         print("File updated")
         old_time = os.stat(filename).st_mtime
         time.sleep(1)
+
+
+order_set = kite.orders()
+while True:
+    if datetime.now().second % 10 == 0:
+        if order_set != kite.orders():
+            print("Punch order")
+
