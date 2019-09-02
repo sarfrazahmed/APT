@@ -24,6 +24,7 @@ def send_mail(mail_from,mail_to,subject,message,file_paths,password):
     msg["From"] = mail_from
     msg["To"] = mail_to
     msg["Subject"] = subject
+
     # attach the body with the msg instance
     msg.attach(MIMEText(message, 'plain'))
 
@@ -132,7 +133,7 @@ summary_df.to_csv(output_file_path,index= False)
 # Send csv as Mail
 print('Sending CSV as Email',flush=True)
 attachments = [file_phrase + stock_name + '.csv' for stock_name in stock_list['Company']]
-attachments = attachments.append(output_file_path)
+attachments = attachments.insert(output_file_path, 0)
 
 for target_mail_id in recipients:
     send_mail(bot_mail_id, target_mail_id, 'Paper Trading Result of The Day',
