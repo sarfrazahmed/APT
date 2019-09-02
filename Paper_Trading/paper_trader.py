@@ -30,8 +30,10 @@ def start(name, token, access_token, timeframe):
         while adate.weekday() > 4:
             adate -= timedelta(days=1)
         return adate
-    date_from = prev_weekday(date.today())
-    date_to = date_from
+    # date_from = prev_weekday(date.today())
+    # date_to = date_from
+    date_from = '2019-08-30'
+    date_to = '2019-08-30'
     interval = 'day'
     previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to, interval=interval)
     previous_day_data = pd.DataFrame(previous_day_data)
