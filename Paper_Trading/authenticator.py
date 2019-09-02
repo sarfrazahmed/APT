@@ -11,7 +11,7 @@ import pandas as pd
 print("Starting Trading Engine...", flush=True)
 config = configparser.ConfigParser()
 # For Ubuntu
-path = os.getcwd()
+# path = os.getcwd()
 path = '/home/ubuntu/APT/APT/Paper_Trading'
 
 # For Windows
@@ -75,8 +75,10 @@ print("Connection Successful")
 driver.close()
 
 # Write access token
-stock_list = pd.read_csv('stock_list_updated.csv', header=None)
+stock_list = pd.read_csv('stock_list_updated.csv')
+# print(stock_list,flush=True)
+# print(KRT['access_token'],flush=True)
 stock_list['Access_Token'] = KRT['access_token']
 stock_list['Extra'] = 0
-stock_list.to_csv('stock_list_updated.csv', header=None, index=False)
+stock_list.to_csv('stock_list_updated.csv', index=False)
 print("Connection succesful", flush=True)
