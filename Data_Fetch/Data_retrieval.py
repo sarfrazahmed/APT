@@ -13,9 +13,9 @@ import re
 
 print("Connecting to Kite...")
 config = configparser.ConfigParser()
-config_path = 'D:/APT/APT/Paper_Trading/config.ini'
+config_path = 'F:/DevAPT/APT/Data_Fetch/config.ini'
 config.read(config_path)
-path = 'D:/APT'
+path = 'F:\DevAPT\APT'
 os.chdir(path)
 
 api_key = config['API']['API_KEY']
@@ -63,17 +63,17 @@ print("Connection Successful")
 # Create directory to save data
 
 # Get working directory path
-path = "D:\APT\Stock_Data"
+path = "F:/DevAPT/APT/Data/Monthly_Data_Hub"
 
 # Input name of the directory to save the data
-dirName = 'Data'
+# dirName = ''
 
 # Create target Directory if don't exist
-if not os.path.exists(dirName):
-    os.mkdir(dirName)
-    print("Directory " , dirName ,  " created ")
-else:    
-    print("Directory " , dirName ,  " already exists")
+# if not os.path.exists(dirName):
+#     os.mkdir(dirName)
+#     print("Directory " , dirName ,  " created ")
+# else:
+#     print("Directory " , dirName ,  " already exists")
 
 
 # Give the list of scrips token
@@ -129,24 +129,41 @@ scrip_dict = {
               'ZEEL':'975873',
               'RELIANCE':'738561'
               }
-date_from = '2019-06-01'
-date_to = '2019-06-30'
-interval_list = ['5minute',
-                 'minute',
-                 'day',
-                 '3minute',
-                 '10minute',
-                 '15minute',
-                 '30minute',
-                 '60minute'
+# date_from = '2019-06-01'
+# date_to = '2019-06-30'
+interval_list = ['5minute'
+                 # 'minute',
+                 # 'day',
+                 # '3minute',
+                 # '10minute',
+                 # '15minute',
+                 # '30minute',
+                 # '60minute'
                  ]
 
 # Fetch data
-date_list = [['2018-08-01', '2018-08-31', 'August'], ['2018-09-01', '2018-09-30', 'September'], ['2018-10-01', '2018-10-31', 'October'], ['2018-11-01', '2018-11-30', 'November'], ['2018-12-01', '2018-12-31', 'December'], ['2019-01-01', '2019-01-31', 'January'], ['2019-02-01', '2019-02-28', 'February'], ['2019-03-01', '2019-03-31', 'March'], ['2019-04-01', '2019-04-30', 'April'], ['2019-05-01', '2019-05-30', 'May']]
+date_list = [
+             # ['2019-08-01', '2019-08-31', 'August_2019'],
+             ['2019-07-01', '2019-07-30', 'July']
+             # ['2018-10-01', '2018-10-31', 'October'],
+             # ['2018-11-01', '2018-11-30', 'November'],
+             # ['2018-12-01', '2018-12-31', 'December'],
+             # ['2019-01-01', '2019-01-31', 'January'],
+             # ['2019-02-01', '2019-02-28', 'February'],
+             # ['2019-03-01', '2019-03-31', 'March'],
+             # ['2019-04-01', '2019-04-30', 'April'],
+             # ['2019-05-01', '2019-05-30', 'May']
+             ]
 for item in date_list:
+    in_path = path + "/" + item[2]
+    if not os.path.exists(in_path):
+        os.mkdir(in_path)
+        print("Directory", in_path, "Created ")
+    else:
+        print("Directory", in_path, "already exists")
     for name, token in scrip_dict.items():
         flag = 0
-        in_path = path + "\\" + item[2] + "\\" + name
+        in_path = path + "/" + item[2] + "/" + name
         if not os.path.exists(in_path):
             os.mkdir(in_path)
             print("Directory" , in_path ,  "Created ")
@@ -155,7 +172,7 @@ for item in date_list:
         for interval in interval_list:
             if flag == 1:
                 interval = 'minute'
-            if not os.path.exists(in_path + "\\" + interval+'data.csv'):
+            if not os.path.exists(in_path + "/" + interval+'data.csv'):
                 try:
                     print("in try block")
                     data=kite.historical_data(instrument_token=token, from_date=item[0], to_date=item[1], interval=interval)

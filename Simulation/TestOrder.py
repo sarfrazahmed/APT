@@ -85,36 +85,52 @@ kite.set_access_token(KRT['access_token'])
 # Initial Inputs
 
 # Place a Unexecutable Limit Order (OrderId, and Get Response)
-order_id = kite.place_order(tradingsymbol="ADANIPORTS",
-                            variety= 'regular',
-                            exchange=kite.EXCHANGE_NSE,
-                            transaction_type=kite.TRANSACTION_TYPE_BUY,
-                            quantity=1,
-                            price= 360.50,
-                            order_type=kite.ORDER_TYPE_LIMIT,
-                            product=kite.PRODUCT_MIS)
-order_list = pd.DataFrame(kite.orders())
+# order_id = kite.place_order(tradingsymbol="ADANIPORTS",
+#                             variety= 'regular',
+#                             exchange=kite.EXCHANGE_NSE,
+#                             transaction_type=kite.TRANSACTION_TYPE_BUY,
+#                             quantity=1,
+#                             price= 360.50,
+#                             order_type=kite.ORDER_TYPE_LIMIT,
+#                             product=kite.PRODUCT_MIS)
+# order_list = pd.DataFrame(kite.orders())
 # trade_list = kite.trades()
-order_id_2 = kite.modify_order(variety= 'regular',
-                               order_id= order_id,
-                               quantity=1,
-                               price=362,
-                               order_type=kite.ORDER_TYPE_LIMIT)
-order_list = pd.concat([order_list,pd.DataFrame(kite.orders())],axis=0)
-trade_list = pd.DataFrame(kite.trades())
+# order_id_2 = kite.modify_order(variety= 'regular',
+#                                order_id= order_id,
+#                                quantity=1,
+#                                price=362,
+#                                order_type=kite.ORDER_TYPE_LIMIT)
+# order_list = pd.concat([order_list,pd.DataFrame(kite.orders())],axis=0)
+# trade_list = pd.DataFrame(kite.trades())
 # Modify that order (immidiate and orders function)
-kite.trades()
+# kite.trades()
 
 # Cancel that order (immidiate and orders function)
-kite.cancel_order(variety='regular',
-                  order_id=order_id)
-trade_list = pd.concat([trade_list,pd.DataFrame(kite.trades())],axis=0)
-order_list = pd.concat([order_list,pd.DataFrame(kite.orders())],axis=0)
+# kite.cancel_order(variety='regular',
+#                   order_id=order_id)
+# trade_list = pd.concat([trade_list,pd.DataFrame(kite.trades())],axis=0)
+# order_list = pd.concat([order_list,pd.DataFrame(kite.orders())],axis=0)
 # Place an Execuatable Limit Order
 
 # Market Order
 
 # Bracket Order
+order_id = kite.place_order(tradingsymbol="ADANIPORTS",
+                            variety= 'bo',
+                            exchange=kite.EXCHANGE_NSE,
+                            transaction_type=kite.TRANSACTION_TYPE_BUY,
+                            quantity=1,
+                            price= 365.90,
+                            order_type=kite.ORDER_TYPE_LIMIT,
+                            product=kite.PRODUCT_MIS,stoploss=3,squareoff=5)
+
+orders = pd.DataFrame(kite.orders())
 
 # Automated Bracket Order Modify
+order_id = kite.modify_order(variety='bo',order_id=order_id,quantity=1,price=366.0)
+orders = pd.DataFrame(kite.orders())
+orders.to_csv('F:\DevAPT\APT\Simulation\Sample_Order_Response.csv')
 
+# cancel BO
+kite.cancel_order(variety='bo',
+                  order_id=order_id)

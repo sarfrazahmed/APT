@@ -60,9 +60,9 @@ def pivotpoints(data, type='simple'):
                               (0.618 * (data_datelevel['Day_High'] -
                                         data_datelevel['Day_Low']))
     if type != 'simple':
-        data_datelevel['S3_Pivot' + type_str] = data_datelevel['Day_Low'] - 2 * (data_datelevel['Day_High'] -
-                                                                                 data_datelevel['PivotPoint'])
-        data_datelevel['R3_Pivot' + type_str] = data_datelevel['Day_High'] + 2 * (data_datelevel['PivotPoint'] -
+        data_datelevel['S3_Pivot' + type_str] = data_datelevel['PivotPoint'] - 2 * (data_datelevel['Day_High'] -
+                                                                                 data_datelevel['Day_Low'])
+        data_datelevel['R3_Pivot' + type_str] = data_datelevel['PivotPoint'] + 2 * (data_datelevel['Day_High'] -
                                                                                   data_datelevel['Day_Low'])
 
     data_datelevel['PivotDate'] = data_datelevel['DatePart'].shift(-1)
@@ -76,18 +76,18 @@ def pivotpoints(data, type='simple'):
 
 ## Initial Inputs
 ###############################################################
-working_dir = 'F:/APT/Historical Data/Pivot Strategy Output/Monthly Output'
+working_dir = 'F:/DevAPT/APT/Backtesting/Output'
 input_file_level = '5minute'
 # output_folder = 'F:/APT/Historical Data/Pivot Strategy Output/Monthly Output'
-input_folder = 'F:/APT/Historical Data/Month-Wise Data'
+input_folder = 'F:/DevAPT/APT/Data/Monthly_Data_Hub'
 output_file_phrase = '_pivot_5min_'
 # summary_folder = 'F:/APT/Historical Data/Pivot Strategy Output'
-summary_file_phrase = 'BackTest_Summary_5min_'
-info_file_path = 'F:/APT/Historical Data/Nifty50_Lot_Size.csv'
+summary_file_phrase = 'BackTest_Summary_5min_4percent_'
+info_file_path = 'F:/DevAPT/APT/Paper_Trading/nifty50_stocks_token.csv'
 
 
 min_gap = 0.0000001
-semi_target_multiplier = 0.005
+semi_target_multiplier = 0.004
 target_buffer_multiplier = 0.0
 candle_error = 0.00075
 min_target = 4000
@@ -104,12 +104,8 @@ indicator_columns = ['R1_Pivot_Fibonacci',
                          'S1_Pivot_Simple',
                          'S2_Pivot_Simple']
 months = [
-          'January',
-          'August',
-          'September',
-          'October',
-          'November',
-          'December']
+          'July',
+          'August_2019']
 print('Initial Inputs Stored')
 ###############################################################
 
@@ -127,14 +123,14 @@ for month in months:
     for j in info_data.index.values:
         input_file = input_folder + '/' + month + '/' + info_data.Company[j] + '/' + input_file_level + '.csv'
         output_file = month + '/'+ info_data.Company[j] + output_file_phrase + month + '.csv'
-        lot_size = info_data['Lot Size'][j]
+        lot_size = info_data['Lot_Size'][j]
 
 
         ## Data Preparation
         ###############################################################
         ads_fin = pd.read_csv(input_file)
         ads_fin.drop(['Unnamed: 0'], inplace=True, axis=1)
-        ads_fin.columns = ['Close', 'Date', 'High', 'Low', 'Open', 'Volume']
+        ads_fin.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
 
         # Date Column Handling
         ads_fin['Date'] = [i[:i.find('+')] for i in ads_fin['Date']]
@@ -143,8 +139,8 @@ for month in months:
         ads_fin['Year'] = [i.year for i in ads_fin['Date']]
 
         # Subset Historical Data For Back Testing
-        ads_analysis = ads_fin[ads_fin['Date'] >= ads_fin['Date'].max().replace(year=2018, hour=9, minute=15)]
-        # ads_analysis = ads_fin[ads_fin['Year'] == 2019]
+        # ads_analysis = ads_fin[ads_fin['Date'] >= ads_fin['Date'].max().replace(year=2018, hour=9, minute=15)]
+        ads_analysis = ads_fin[ads_fin['Year'] == 2019]
 
         # Include Necessary Technical Indicators in the dataset
         ads_analysis = pivotpoints(ads_analysis)  # Getting Simple Pivot Points
@@ -534,5 +530,5 @@ for month in months:
         print('Completed For: ' + info_data['Company'][j] + '\nMonth: ' + month)
 
     # Write Backtest Summary
-    info_data['Net Profit'] = info_data['Lot Size'] * info_data['Profit'] - (info_data['Trades'] * 200)
+    info_data['Net Profit'] = info_data['Lot_Size'] * info_data['Profit'] - (info_data['Trades'] * 200)
     info_data.to_csv(summary_file_name,index=False)
