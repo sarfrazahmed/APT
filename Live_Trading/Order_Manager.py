@@ -6,16 +6,7 @@ import os
 import time
 from datetime import datetime, timedelta
 
-order_id = 190903001710311
-local_all_orders = pd.read_csv('D:\DevAPT\APT\Simulation\Sample_Order_Response.csv')
-order_id_list = [data.loc[data['status'] == 'OPEN', 'parent_order_id'].iloc[0]]
-order_status = data.loc[data['order_id'] == order_id, 'status'].iloc[0]
-order_status
 
-order_id_list = dict(zip(data.order_id, data.status))
-order_id_list
-
-local_all_orders['status'][local_all_orders['order_id'] == order_id].values[0] == 'COMPLETE'
 
 # Authenticate
 config = configparser.ConfigParser()
@@ -65,7 +56,7 @@ while True:
             kite_all_orders = pd.DataFrame(kite.orders())
 
             # update order status
-            order_id_list = dict(zip(data.order_id, data.status))
+            # order_id_list = dict(zip(data.order_id, data.status))
 
             # cancel second order if first order got executed
             order_id_list = list(kite_all_orders.loc[kite_all_orders['status'] == 'OPEN', 'parent_order_id'].items())
@@ -77,7 +68,7 @@ while True:
                                   order_id=order_id_list[0])
 
             # place reverse entry if stoploss executed
-            if kite_all_orders
+            # if kite_all_orders
 
 
 
@@ -159,51 +150,61 @@ while True:
 
 
 
-while True:
-    if datetime.now().minute % 5 == 0 and datetime.now().second >= 3:
-        local_orders = pd.read_csv('filename')
-        if len(local_orders > 0):
-            # Place first order
-            local_current_order = len(local_orders) - 2
-            order_id = kite.place_order(tradingsymbol=local_orders.at[local_current_order, 'tradingsymbol'],
-                                        variety='bo',
-                                        exchange=kite.EXCHANGE_NSE,
-                                        transaction_type=kite.TRANSACTION_TYPE_BUY,
-                                        quantity=local_orders.at[local_current_order, 'quantity'],
-                                        price=local_orders.at[local_current_order, 'price'],
-                                        order_type=kite.ORDER_TYPE_LIMIT,
-                                        product=kite.PRODUCT_MIS,
-                                        stoploss=local_orders.at[local_current_order, 'stoploss'],
-                                        squareoff=local_orders.at[local_current_order, 'target'])
-            local_orders.at[local_current_order, 'order_id'] = order_id
+# while True:
+#     if datetime.now().minute % 5 == 0 and datetime.now().second >= 3:
+#         local_orders = pd.read_csv('filename')
+#         if len(local_orders > 0):
+#             # Place first order
+#             local_current_order = len(local_orders) - 2
+#             order_id = kite.place_order(tradingsymbol=local_orders.at[local_current_order, 'tradingsymbol'],
+#                                         variety='bo',
+#                                         exchange=kite.EXCHANGE_NSE,
+#                                         transaction_type=kite.TRANSACTION_TYPE_BUY,
+#                                         quantity=local_orders.at[local_current_order, 'quantity'],
+#                                         price=local_orders.at[local_current_order, 'price'],
+#                                         order_type=kite.ORDER_TYPE_LIMIT,
+#                                         product=kite.PRODUCT_MIS,
+#                                         stoploss=local_orders.at[local_current_order, 'stoploss'],
+#                                         squareoff=local_orders.at[local_current_order, 'target'])
+#             local_orders.at[local_current_order, 'order_id'] = order_id
+#
+#             # Place second order
+#             local_current_order = len(local_orders) - 1
+#             order_id = kite.place_order(tradingsymbol=local_orders.at[local_current_order, 'tradingsymbol'],
+#                                         variety='bo',
+#                                         exchange=kite.EXCHANGE_NSE,
+#                                         transaction_type=kite.TRANSACTION_TYPE_BUY,
+#                                         quantity=local_orders.at[local_current_order, 'quantity'],
+#                                         price=local_orders.at[local_current_order, 'price'],
+#                                         order_type=kite.ORDER_TYPE_LIMIT,
+#                                         product=kite.PRODUCT_MIS,
+#                                         stoploss=local_orders.at[local_current_order, 'stoploss'],
+#                                         squareoff=local_orders.at[local_current_order, 'target'])
+#             local_orders.at[local_current_order, 'order_id'] = order_id
+#             order_id_list = list(local_orders['order_id'])
+#             kite_all_orders = pd.DataFrame(kite.orders())
+#             while True:
+#                 if datetime.now().second % 10 == 0:
+#                     if kite_all_orders != pd.DataFrame(kite.orders()):
+#                         if kite_all_orders[kite_all_orders['order_id'] == order_id_list[0]]['status'] == 'COMPLETE':
+#                             kite.cancel_order(order_id_list[1])
+#                         elif kite_all_orders[kite_all_orders['order_id'] == order_id_list[1]]['status'] == 'COMPLETE':
+#                             kite.cancel_order(order_id_list[0])
+#                     else:
+#                         time.sleep(1)
 
-            # Place second order
-            local_current_order = len(local_orders) - 1
-            order_id = kite.place_order(tradingsymbol=local_orders.at[local_current_order, 'tradingsymbol'],
-                                        variety='bo',
-                                        exchange=kite.EXCHANGE_NSE,
-                                        transaction_type=kite.TRANSACTION_TYPE_BUY,
-                                        quantity=local_orders.at[local_current_order, 'quantity'],
-                                        price=local_orders.at[local_current_order, 'price'],
-                                        order_type=kite.ORDER_TYPE_LIMIT,
-                                        product=kite.PRODUCT_MIS,
-                                        stoploss=local_orders.at[local_current_order, 'stoploss'],
-                                        squareoff=local_orders.at[local_current_order, 'target'])
-            local_orders.at[local_current_order, 'order_id'] = order_id
-            order_id_list = list(local_orders['order_id'])
-            kite_all_orders = pd.DataFrame(kite.orders())
-            while True:
-                if datetime.now().second % 10 == 0:
-                    if kite_all_orders != pd.DataFrame(kite.orders()):
-                        if kite_all_orders[kite_all_orders['order_id'] == order_id_list[0]]['status'] == 'COMPLETE':
-                            kite.cancel_order(order_id_list[1])
-                        elif kite_all_orders[kite_all_orders['order_id'] == order_id_list[1]]['status'] == 'COMPLETE':
-                            kite.cancel_order(order_id_list[0])
-                    else:
-                        time.sleep(1)
 
+order_id = 190903001710311
+local_all_orders = pd.read_csv('D:\DevAPT\APT\Simulation\Sample_Order_Response.csv')
+order_id_list = [data.loc[data['status'] == 'OPEN', 'parent_order_id'].iloc[0]]
+order_status = data.loc[data['order_id'] == order_id, 'status'].iloc[0]
+order_status
 
+order_id_list = dict(zip(data.order_id, data.status))
+order_id_list
 
+local_all_orders['status'][local_all_orders['order_id'] == order_id].values[0] == 'COMPLETE'
+local_all_orders['status'][local_all_orders['order_id'] == order_id].values[0]
 
 
 # while True:
