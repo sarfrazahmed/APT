@@ -44,7 +44,7 @@ def start(name, access_token):
             # Proceed if any new updates are there
             if not kite_orders.equals(previous_kite_orders):
 
-                if first_order == 1:
+                if len(current_order) == 2:
                     # cancel secondary order on execution of primary order and vice-versa
                     if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'COMPLETE':
                         kite.cancel_order(variety='bo',
@@ -67,7 +67,7 @@ def start(name, access_token):
                         first_order = 0
 
                 # if stoploss hits
-                if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.index[current_order['order_type'] == 'SL'], 'order_id']].values[0] == 'COMPLETE':
+                if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']].values[0] == 'COMPLETE':
 
                     # place first order at current market price
                     order_id = kite.place_order(tradingsymbol=name,
@@ -108,7 +108,7 @@ def start(name, access_token):
                                                           'status': 'OPEN'}, ignore_index=True)
 
                 # if target hits
-                if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.index[current_order['order_type'] == 'LIMIT' and current_order['transaction_type'] != 'transaction_type'], 'order_id']].values[0] == 'COMPLETE':
+                if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[(current_order['order_type'] == 'LIMIT') & (current_order['transaction_type'] != 'BUY')].index.values.astype(int)[0], 'order_id']].values[0] == 'COMPLETE':
                     order_id = kite.place_order(tradingsymbol=name,
                                                 variety='bo',
                                                 exchange=kite.EXCHANGE_NSE,
