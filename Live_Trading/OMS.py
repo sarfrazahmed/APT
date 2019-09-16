@@ -55,7 +55,7 @@ def start(name, access_token):
     # Get order update from KITE
     previous_kite_orders = pd.DataFrame(kite.orders())
 
-    # Start looping
+    # Start infinite loop
     while True:
         if datetime.now().second % 10 == 0:
             kite_orders = pd.DataFrame(kite.orders())
@@ -63,6 +63,18 @@ def start(name, access_token):
 
             # Proceed if any new updates are there
             if not kite_orders.equals(previous_kite_orders):
+
+                if len(current_order) == 1:
+                    # check if status of order is complete
+                    if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'COMPLETE':
+                        # change current order status
+                        current_order = current_order.reset_index(drop=True)
+                        current_order.at[0, 'status'] = 'COMPLETE'
+
+                        # append stoploss and target orders
+                        current_order = current_order.append(kite_orders.loc[kite_orders['parent_order_id'] == current_order.at[0, 'order_id'], current_order_parameters])
+                        current_order = current_order.reset_index(drop=True)
+
 
                 if len(current_order) == 2:
                     # cancel secondary order on execution of primary order and vice-versa
