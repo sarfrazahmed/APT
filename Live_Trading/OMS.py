@@ -26,6 +26,21 @@ def pivotpoints(data):
                    r1_simple, r1_fibonacci, r2_simple, r2_fibonacci, r3_simple])
     return pivots
 
+def get_target():
+    # input = pivots, order_price
+    # return target
+    return  0
+
+def get_transaction_type():
+    # input = previous order transaction type
+    # return transaction type
+    return 0
+
+def get_stoploss():
+    # input = transaction type, day high, day low
+    # return stoploss
+    return 0
+
 
 def start(name, access_token):
     # Authenticate
@@ -83,7 +98,8 @@ def start(name, access_token):
                                           order_id=current_order.at[1, 'order_id'].values[0])
 
                         # drop cancelled order row
-                        current_order = current_order[current_order['status'] != 'CANCELLED']
+                        current_order = current_order[current_order['status'] != 'OPEN']
+                        # GET COMPLETED ORDER DATA
                         first_order = 0
 
                         # change current order status
@@ -102,6 +118,7 @@ def start(name, access_token):
 
                         # drop cancelled order row
                         current_order = current_order[current_order['status'] != 'CANCELLED']
+                        # GET COMPLETED ORDER DATA
                         first_order = 0
 
                         # change current order status
@@ -116,6 +133,7 @@ def start(name, access_token):
                 if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']].values[0] == 'COMPLETE':
 
                     # clear previous orders
+                    # FETCH LAST ORDER TRANSACTION TYPE
                     current_order = current_order[0:0]
 
                     # place first order at current market price
@@ -124,10 +142,10 @@ def start(name, access_token):
                                                 exchange=kite.EXCHANGE_NSE,
                                                 transaction_type='transaction_type',
                                                 quantity=quantity,
-                                                price='price',
+                                                price='price', # stoploss price
                                                 order_type=kite.ORDER_TYPE_LIMIT,
                                                 product=kite.PRODUCT_MIS,
-                                                stoploss='stoploss',
+                                                stoploss='stoploss', # get stoploss function depends on transaction type
                                                 squareoff='target')
                     current_order = current_order.append({'order_id': order_id,
                                                           'order_type': 'LIMIT',
@@ -157,6 +175,7 @@ def start(name, access_token):
 
                 # if target hits
                 if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[(current_order['order_type'] == 'LIMIT') & (current_order['transaction_type'] != 'BUY')].index.values.astype(int)[0], 'order_id']].values[0] == 'COMPLETE':
+                    current_order = current_order[0:0]
                     order_id = kite.place_order(tradingsymbol=name,
                                                 variety='bo',
                                                 exchange=kite.EXCHANGE_NSE,
@@ -167,7 +186,6 @@ def start(name, access_token):
                                                 product=kite.PRODUCT_MIS,
                                                 stoploss='stoploss',
                                                 squareoff='target')
-                    current_order = current_order[0:0]
                     current_order = current_order.append({'order_id': order_id,
                                                           'order_type': 'LIMIT',
                                                           'transaction_type': 'transaction_type',
@@ -175,12 +193,16 @@ def start(name, access_token):
                                                           'price': 'price',
                                                           'status': 'OPEN'}, ignore_index=True)
                     stoploss_modified = 0
-            # copy current orders to previous orders
-            previous_kite_orders = kite_orders.copy(deep=True)
+
+                # copy current orders to previous orders
+                previous_kite_orders = kite_orders.copy(deep=True)
 
 
 
         elif datetime.now().minute % 5 == 0 and datetime.now().second % 11 == 0:
+            # CHECK IF FILE IS PRESENT
+            # READ FILE
+            # CHECK IF CONTENT IS SAME AS PREVIOUS OR NOT
             strategy_orders = pd.read_csv(name + '_' + str(datetime.now().date()) + '.csv')
 
             # if orders present in strategy orders file
