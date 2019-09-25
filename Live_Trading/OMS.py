@@ -26,7 +26,7 @@ def pivotpoints(data):
                    r1_simple, r1_fibonacci, r2_simple, r2_fibonacci, r3_simple])
     return pivots
 
-def get_target():
+def get_target(pivots, order_price, transaction_type):
     # input = pivots, order_price
     # return target
     return  0
@@ -36,7 +36,7 @@ def get_transaction_type():
     # return transaction type
     return 0
 
-def get_stoploss():
+def get_stoploss(transaction_type, day_high, day_low):
     # input = transaction type, day high, day low
     # return stoploss
     return 0
@@ -62,6 +62,14 @@ def start(name, access_token):
     day_high = 0
     day_low = 0
     quantity = 1
+
+    # Read previous day data file
+    data = pd.read_csv('previous_day_data'+name+'.csv')
+    pivots = pivotpoints(data)
+
+    # Local orders dataframes
+    strategy_orders = pd.DataFrame()
+    previous_strategy_orders = pd.DataFrame()
 
     # Create current order tracker dataframe
     current_order_parameters = ['order_id', 'order_type', 'transaction_type', 'parent_order_id', 'price', 'status']
@@ -98,8 +106,7 @@ def start(name, access_token):
                                           order_id=current_order.at[1, 'order_id'].values[0])
 
                         # drop cancelled order row
-                        current_order = current_order[current_order['status'] != 'OPEN']
-                        # GET COMPLETED ORDER DATA
+                        current_order = current_order.drop(current_order.index[1])
                         first_order = 0
 
                         # change current order status
@@ -117,8 +124,8 @@ def start(name, access_token):
                                           order_id=current_order.at[0, 'order_id'].values[0])
 
                         # drop cancelled order row
-                        current_order = current_order[current_order['status'] != 'CANCELLED']
-                        # GET COMPLETED ORDER DATA
+                        current_order = current_order.drop(current_order.index[0])
+
                         first_order = 0
 
                         # change current order status
@@ -133,20 +140,25 @@ def start(name, access_token):
                 if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']].values[0] == 'COMPLETE':
 
                     # clear previous orders
-                    # FETCH LAST ORDER TRANSACTION TYPE
                     current_order = current_order[0:0]
+
+                    # fetch stoploss order transaction type
+                    sl_transaction_type = kite_orders['transaction_type'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']].values[0]
+
+                    # entry price
+                    entry_price = kite_orders['price'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']].values[0]
 
                     # place first order at current market price
                     order_id = kite.place_order(tradingsymbol=name,
                                                 variety='bo',
                                                 exchange=kite.EXCHANGE_NSE,
-                                                transaction_type='transaction_type',
+                                                transaction_type=sl_transaction_type,
                                                 quantity=quantity,
-                                                price='price', # stoploss price
+                                                price=entry_price,
                                                 order_type=kite.ORDER_TYPE_LIMIT,
                                                 product=kite.PRODUCT_MIS,
-                                                stoploss='stoploss', # get stoploss function depends on transaction type
-                                                squareoff='target')
+                                                stoploss=day_high if sl_transaction_type == 'SELL' else day_low,
+                                                squareoff=get_target(pivots, entry_price, sl_transaction_type))
                     current_order = current_order.append({'order_id': order_id,
                                                           'order_type': 'LIMIT',
                                                           'transaction_type': 'transaction_type',
@@ -155,16 +167,18 @@ def start(name, access_token):
                                                           'status': 'OPEN'}, ignore_index=True)
 
                     # place second order at stoploss
+                    transaction_type = 'SELL' if sl_transaction_type == 'BUY' else 'BUY'
+                    entry_price = day_high if sl_transaction_type == 'SELL' else day_low
                     order_id = kite.place_order(tradingsymbol=name,
                                                 variety='bo',
                                                 exchange=kite.EXCHANGE_NSE,
-                                                transaction_type='transaction_type',
+                                                transaction_type=transaction_type,
                                                 quantity=quantity,
-                                                price='price',
+                                                price=entry_price,
                                                 order_type=kite.ORDER_TYPE_LIMIT,
                                                 product=kite.PRODUCT_MIS,
-                                                stoploss='stoploss',
-                                                squareoff='target')
+                                                stoploss=day_high if sl_transaction_type == 'SELL' else day_low,
+                                                squareoff=get_target(pivots, entry_price, transaction_type))
                     current_order = current_order.append({'order_id': order_id,
                                                           'order_type': 'LIMIT',
                                                           'transaction_type': 'transaction_type',
@@ -200,100 +214,99 @@ def start(name, access_token):
 
 
         elif datetime.now().minute % 5 == 0 and datetime.now().second % 11 == 0:
-            # CHECK IF FILE IS PRESENT
-            # READ FILE
-            # CHECK IF CONTENT IS SAME AS PREVIOUS OR NOT
-            strategy_orders = pd.read_csv(name + '_' + str(datetime.now().date()) + '.csv')
+            if os.path.isfile(name + '_' + str(datetime.now().date()) + '.csv'):
+                strategy_orders = pd.read_csv(name + '_' + str(datetime.now().date()) + '.csv')
 
-            # if orders present in strategy orders file
-            if len(strategy_orders) > 0:
+                # if orders present in strategy orders file
+                if not strategy_orders.equals(previous_strategy_orders):
 
-                # first order of the day
-                if first_order == 1:
-                    # place first order at current market price
-                    order_id = kite.place_order(tradingsymbol=name,
-                                                variety='bo',
-                                                exchange=kite.EXCHANGE_NSE,
-                                                transaction_type=strategy_orders.at[0, 'transaction_type'],
-                                                quantity=quantity,
-                                                price=strategy_orders.at[0, 'price'],
-                                                order_type=kite.ORDER_TYPE_LIMIT,
-                                                product=kite.PRODUCT_MIS,
-                                                stoploss=strategy_orders.at[0, 'stoploss'],
-                                                squareoff=strategy_orders.at[0, 'target'])
-                    current_order = current_order.append({'order_id': order_id,
-                                                          'order_type': 'LIMIT',
-                                                          'transaction_type': 'transaction_type',
-                                                          'parent_order_id': 'NA',
-                                                          'price': strategy_orders.at[0, 'price'],
-                                                          'status': 'OPEN'}, ignore_index=True)
-                    strategy_orders.at[0, 'order_id'] = order_id
-
-                    # place second order at stoploss
-                    order_id = kite.place_order(tradingsymbol=name,
-                                                variety='bo',
-                                                exchange=kite.EXCHANGE_NSE,
-                                                transaction_type=strategy_orders.at[1, 'transaction_type'],
-                                                quantity=quantity,
-                                                price=strategy_orders.at[1, 'price'],
-                                                order_type=kite.ORDER_TYPE_LIMIT,
-                                                product=kite.PRODUCT_MIS,
-                                                stoploss=strategy_orders.at[1, 'stoploss'],
-                                                squareoff=strategy_orders.at[1, 'target'])
-                    current_order = current_order.append({'order_id': order_id,
-                                                          'order_type': 'LIMIT',
-                                                          'transaction_type': 'transaction_type',
-                                                          'parent_order_id': 'NA',
-                                                          'price': strategy_orders.at[1, 'price'],
-                                                          'status': 'OPEN'}, ignore_index=True)
-                    strategy_orders.at[1, 'order_id'] = order_id
-                    strategy_orders.to_csv(name + '_' + str(datetime.now().date()) + '.csv')
-                    first_order = 0
-
-
-                # update day high and day low
-                day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'order_id']), 'day_high']
-                day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'order_id']), 'day_low']
-
-                # modify stoploss if semi-target is hit
-                if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 1 and stoploss_modified == 0:
-                    # if order is executed
-                    if current_order.at[0, 'status'] == 'COMPLETE':
-                        # modify stoploss
-                        order_id = kite.modify_order(variety='bo',
-                                                     order_id=current_order.at[0, 'order_id'],
-                                                     quantity=quantity,
-                                                     price=strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'semi-target']].values[0])
-                        stoploss_modified = 1
-
-                    # if order was not executed
-                    elif current_order.at[0, 'status'] == 'OPEN' and current_order.at[1, 'status'] == 'OPEN':
-                        # cancel both pending orders
-                        kite.cancel_order(variety='bo',
-                                          order_id=current_order.at[0, 'order_id'].values[0])
-                        kite.cancel_order(variety='bo',
-                                          order_id=current_order.at[1, 'order_id'].values[0])
-                        # empty dataframe
-                        current_order = current_order[0:0]
-
-                        # place new order
+                    # first order of the day
+                    if first_order == 1:
+                        # place first order at current market price
                         order_id = kite.place_order(tradingsymbol=name,
                                                     variety='bo',
                                                     exchange=kite.EXCHANGE_NSE,
-                                                    transaction_type='transaction_type',
+                                                    transaction_type=strategy_orders.at[0, 'transaction_type'],
                                                     quantity=quantity,
-                                                    price='price',
+                                                    price=strategy_orders.at[0, 'price'],
                                                     order_type=kite.ORDER_TYPE_LIMIT,
                                                     product=kite.PRODUCT_MIS,
-                                                    stoploss='stoploss',
-                                                    squareoff='target')
+                                                    stoploss=strategy_orders.at[0, 'stoploss'],
+                                                    squareoff=strategy_orders.at[0, 'target'])
+                        current_order = current_order.append({'order_id': order_id,
+                                                              'order_type': 'LIMIT',
+                                                              'transaction_type': 'transaction_type',
+                                                              'parent_order_id': 'NA',
+                                                              'price': strategy_orders.at[0, 'price'],
+                                                              'status': 'OPEN'}, ignore_index=True)
+                        strategy_orders.at[0, 'order_id'] = order_id
+
+                        # place second order at stoploss
+                        order_id = kite.place_order(tradingsymbol=name,
+                                                    variety='bo',
+                                                    exchange=kite.EXCHANGE_NSE,
+                                                    transaction_type=strategy_orders.at[1, 'transaction_type'],
+                                                    quantity=quantity,
+                                                    price=strategy_orders.at[1, 'price'],
+                                                    order_type=kite.ORDER_TYPE_LIMIT,
+                                                    product=kite.PRODUCT_MIS,
+                                                    stoploss=strategy_orders.at[1, 'stoploss'],
+                                                    squareoff=strategy_orders.at[1, 'target'])
                         current_order = current_order.append({'order_id': order_id,
                                                               'order_type': 'LIMIT',
                                                               'transaction_type': 'transaction_type',
                                                               'parent_order_id': 'NA',
                                                               'price': strategy_orders.at[1, 'price'],
                                                               'status': 'OPEN'}, ignore_index=True)
-                        stoploss_modified = 0
+                        strategy_orders.at[1, 'order_id'] = order_id
+                        strategy_orders.to_csv(name + '_' + str(datetime.now().date()) + '.csv')
+                        first_order = 0
+
+
+                    # update day high and day low
+                    day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'order_id']), 'day_high']
+                    day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'order_id']), 'day_low']
+
+                    # modify stoploss if semi-target is hit
+                    if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 1 and stoploss_modified == 0:
+                        # if order is executed
+                        if current_order.at[0, 'status'] == 'COMPLETE':
+                            # modify stoploss
+                            order_id = kite.modify_order(variety='bo',
+                                                         order_id=current_order.at[0, 'order_id'],
+                                                         quantity=quantity,
+                                                         price=strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'semi-target']].values[0])
+                            stoploss_modified = 1
+
+                        # if order was not executed
+                        elif current_order.at[0, 'status'] == 'OPEN' and current_order.at[1, 'status'] == 'OPEN':
+                            # cancel both pending orders
+                            kite.cancel_order(variety='bo',
+                                              order_id=current_order.at[0, 'order_id'].values[0])
+                            kite.cancel_order(variety='bo',
+                                              order_id=current_order.at[1, 'order_id'].values[0])
+                            # empty dataframe
+                            current_order = current_order[0:0]
+
+                            # place new order
+                            order_id = kite.place_order(tradingsymbol=name,
+                                                        variety='bo',
+                                                        exchange=kite.EXCHANGE_NSE,
+                                                        transaction_type='transaction_type',
+                                                        quantity=quantity,
+                                                        price='price',
+                                                        order_type=kite.ORDER_TYPE_LIMIT,
+                                                        product=kite.PRODUCT_MIS,
+                                                        stoploss='stoploss',
+                                                        squareoff='target')
+                            current_order = current_order.append({'order_id': order_id,
+                                                                  'order_type': 'LIMIT',
+                                                                  'transaction_type': 'transaction_type',
+                                                                  'parent_order_id': 'NA',
+                                                                  'price': strategy_orders.at[1, 'price'],
+                                                                  'status': 'OPEN'}, ignore_index=True)
+                            stoploss_modified = 0
+                previous_strategy_orders = strategy_orders.copy(deep=True)
         else:
             time.sleep(1)
 
