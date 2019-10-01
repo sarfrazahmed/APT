@@ -26,14 +26,15 @@ def start(name, token, access_token, timeframe):
     kite.set_access_token(access_token)
     # Get previous day candle
     def prev_weekday(adate):
+        holiday_list=['2019-10-02','2019-10-08','2019-10-08','2019-11-12','2019-12-25']
         adate -= timedelta(days=1)
+        if adate.strftime('%Y-%m-%d') in holiday_list:
+            adate -= timedelta(days=1)
         while adate.weekday() > 4:
             adate -= timedelta(days=1)
         return adate
     date_from = prev_weekday(date.today())
     date_to = date_from
-    # date_from = '2019-09-09'
-    # date_to = '2019-09-09'
     interval = 'day'
     previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to, interval=interval)
     previous_day_data = pd.DataFrame(previous_day_data)
