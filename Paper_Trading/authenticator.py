@@ -95,6 +95,8 @@ selected_scrips_info = selected_scrips_info.dropna()
 selected_scrips_info = selected_scrips_info.reset_index()
 selected_scrips_info = selected_scrips_info[0:5]
 selected_scrips_info = selected_scrips_info[['Company','Token','Lot_Size']]
+selected_scrips_info['Token'] = [int(i) for i in selected_scrips_info['Token']]
+selected_scrips_info['Lot_Size'] = [int(i) for i in selected_scrips_info['Lot_Size']]
 print('Completed')
 
 
