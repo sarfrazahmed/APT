@@ -68,18 +68,18 @@ def send_mail(mail_from,mail_to,subject,message,file_paths,password):
 ## Initial Inputs
 ###############################################################
 # Windows
-# folder_path = 'F:/DevAPT/APT/Paper_Trading'
-# wkhtmltopdf_path = 'F:/DevAPT/APT/Paper_Trading/wkhtmltopdf/bin/wkhtmltopdf.exe'
+# folder_path = 'F:/DevAPT/APT/Live_Trading'
+# wkhtmltopdf_path = 'F:/DevAPT/APT/Live_Trading/wkhtmltopdf/bin/wkhtmltopdf.exe'
 
 # For Ubuntu
-folder_path = '/home/ubuntu/APT/APT/Paper_Trading'
+folder_path = '/home/ubuntu/APT/APT/Live_Trading'
 wkhtmltopdf_path = '/home/ubuntu/anaconda3/bin/wkhtmltopdf'
 
-file_phrase = 'PaperTrading_Output'
+file_phrase = 'LiveTrading_Output'
 stock_list_path = 'stock_list_updated.csv'
 
 time_now = str(datetime.now().date())
-body_text = 'Hi All,\n\nPFA the summary of paper trading for ' + time_now + '\n\nRegards,\nAPT BOT'
+body_text = 'Hi All,\n\nPFA the summary of live trading for ' + time_now + '\n\nRegards,\nAPT BOT'
 bot_mail_id = 'apt.automated@gmail.com'
 bot_mail_password = 'algotrading2019'
 recipients = ['anubhab.ghosh95@gmail.com','sarfraz.contact@gmail.com','arkajeet75@gmail.com']
@@ -127,7 +127,7 @@ summary_df = pd.concat([summary_df,total_summary])
 # write Summary as CSV
 print('Writing Summary as CSV',flush=True)
 time_now = str(datetime.now().date())
-output_file_path = 'Paper_Trading_Summary_' + time_now +'.csv'
+output_file_path = 'Live_Trading_Summary_' + time_now +'.csv'
 summary_df.to_csv(output_file_path,index= False)
 
 # Send csv as Mail
@@ -139,7 +139,7 @@ attachments.insert(0, output_file_path)
 print(attachments)
 
 for target_mail_id in recipients:
-    send_mail(bot_mail_id, target_mail_id, 'Paper Trading Result of The Day',
+    send_mail(bot_mail_id, target_mail_id, 'Live Trading Result of The Day',
               body_text, attachments, bot_mail_password)
 
 # Save csv as PDF
