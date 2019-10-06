@@ -17,13 +17,13 @@ config = configparser.ConfigParser()
 ## Initial Inputs
 ############################################################################
 # For Windows
-# path = 'F:/DevAPT/APT/Paper_Trading'
+# path = 'F:/DevAPT/APT/Live_Trading'
 
 # For Ubuntu
-path = '/home/ubuntu/APT/APT/Paper_Trading'
+path = '/home/ubuntu/APT/APT/Live_Trading'
 
 # For Windows
-# path = 'D:/DevAPT/APT/Paper_Trading'
+# path = 'D:/DevAPT/APT/Live_Trading'
 
 exception_stocks = ['IDEA','BOSCHLTD','CASTROLIND','IDBI','MRF','NBCC','DISHTV',
                     'GMRINFRA','RELINFRA']
