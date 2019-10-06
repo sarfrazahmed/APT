@@ -17,7 +17,7 @@ def start(name, token, access_token, timeframe):
     # print("Starting Trading Engine...", flush=True)
     config = configparser.ConfigParser()
     # path = os.getcwd()
-    path = '/home/ubuntu/APT/APT/Paper_Trading'
+    path = '/home/ubuntu/APT/APT/Live_Trading'
     config_path = path + '/config.ini'
     config.read(config_path)
     api_key = config['API']['API_KEY']
@@ -26,14 +26,15 @@ def start(name, token, access_token, timeframe):
     kite.set_access_token(access_token)
     # Get previous day candle
     def prev_weekday(adate):
+        holiday_list=['2019-10-02','2019-10-08','2019-10-08','2019-11-12','2019-12-25']
         adate -= timedelta(days=1)
+        if adate.strftime('%Y-%m-%d') in holiday_list:
+            adate -= timedelta(days=1)
         while adate.weekday() > 4:
             adate -= timedelta(days=1)
         return adate
     date_from = prev_weekday(date.today())
     date_to = date_from
-    # date_from = '2019-08-30'
-    # date_to = '2019-08-30'
     interval = 'day'
     previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to, interval=interval)
     previous_day_data = pd.DataFrame(previous_day_data)
@@ -131,7 +132,7 @@ def start(name, token, access_token, timeframe):
 
 if __name__ == '__main__':
     # path = os.getcwd()
-    path = '/home/ubuntu/APT/APT/Paper_Trading'
+    path = '/home/ubuntu/APT/APT/Live_Trading'
     os.chdir(path)
     name = sys.argv[1]
     token = [int(sys.argv[2])]
