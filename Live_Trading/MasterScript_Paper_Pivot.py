@@ -39,7 +39,7 @@ def start(name, lot_size):
     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
     print("Master Script started", flush=True)
     # For Ubuntu
-    path = '/home/ubuntu/APT/APT/Paper_Trading'
+    path = '/home/ubuntu/APT/APT/Live_Trading'
 
     # Set Initial Pointers Value
     order_status = 'Exit'
@@ -122,7 +122,7 @@ def start(name, lot_size):
                 Trade_Dataset = Trade_Dataset.append(data)
 
                 # Write Updated Trade History as CSV
-                Trade_Dataset.to_csv('PaperTrading_Output' + name + '.csv', index=False)
+                Trade_Dataset.to_csv('LiveTrading_Output' + name + '.csv', index=False)
 
             if data.Date[0].hour == 15 and data.Date[0].minute == 25:
                 break
@@ -138,7 +138,7 @@ def start(name, lot_size):
 
 if __name__ == '__main__':
     # path = os.getcwd()
-    path = '/home/ubuntu/APT/APT/Paper_Trading'
+    path = '/home/ubuntu/APT/APT/Live_Trading'
     os.chdir(path)
     # Get User Input from Bash File
     name = sys.argv[1]
