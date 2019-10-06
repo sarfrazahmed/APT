@@ -290,7 +290,7 @@ def start(name, access_token):
                             order_id = kite.modify_order(variety='bo',
                                                          order_id=current_order.at[0, 'order_id'],
                                                          quantity=quantity,
-                                                         price=strategy_orders['semi-target_status'][strategy_orders['local_order_id'] == current_order.at[0, 'semi-target']].values[0])
+                                                         price=strategy_orders['semi-target'][strategy_orders['local_order_id'] == current_order.at[0, 'local_order_id']].values[0])
                             # update stoploss status
                             stoploss_modified = 1
 
