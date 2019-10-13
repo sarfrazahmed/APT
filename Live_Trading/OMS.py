@@ -29,7 +29,18 @@ def pivotpoints(data):
 def get_target(pivots, order_price, transaction_type):
     # input = pivots, order_price
     # return target
-    return  0
+    # Calculating Target
+    if transaction_type == 'Buy':
+        deltas = [indicator - order_price for indicator in pivots]
+        pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
+        min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
+        target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
+    else:
+        deltas = [round(indicator, 1) - order_price for indicator in pivots]
+        neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
+        max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
+        target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
+    return target
 
 def get_transaction_type():
     # input = previous order transaction type
