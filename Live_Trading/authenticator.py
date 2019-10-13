@@ -93,7 +93,7 @@ selected_scrips_info = pd.merge(selected_scrips,info_data,
                                 how='left')
 selected_scrips_info = selected_scrips_info.dropna()
 selected_scrips_info = selected_scrips_info.reset_index()
-selected_scrips_info = selected_scrips_info[0:5]
+selected_scrips_info = selected_scrips_info[0:2]
 selected_scrips_info = selected_scrips_info[['Company','Token','Lot_Size']]
 print('Completed')
 
@@ -138,6 +138,8 @@ driver.close()
 # Write access token
 selected_scrips_info['Access_Token'] = KRT['access_token']
 selected_scrips_info['Extra'] = 0
+selected_scrips_info['Token'] = [int(i) for i in selected_scrips_info['Token']]
+selected_scrips_info['Lot_Size'] = [int(i) for i in selected_scrips_info['Lot_Size']]
 selected_scrips_info.to_csv('stock_list_updated.csv', index=False)
 print("Connection successful", flush=True)
 print("End Time: " + str(datetime.now()))

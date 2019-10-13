@@ -46,10 +46,10 @@ def get_target(pivots, order_price, transaction_type, lot_size):
 
 def start(name, access_token, lot_size):
     # Authenticate
+    path = '/home/ubuntu/APT/APT/Live_Trading'
+    os.chdir(path)
     config = configparser.ConfigParser()
-    path = os.getcwd()
-    print(path)
-    config_path = path + '\\config.ini'
+    config_path = path + '/config.ini'
     config.read(config_path)
     api_key = config['API']['API_KEY']
 
@@ -67,7 +67,7 @@ def start(name, access_token, lot_size):
     quantity = 1
 
     # Read previous day data file
-    data = pd.read_csv('previous_day_data'+name+'.csv')
+    data = pd.read_csv(path + '/previous_day_data_' + name + '.csv')
     pivots = pivotpoints(data)
 
     # Local orders dataframes
@@ -80,6 +80,8 @@ def start(name, access_token, lot_size):
 
     # Get order update from KITE
     previous_kite_orders = pd.DataFrame(kite.orders())
+
+    print("Order Management Started")
 
     # Start infinite loop
     while True:
@@ -234,12 +236,12 @@ def start(name, access_token, lot_size):
 
                 # copy current orders to previous orders
                 previous_kite_orders = kite_orders.copy(deep=True)
-
+            time.sleep(1)
 
 
         elif datetime.now().minute % 5 == 0 and datetime.now().second % 11 == 0:
-            if os.path.isfile(name + '_' + str(datetime.now().date()) + '.csv'):
-                strategy_orders = pd.read_csv(name + '_' + str(datetime.now().date()) + '.csv')
+            if os.path.isfile('live_order_' + name + '_' + str(datetime.now().date()) + '.csv'):
+                strategy_orders = pd.read_csv('live_order_' + name + '_' + str(datetime.now().date()) + '.csv')
 
                 # if orders present in strategy orders file
                 if not strategy_orders.equals(previous_strategy_orders):
@@ -341,6 +343,7 @@ def start(name, access_token, lot_size):
                             stoploss_modified = 0
                             local_order = local_order + 1
                 previous_strategy_orders = strategy_orders.copy(deep=True)
+            time.sleep(1)
         else:
             time.sleep(1)
 

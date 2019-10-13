@@ -144,5 +144,6 @@ if __name__ == '__main__':
     name = sys.argv[1]
     print('Start Time: ' + str(datetime.now()))
     lot_size = int(sys.argv[2])
+    print(name)
     print(lot_size)
     start(name, lot_size)
