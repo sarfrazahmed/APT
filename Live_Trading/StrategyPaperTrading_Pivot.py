@@ -386,7 +386,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_status = 'Exit'
                     order_signal = 'Sell'
                     order_price = target
-                    trade_count = trade_count + 1
+                    # trade_count = trade_count + 1
                     long_count = 1
                     short_count = 0
                     profit = profit + order_price
@@ -401,8 +401,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Action on Semi Target
-                elif data.High[0] >= (order_price + (order_price * semi_target_multiplier)):
-                    stop_loss = round(order_price + (order_price * semi_target_multiplier),1)
+                elif data.Close[0] >= (order_price + (order_price * semi_target_multiplier)):
+                    stop_loss = round(order_price + (order_price * semi_target_multiplier), 1)
                     # semi_target_flag = 1
                     live_order_data = pd.read_csv(live_order_file_name)
                     live_order_data['semi-target_status'][len(live_order_data) - 1] = 1
@@ -417,7 +417,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_status = 'Exit'
                     order_signal = 'Buy'
                     order_price = stop_loss
-                    trade_count = trade_count + 1
+                    # trade_count = trade_count + 1
                     long_count = 0
                     short_count = 1
                     profit = profit - order_price
@@ -469,7 +469,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_status = 'Exit'
                     order_signal = 'Buy'
                     order_price = target
-                    trade_count = trade_count + 1
+                    # trade_count = trade_count + 1
                     long_count = 0
                     short_count = 1
                     profit = profit - order_price
@@ -484,7 +484,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Action on Semi Target
-                elif data.Low[0] <= (order_price - (order_price * semi_target_multiplier)):
+                elif data.Close[0] <= (order_price - (order_price * semi_target_multiplier)):
                     stop_loss = round(order_price - (order_price * semi_target_multiplier), 1)
                     # semi_target_flag = 1
                     live_order_data = pd.read_csv('live_order_' + name + '.csv')
