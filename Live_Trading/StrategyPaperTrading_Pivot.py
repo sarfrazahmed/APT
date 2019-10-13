@@ -13,8 +13,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         semi_target_flag, profit, skip_date, prev_day_close, min_gap=0.000001,
                         semi_target_multiplier=0.005, target_buffer_multiplier=0.0, min_target=5000,
                         candle_error = 0.00075):
-
-    live_order_file_name = 'live_order_' + name + '.csv'
+    live_order_file_name = 'live_order_' + name + str(datetime.now().date()) + '.csv'
 
     if path.exists(live_order_file_name):
         live_order_data = pd.read_csv(live_order_file_name)
@@ -50,12 +49,10 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 order_status = 'Exit'
                 order_signal = 'Sell'
                 order_price = round(data.Close[0], 1)
-                trade_count = trade_count + 1
                 long_count = 1
                 short_count = 0
                 semi_target_flag = 0
                 profit = profit + order_price
-
                 # Print Pointers
                 data.Order_Status[0] = order_status
                 data.Order_Signal[0] = order_signal
@@ -70,7 +67,6 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 order_status = 'Exit'
                 order_signal = 'Buy'
                 order_price = round(data.Close[0], 1)
-                trade_count = trade_count + 1
                 long_count = 0
                 short_count = 1
                 semi_target_flag = 0
@@ -111,6 +107,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 if data.Close[0] > entry_high_target:
                     order_status = 'Entry'
                     order_signal = 'Buy'
+                    trade_count = trade_count + 1
                     semi_target_flag = 0
                     order_price = round(data.Close[0], 1)
                     stop_loss = entry_low_target - round((target_buffer_multiplier * order_price), 1)
@@ -134,7 +131,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                             'status', 'semi-target_status', 'target_status',
                                                             'stoploss_status',
                                                             'day_high', 'day_low'])
-                    live_order_data_subset = pd.DataFrame({'order_id':[np.nan],
+                    live_order_data_subset = pd.DataFrame({'order_id': [trade_count],
                                                            'transaction_type':[order_signal],
                                                            'price': [order_price],
                                                            'stoploss': [stop_loss],
@@ -158,6 +155,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_status = 'Entry'
                     order_signal = 'Sell'
                     semi_target_flag = 0
+                    trade_count = trade_count + 1
                     order_price = round(data.Close[0], 1)
                     stop_loss = entry_high_target + round((target_buffer_multiplier * order_price), 1)
                     profit = profit + order_price
@@ -180,7 +178,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                             'status', 'semi-target_status', 'target_status',
                                                             'stoploss_status',
                                                             'day_high', 'day_low'])
-                    live_order_data_subset = pd.DataFrame({'order_id': [np.nan],
+                    live_order_data_subset = pd.DataFrame({'order_id': [trade_count],
                                                            'transaction_type': [order_signal],
                                                            'price': [order_price],
                                                            'stoploss': [stop_loss],
@@ -200,12 +198,12 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
             # Other Trade Entries
             else:
-
                 # Long Entry
                 if (data.High[0] > entry_high_target) and (long_count == 0):
                     order_status = 'Entry'
                     order_signal = 'Buy'
                     semi_target_flag = 0
+                    trade_count = trade_count + 1
                     order_price = entry_high_target
                     stop_loss = entry_low_target - round((target_buffer_multiplier * order_price), 1)
                     profit = profit - order_price
@@ -223,8 +221,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
                     if path.exists(live_order_file_name):
-                        live_order_data = pd.read_csv('live_order_' + name + '.csv')
-                        live_order_data_subset = pd.DataFrame({'order_id': [np.nan],
+                        live_order_data = pd.read_csv(live_order_file_name)
+                        live_order_data_subset = pd.DataFrame({'order_id': [trade_count],
                                                            'transaction_type': [order_signal],
                                                            'price': [order_price],
                                                            'stoploss': [stop_loss],
@@ -244,7 +242,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                 'status', 'semi-target_status', 'target_status',
                                                                 'stoploss_status',
                                                                 'day_high', 'day_low'])
-                        live_order_data_subset = pd.DataFrame({'order_id': [np.nan],
+                        live_order_data_subset = pd.DataFrame({'order_id': [trade_count],
                                                                'transaction_type': [order_signal],
                                                                'price': [order_price],
                                                                'stoploss': [stop_loss],
@@ -267,6 +265,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_status = 'Entry'
                     order_signal = 'Sell'
                     semi_target_flag = 0
+                    trade_count = trade_count + 1
                     order_price = entry_low_target
                     stop_loss = entry_high_target + round((target_buffer_multiplier * order_price),1)
                     profit = profit + order_price
@@ -284,18 +283,18 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
                     if path.exists(live_order_file_name):
-                        live_order_data = pd.read_csv('live_order_' + name + '.csv')
-                        live_order_data_subset = pd.DataFrame({'order_id': [np.nan],
-                                                           'transaction_type': [order_signal],
-                                                           'price': [order_price],
-                                                           'stoploss': [stop_loss],
-                                                           'target': [target],
-                                                           'status': [np.nan],
-                                                           'semi-target_status': [0],
-                                                           'target_status': [0],
-                                                           'stoploss_status': [0],
-                                                           'day_high': [entry_high_target],
-                                                           'day_low': [entry_low_target]})
+                        live_order_data = pd.read_csv(live_order_file_name)
+                        live_order_data_subset = pd.DataFrame({'order_id': [trade_count],
+                                                               'transaction_type': [order_signal],
+                                                               'price': [order_price],
+                                                               'stoploss': [stop_loss],
+                                                               'target': [target],
+                                                               'status': [np.nan],
+                                                               'semi-target_status': [0],
+                                                               'target_status': [0],
+                                                               'stoploss_status': [0],
+                                                               'day_high': [entry_high_target],
+                                                               'day_low': [entry_low_target]})
                         live_order_data = live_order_data.append(live_order_data_subset)
                         live_order_data.reset_index()
                     else:
@@ -305,7 +304,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                 'status', 'semi-target_status', 'target_status',
                                                                 'stoploss_status',
                                                                 'day_high', 'day_low'])
-                        live_order_data_subset = pd.DataFrame({'order_id': [np.nan],
+                        live_order_data_subset = pd.DataFrame({'order_id': [trade_count],
                                                                'transaction_type': [order_signal],
                                                                'price': [order_price],
                                                                'stoploss': [stop_loss],
@@ -325,7 +324,6 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
         # If Open Order Exists
         else:
-
             # If Long Entry Exists
             if order_signal == 'Buy':
 
@@ -334,7 +332,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_status = 'Exit'
                     order_signal = 'Sell'
                     order_price = stop_loss
-                    trade_count = trade_count + 1
+                    # trade_count = trade_count + 1
                     long_count = 1
                     short_count = 0
                     profit = profit + order_price
@@ -353,6 +351,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         order_status = 'Entry'
                         order_signal = 'Sell'
                         semi_target_flag = 0
+                        trade_count = trade_count + 1
                         stop_loss = entry_high_target + round((target_buffer_multiplier * order_price),1)
                         profit = profit + order_price
 
@@ -365,8 +364,8 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         # Print Pointers
                         data.Target[0] = target
                         data.Stop_Loss[0] = stop_loss
-                        live_order_data = pd.read_csv('live_order_' + name + '.csv')
-                        live_order_data_subset = pd.DataFrame({'order_id': [np.nan],
+                        live_order_data = pd.read_csv(live_order_file_name)
+                        live_order_data_subset = pd.DataFrame({'order_id': [trade_count],
                                                                'transaction_type': [order_signal],
                                                                'price': [order_price],
                                                                'stoploss': [stop_loss],
@@ -387,7 +386,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_status = 'Exit'
                     order_signal = 'Sell'
                     order_price = target
-                    trade_count = trade_count + 1
+                    # trade_count = trade_count + 1
                     long_count = 1
                     short_count = 0
                     profit = profit + order_price
@@ -396,16 +395,16 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    live_order_data = pd.read_csv('live_order_' + name + '.csv')
+                    live_order_data = pd.read_csv(live_order_file_name)
                     live_order_data['target_status'][len(live_order_data) - 1] = 1
                     message = 'Stock Name: ' + name + '\n Long Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit From Target'
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Action on Semi Target
-                elif data.High[0] >= (order_price + (order_price * semi_target_multiplier)):
-                    stop_loss = round(order_price + (order_price * semi_target_multiplier),1)
+                elif data.Close[0] >= (order_price + (order_price * semi_target_multiplier)):
+                    stop_loss = round(order_price + (order_price * semi_target_multiplier), 1)
                     # semi_target_flag = 1
-                    live_order_data = pd.read_csv('live_order_' + name + '.csv')
+                    live_order_data = pd.read_csv(live_order_file_name)
                     live_order_data['semi-target_status'][len(live_order_data) - 1] = 1
                     message = 'Stock Name: ' + name + '\nRemarks: Semi Target Crossed and Stop Loss Modified --- \nStop Loss: ' + str(stop_loss)
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
@@ -418,7 +417,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_status = 'Exit'
                     order_signal = 'Buy'
                     order_price = stop_loss
-                    trade_count = trade_count + 1
+                    # trade_count = trade_count + 1
                     long_count = 0
                     short_count = 1
                     profit = profit - order_price
@@ -427,7 +426,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    live_order_data = pd.read_csv('live_order_' + name + '.csv')
+                    live_order_data = pd.read_csv(live_order_file_name)
                     live_order_data['stoploss_status'][len(live_order_data) - 1] = 1
                     message = 'Stock Name: ' + name + '\n Short Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit From Stop Loss'
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
@@ -470,7 +469,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_status = 'Exit'
                     order_signal = 'Buy'
                     order_price = target
-                    trade_count = trade_count + 1
+                    # trade_count = trade_count + 1
                     long_count = 0
                     short_count = 1
                     profit = profit - order_price
@@ -485,7 +484,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Action on Semi Target
-                elif data.Low[0] <= (order_price - (order_price * semi_target_multiplier)):
+                elif data.Close[0] <= (order_price - (order_price * semi_target_multiplier)):
                     stop_loss = round(order_price - (order_price * semi_target_multiplier), 1)
                     # semi_target_flag = 1
                     live_order_data = pd.read_csv('live_order_' + name + '.csv')

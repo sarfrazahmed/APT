@@ -146,4 +146,3 @@ if __name__ == '__main__':
     lot_size = int(sys.argv[2])
     print(lot_size)
     start(name, lot_size)
-
