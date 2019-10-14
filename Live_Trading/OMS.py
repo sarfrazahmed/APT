@@ -47,6 +47,7 @@ def get_target(pivots, order_price, transaction_type, lot_size):
 
 def start(name, access_token, lot_size):
     # Authenticate
+    time.sleep(140)
     path = '/home/ubuntu/APT/APT/Live_Trading'
     os.chdir(path)
     config = configparser.ConfigParser()
