@@ -153,6 +153,6 @@ pdfkit.from_file(output_html_path,output_pdf_path,configuration=config)
 pdf_summary = open(output_pdf_path, 'rb')
 requests.post("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendDocument?chat_id=-383311990",
               files={'document': pdf_summary})
-message = 'csv file of daily report is sent in email'
+message = 'Live Trading for today is completed. CSV file of daily report is sent in email'
 requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
