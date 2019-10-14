@@ -93,7 +93,7 @@ selected_scrips_info = pd.merge(selected_scrips,info_data,
                                 how='left')
 selected_scrips_info = selected_scrips_info.dropna()
 selected_scrips_info = selected_scrips_info.reset_index()
-selected_scrips_info = selected_scrips_info[0:2]
+selected_scrips_info = selected_scrips_info[0:3]
 selected_scrips_info = selected_scrips_info[['Company','Token','Lot_Size']]
 print('Completed')
 
