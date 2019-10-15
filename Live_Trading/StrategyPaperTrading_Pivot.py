@@ -14,8 +14,10 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         semi_target_multiplier=0.005, target_buffer_multiplier=0.0, min_target=5000,
                         candle_error = 0.00075):
     live_order_file_name = 'live_order_' + name + '_' + str(datetime.now().date()) + '.csv'
+    print('Live Oder From Strategy: '  + live_order_file_name)
 
     if path.exists(live_order_file_name):
+        print('Live Trading data Exists for ' + name)
         live_order_data = pd.read_csv(live_order_file_name)
 
     # Selecting Tradable Day and Reset Day High and Day Low
@@ -45,9 +47,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
         if order_status == 'Entry':
 
             # Check if the open order is a long entry
-            if order_signal == 'Buy':
+            if order_signal == 'BUY':
                 order_status = 'Exit'
-                order_signal = 'Sell'
+                order_signal = 'SELL'
                 order_price = round(data.Close[0], 1)
                 long_count = 1
                 short_count = 0
@@ -63,9 +65,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
             # Check If the open order is a short entry
-            elif order_signal == 'Sell':
+            elif order_signal == 'SELL':
                 order_status = 'Exit'
-                order_signal = 'Buy'
+                order_signal = 'BUY'
                 order_price = round(data.Close[0], 1)
                 long_count = 0
                 short_count = 1
@@ -106,7 +108,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 # Long Entry Action
                 if data.Close[0] > entry_high_target:
                     order_status = 'Entry'
-                    order_signal = 'Buy'
+                    order_signal = 'BUY'
                     trade_count = trade_count + 1
                     semi_target_flag = 0
                     order_price = round(data.Close[0], 1)
@@ -153,7 +155,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 # Short Entry Action
                 elif data.Close[0] < entry_low_target:
                     order_status = 'Entry'
-                    order_signal = 'Sell'
+                    order_signal = 'SELL'
                     semi_target_flag = 0
                     trade_count = trade_count + 1
                     order_price = round(data.Close[0], 1)
@@ -201,7 +203,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 # Long Entry
                 if (data.High[0] > entry_high_target) and (long_count == 0):
                     order_status = 'Entry'
-                    order_signal = 'Buy'
+                    order_signal = 'BUY'
                     semi_target_flag = 0
                     trade_count = trade_count + 1
                     order_price = entry_high_target
@@ -263,7 +265,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 # Short Entry
                 elif (data.Low[0] < entry_low_target) and (short_count == 0):
                     order_status = 'Entry'
-                    order_signal = 'Sell'
+                    order_signal = 'SELL'
                     semi_target_flag = 0
                     trade_count = trade_count + 1
                     order_price = entry_low_target
@@ -325,12 +327,12 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
         # If Open Order Exists
         else:
             # If Long Entry Exists
-            if order_signal == 'Buy':
+            if order_signal == 'BUY':
 
                 # Exit From Stop Loss
                 if data.Low[0] <= stop_loss:
                     order_status = 'Exit'
-                    order_signal = 'Sell'
+                    order_signal = 'SELL'
                     order_price = stop_loss
                     # trade_count = trade_count + 1
                     long_count = 1
@@ -349,7 +351,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     ## Take Short Entry if semi target is not hit
                     if semi_target_flag == 0:
                         order_status = 'Entry'
-                        order_signal = 'Sell'
+                        order_signal = 'SELL'
                         semi_target_flag = 0
                         trade_count = trade_count + 1
                         stop_loss = entry_high_target + round((target_buffer_multiplier * order_price),1)
@@ -384,7 +386,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 # Exit From Target
                 elif data.High[0] >= target:
                     order_status = 'Exit'
-                    order_signal = 'Sell'
+                    order_signal = 'SELL'
                     order_price = target
                     # trade_count = trade_count + 1
                     long_count = 1
@@ -410,12 +412,12 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
             # If Short Entry Exists
-            elif order_signal == 'Sell':
+            elif order_signal == 'SELL':
 
                 # Exit From Stop Loss
                 if data.High[0] >= stop_loss:
                     order_status = 'Exit'
-                    order_signal = 'Buy'
+                    order_signal = 'BUY'
                     order_price = stop_loss
                     # trade_count = trade_count + 1
                     long_count = 0
@@ -434,7 +436,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     ## Take Long Entry if semi target is not hit
                     if semi_target_flag == 0:
                         order_status = 'Entry'
-                        order_signal = 'Buy'
+                        order_signal = 'BUY'
                         stop_loss = round(entry_low_target - (target_buffer_multiplier * order_price),1)
                         profit = profit - order_price
 
@@ -467,7 +469,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 # Exit From Target
                 elif data.Low[0] <= target:
                     order_status = 'Exit'
-                    order_signal = 'Buy'
+                    order_signal = 'BUY'
                     order_price = target
                     # trade_count = trade_count + 1
                     long_count = 0
