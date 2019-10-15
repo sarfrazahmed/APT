@@ -75,7 +75,7 @@ def send_mail(mail_from,mail_to,subject,message,file_paths,password):
 folder_path = '/home/ubuntu/APT/APT/Live_Trading'
 wkhtmltopdf_path = '/home/ubuntu/anaconda3/bin/wkhtmltopdf'
 
-file_phrase = 'LiveTrading_Output'
+file_phrase = 'LivePaperTrading_Output'
 stock_list_path = 'stock_list_updated.csv'
 
 time_now = str(datetime.now().date())

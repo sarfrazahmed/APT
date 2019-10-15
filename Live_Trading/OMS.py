@@ -66,7 +66,7 @@ def start(name, access_token, lot_size):
 
     day_high = 0
     day_low = 0
-    quantity = 1
+    quantity = 5
 
     # Read previous day data file
     data = pd.read_csv(path + '/previous_day_data_' + name + '.csv')
