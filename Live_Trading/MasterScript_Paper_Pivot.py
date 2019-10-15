@@ -55,7 +55,7 @@ def start(name, lot_size):
     trade_count = 0
     semi_target_flag = 0
     profit = 0
-    skip_date = datetime.strptime('2019-08-06','%Y-%m-%d').date()
+    skip_date = datetime.strptime('2019-08-06', '%Y-%m-%d').date()
     result_list = [order_status, order_signal, order_price, target, stop_loss,
               entry_high_target, entry_low_target, long_count, short_count, trade_count,
               semi_target_flag, profit, skip_date]
