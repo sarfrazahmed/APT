@@ -42,6 +42,7 @@ def start(name, lot_size):
     path = '/home/ubuntu/APT/APT/Live_Trading'
 
     # Set Initial Pointers Value
+    sleeping_time = 30
     order_status = 'Exit'
     order_signal = ''
     order_price = 0.0
@@ -127,7 +128,7 @@ def start(name, lot_size):
             if data.Date[0].hour == 15 and data.Date[0].minute == 25:
                 break
             # Sleep for 4 min
-            time.sleep(240)
+            time.sleep(sleeping_time)
             # time.sleep(30)
             count = 1
 
