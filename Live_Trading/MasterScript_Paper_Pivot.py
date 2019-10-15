@@ -75,11 +75,12 @@ def start(name, lot_size):
                 continue
 
             # data.columns = ['Close', 'Date', 'High', 'Low', 'Open','Volume']
-            data.columns = ['Date', 'Open', 'High', 'Low', 'Close']
+            # data.columns = ['Date', 'Open', 'High', 'Low', 'Close']
+            data.columns = ['Close','Date','High','Low','Open','Volume']
 
             # Date Column Handling
-            # data['Date'] = [datetime.strptime(i[:i.find('+')], '%Y-%m-%d %H:%M:%S') for i in data['Date']]
-            data['Date'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S') + timedelta(hours=5, minutes=30) for i in data['Date']]
+            data['Date'] = [datetime.strptime(i[:i.find('+')], '%Y-%m-%d %H:%M:%S') for i in data['Date']]
+            # data['Date'] = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S') + timedelta(hours=5, minutes=30) for i in data['Date']]
             data['Year'] = [i.year for i in data['Date']]
             data['DatePart'] = [i.date() for i in data['Date']]
 
@@ -123,7 +124,7 @@ def start(name, lot_size):
                 Trade_Dataset = Trade_Dataset.append(data)
 
                 # Write Updated Trade History as CSV
-                Trade_Dataset.to_csv('LiveTrading_Output' + name + '.csv', index=False)
+                Trade_Dataset.to_csv('LivePaperTrading_Output' + name + '.csv', index=False)
 
             if data.Date[0].hour == 15 and data.Date[0].minute == 25:
                 break

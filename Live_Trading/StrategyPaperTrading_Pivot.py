@@ -125,7 +125,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Price[0] = order_price
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
-                    live_order_data = pd.DataFrame(index=0,
+                    live_order_data = pd.DataFrame(index=[0],
                                                    columns=['order_id', 'transaction_type', 'price', 'stoploss',
                                                             'target',
                                                             'status', 'semi-target_status', 'target_status',
