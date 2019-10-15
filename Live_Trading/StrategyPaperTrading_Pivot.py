@@ -59,7 +59,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 data.Order_Status[0] = order_status
                 data.Order_Signal[0] = order_signal
                 data.Order_Price[0] = order_price
-                live_order_data = pd.read_csv('live_order_' + name + '.csv')
+                live_order_data = pd.read_csv(live_order_file_name)
                 live_order_data['stoploss_status'][len(live_order_data) - 1] = 1
                 message = 'Stock Name: ' + name + '\n Long Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit At 3:25 PM'
                 requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
@@ -78,7 +78,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 data.Order_Status[0] = order_status
                 data.Order_Signal[0] = order_signal
                 data.Order_Price[0] = order_price
-                live_order_data = pd.read_csv('live_order_' + name + '.csv')
+                live_order_data = pd.read_csv(live_order_file_name)
                 live_order_data['stoploss_status'][len(live_order_data) - 1] = 1
                 message = 'Stock Name: ' + name + '\n Short Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit At 3:25 PM'
                 requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
@@ -343,7 +343,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    live_order_data = pd.read_csv('live_order_' + name + '.csv')
+                    live_order_data = pd.read_csv(live_order_file_name)
                     live_order_data['stoploss_status'][len(live_order_data) - 1] = 1
                     message = 'Stock Name: ' + name + '\n Long Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit From Stop Loss'
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
@@ -449,7 +449,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         # Print Pointers
                         data.Target[0] = target
                         data.Stop_Loss[0] = stop_loss
-                        live_order_data = pd.read_csv('live_order_' + name + '.csv')
+                        live_order_data = pd.read_csv(live_order_file_name)
                         live_order_data_subset = pd.DataFrame({'order_id': [np.nan],
                                                                'transaction_type': [order_signal],
                                                                'price': [order_price],
@@ -480,7 +480,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
                     data.Order_Price[0] = order_price
-                    live_order_data = pd.read_csv('live_order_' + name + '.csv')
+                    live_order_data = pd.read_csv(live_order_file_name)
                     live_order_data['target_status'][len(live_order_data) - 1] = 1
                     message = 'Stock Name: ' + name + '\n Short Exit ---' + '\nOrder Price: ' + str(order_price) + '\nRemarks: Exit From Target'
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
@@ -489,7 +489,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                 elif data.Close[0] <= (order_price - (order_price * semi_target_multiplier)):
                     stop_loss = round(order_price - (order_price * semi_target_multiplier), 1)
                     # semi_target_flag = 1
-                    live_order_data = pd.read_csv('live_order_' + name + '.csv')
+                    live_order_data = pd.read_csv(live_order_file_name)
                     live_order_data['semi-target_status'][len(live_order_data) - 1] = 1
                     message = 'Stock Name: ' + name + '\n Semi Target Crossed and Stop Loss Modified  --- \nStop Loss: ' + str(stop_loss)
                     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
