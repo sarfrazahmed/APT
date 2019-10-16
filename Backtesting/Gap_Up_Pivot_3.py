@@ -93,19 +93,24 @@ candle_error = 0.00075
 min_target = 4000
 
 indicator_columns = ['R1_Pivot_Fibonacci',
-                         'R2_Pivot_Fibonacci',
-                         'R3_Pivot_Fibonacci',
-                         'PivotPoint',
-                         'S1_Pivot_Fibonacci',
-                         'S2_Pivot_Fibonacci',
-                         'S3_Pivot_Fibonacci',
-                         'R1_Pivot_Simple',
-                         'R2_Pivot_Simple',
-                         'S1_Pivot_Simple',
-                         'S2_Pivot_Simple']
+                     'R2_Pivot_Fibonacci',
+                     'R3_Pivot_Fibonacci',
+                     'PivotPoint',
+                     'S1_Pivot_Fibonacci',
+                     'S2_Pivot_Fibonacci',
+                     'S3_Pivot_Fibonacci',
+                     'R1_Pivot_Simple',
+                     'R2_Pivot_Simple',
+                     'S1_Pivot_Simple',
+                     'S2_Pivot_Simple']
 months = [
-          'July',
-          'August_2019']
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June'
+]
 print('Initial Inputs Stored')
 ###############################################################
 

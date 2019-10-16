@@ -47,18 +47,18 @@ pin = config['USER']['PIN']
 
 
 ## Selenium for ubuntu
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
-driver = webdriver.Chrome(chrome_options=chrome_options)
-page = driver.get(nsepage)
-time.sleep(5)
-
-# Selenium for windows
-# driver = webdriver.Chrome(executable_path='F:\\DevAPT\\APT\\chromedriver.exe')
+# chrome_options = webdriver.ChromeOptions()
+# chrome_options.add_argument('--headless')
+# chrome_options.add_argument('--no-sandbox')
+# chrome_options.add_argument('--disable-dev-shm-usage')
+# driver = webdriver.Chrome(chrome_options=chrome_options)
 # page = driver.get(nsepage)
 # time.sleep(5)
+
+# Selenium for windows
+driver = webdriver.Chrome(executable_path='F:\\DevAPT\\APT\\chromedriver.exe')
+page = driver.get(nsepage)
+time.sleep(5)
 
 # Choose All FO stocks From Option
 print('Getting All Gap Up/ Down Stocks From Pre Market...')
