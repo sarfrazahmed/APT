@@ -36,12 +36,12 @@ def get_target(pivots, order_price, transaction_type, lot_size):
         deltas = [indicator - order_price for indicator in pivots]
         pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
         min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
-        target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
+        target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1) - order_price
     else:
         deltas = [round(indicator, 1) - order_price for indicator in pivots]
         neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
         max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
-        target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
+        target = order_price - round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
     return target
 
 
@@ -193,7 +193,7 @@ def start(name, access_token, lot_size):
                                                 price=primary_entry_price,
                                                 order_type=kite.ORDER_TYPE_LIMIT,
                                                 product=kite.PRODUCT_MIS,
-                                                stoploss=day_high if primary_transaction_type == 'SELL' else day_low,
+                                                stoploss=(day_high - entry_price) if primary_transaction_type == 'SELL' else (entry_price - day_low),
                                                 squareoff=get_target(pivots, primary_entry_price, primary_transaction_type, lot_size))
                     current_order = current_order.append({'order_id': order_id,
                                                           'local_order_id': local_order,
@@ -216,7 +216,7 @@ def start(name, access_token, lot_size):
                                                 price=secondary_entry_price,
                                                 order_type=kite.ORDER_TYPE_LIMIT,
                                                 product=kite.PRODUCT_MIS,
-                                                stoploss=day_high if primary_transaction_type == 'SELL' else day_low,
+                                                stoploss=(day_high - entry_price) if secondary_transaction_type == 'SELL' else (entry_price - day_low),
                                                 squareoff=get_target(pivots, secondary_entry_price, secondary_transaction_type, lot_size))
                     current_order = current_order.append({'order_id': order_id,
                                                           'local_order_id': local_order+1,
@@ -256,7 +256,7 @@ def start(name, access_token, lot_size):
                                                 price=entry_price,
                                                 order_type=kite.ORDER_TYPE_LIMIT,
                                                 product=kite.PRODUCT_MIS,
-                                                stoploss=day_high if transaction_type == 'SELL' else day_low,
+                                                stoploss=(day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low),
                                                 squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
                     current_order = current_order.append({'order_id': order_id,
                                                           'local_order_id': local_order,
@@ -299,8 +299,8 @@ def start(name, access_token, lot_size):
                                                     price=entry_price,
                                                     order_type=kite.ORDER_TYPE_LIMIT,
                                                     product=kite.PRODUCT_MIS,
-                                                    stoploss=strategy_orders.at[local_order-1, 'stoploss'],
-                                                    squareoff=strategy_orders.at[local_order-1, 'target'])
+                                                    stoploss=(strategy_orders.at[local_order-1, 'stoploss'] - entry_price) if transaction_type == 'SELL' else ( entry_price - strategy_orders.at[local_order-1, 'stoploss']),
+                                                    squareoff=(entry_price - strategy_orders.at[local_order-1, 'target']) if transaction_type == 'SELL' else (strategy_orders.at[local_order-1, 'target'] - entry_price))
                         current_order = current_order.append({'order_id': order_id,
                                                               'local_order_id': local_order,
                                                               'order_type': 'LIMIT',
@@ -324,7 +324,7 @@ def start(name, access_token, lot_size):
                                                     price=entry_price,
                                                     order_type=kite.ORDER_TYPE_LIMIT,
                                                     product=kite.PRODUCT_MIS,
-                                                    stoploss=day_high if strategy_orders.at[local_order-1, 'transaction_type'] == 'SELL' else day_low,
+                                                    stoploss=(day_high - entry_price) if strategy_orders.at[local_order-1, 'transaction_type'] == 'SELL' else (entry_price - day_low),
                                                     squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
                         current_order = current_order.append({'order_id': order_id,
                                                               'local_order_id': local_order+1,
@@ -384,7 +384,7 @@ def start(name, access_token, lot_size):
                                                         price=entry_price,
                                                         order_type=kite.ORDER_TYPE_LIMIT,
                                                         product=kite.PRODUCT_MIS,
-                                                        stoploss=day_high if transaction_type == 'SELL' else day_low,
+                                                        stoploss=(day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low),
                                                         squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
                             current_order = current_order.append({'order_id': order_id,
                                                                   'local_order_id': local_order+1,
