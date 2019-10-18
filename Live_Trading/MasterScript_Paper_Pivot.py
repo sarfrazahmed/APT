@@ -48,8 +48,11 @@ def start(name, lot_size):
     order_price = 0.0
     target = 0.0
     stop_loss = 0.0
-    entry_high_target = 0.0
-    entry_low_target = 10000.0
+    # entry_high_target = 0.0
+    # entry_low_target = 10000.0
+    data = pd.read_csv(path + '/ohlc_data_' + name + '.csv')
+    entry_high_target = data.high[0]
+    entry_low_target = data.low[0]
     long_count = 0
     short_count = 0
     trade_count = 0
@@ -64,6 +67,7 @@ def start(name, lot_size):
                                           'Hour', 'Minute'])
     count = 0
     counter = 0
+    temp_count = 0
     while True:
         # Get data after every 5 mins
         if (datetime.now().minute % 5 == 0) and (datetime.now().second >= 3) and count == 0:
