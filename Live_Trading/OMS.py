@@ -98,7 +98,7 @@ def start(name, access_token, lot_size):
 
                 if len(current_order) == 1:
                     # check if status of order is complete
-                    if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'COMPLETE':
+                    if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']] == 'COMPLETE':
                         # change current order status
                         current_order = current_order.reset_index(drop=True)
                         current_order.at[0, 'status'] = 'COMPLETE'
@@ -117,7 +117,7 @@ def start(name, access_token, lot_size):
 
                 if len(current_order) == 2:
                     # cancel secondary order on execution of primary order and vice-versa
-                    if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'COMPLETE':
+                    if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']] == 'COMPLETE':
                         kite.cancel_order(variety='bo',
                                           order_id=current_order.at[1, 'order_id'].values[0])
 
@@ -142,7 +142,7 @@ def start(name, access_token, lot_size):
 
 
 
-                    elif kite_orders['status'][kite_orders['order_id'] == current_order.at[1, 'order_id']].values[0] == 'COMPLETE':
+                    elif kite_orders['status'][kite_orders['order_id'] == current_order.at[1, 'order_id']] == 'COMPLETE':
                         kite.cancel_order(variety='bo',
                                           order_id=current_order.at[0, 'order_id'].values[0])
 
@@ -166,7 +166,7 @@ def start(name, access_token, lot_size):
                         requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # if stoploss hits
-                if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']].values[0] == 'COMPLETE':
+                if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']] == 'COMPLETE':
 
                     # order transaction type
                     primary_transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
@@ -175,7 +175,7 @@ def start(name, access_token, lot_size):
                     # sl_transaction_type = kite_orders['transaction_type'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']].values[0]
 
                     # entry price
-                    primary_entry_price = kite_orders['price'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']].values[0]
+                    primary_entry_price = kite_orders['price'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']]
                     secondary_entry_price = day_high if primary_transaction_type == 'SELL' else day_low
 
                     # update local order id
@@ -234,7 +234,7 @@ def start(name, access_token, lot_size):
                     stoploss_modified = 0
 
                 # if target hits
-                if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[(current_order['order_type'] == 'LIMIT') & (current_order['transaction_type'] != 'BUY')].index.values.astype(int)[0], 'order_id']].values[0] == 'COMPLETE':
+                if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[(current_order['order_type'] == 'LIMIT') & (current_order['transaction_type'] != 'BUY')].index.values.astype(int)[0], 'order_id']] == 'COMPLETE':
 
                     # order transaction type
                     transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
@@ -346,7 +346,7 @@ def start(name, access_token, lot_size):
                     day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low']
 
                     # modify stoploss if semi-target is hit
-                    if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and stoploss_modified == 0:
+                    if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']] == 1 and stoploss_modified == 0:
                         # if order is executed
                         if current_order.at[0, 'status'] == 'COMPLETE':
                             # modify stoploss

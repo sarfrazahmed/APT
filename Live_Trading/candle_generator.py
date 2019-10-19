@@ -103,7 +103,7 @@ def start(name, date, access_token, interval):
 
 if __name__ == '__main__':
     name = sys.argv[1]
-    date = '2019-10-15'
+    date = '2019-10-16'
     access_token = sys.argv[2]
     # name = 'LT'
     # date = '2019-08-08'

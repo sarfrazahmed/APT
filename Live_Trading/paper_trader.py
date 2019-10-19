@@ -62,7 +62,7 @@ def start(name, token, access_token, timeframe):
         # print(ticks[0]['timestamp'] >= datetime.strptime('1970-01-01 00:00:00','%Y-%m-%d %H:%M:%S'))
         if ticks[0]['timestamp'] >= datetime.now().replace(hour= 3,minute= 45, second = 0,microsecond = 0):
         # if ticks[0]['timestamp'] >= datetime.strptime('1970-01-01 00:00:00','%Y-%m-%d %H:%M:%S'):
-            print(ticks)
+            # print(ticks)
             start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
             if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
                 # save the last minute
