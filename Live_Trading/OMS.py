@@ -346,7 +346,7 @@ def start(name, access_token, lot_size):
                     day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low']
 
                     # modify stoploss if semi-target is hit
-                    if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']] == 1 and stoploss_modified == 0:
+                    if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and stoploss_modified == 0:
                         # if order is executed
                         if current_order.at[0, 'status'] == 'COMPLETE':
                             # modify stoploss
