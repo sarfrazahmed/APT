@@ -7,8 +7,6 @@ import copy
 import kiteconnect as kc
 import os
 
-
-
 ## Pivot Point Calculation
 ###############################################################
 def pivotpoints(data, type='simple'):

@@ -34,7 +34,7 @@ def pivotpoints(data):
 ###############################################################
 def start(name, lot_size):
     # time.sleep(14)
-    # time.sleep(130)
+    time.sleep(130)
     message = ("Stock selected for today: " + str(name))
     requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
     print("Master Script started", flush=True)

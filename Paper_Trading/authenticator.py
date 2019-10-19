@@ -17,10 +17,10 @@ config = configparser.ConfigParser()
 ## Initial Inputs
 ############################################################################
 # For Windows
-path = 'F:/DevAPT/APT/Paper_Trading'
+# path = 'F:/DevAPT/APT/Paper_Trading'
 
 # For Ubuntu
-# path = '/home/ubuntu/APT/APT/Paper_Trading'
+path = '/home/ubuntu/APT/APT/Paper_Trading'
 
 # For Windows
 # path = 'D:/DevAPT/APT/Paper_Trading'
@@ -64,9 +64,11 @@ time.sleep(5)
 print('Getting All Gap Up/ Down Stocks From Pre Market...')
 x = driver.find_element_by_xpath('//*[@id="selId"]/option[2]')
 x.click()
+time.sleep(3)
 
 # Get Pre-market data as DataFrame
 table = driver.find_element_by_xpath('//*[@id="preOpenNiftyTab"]')
+print(table,flush= True)
 tbl = table.get_attribute('outerHTML')
 pre_open_stat = pd.read_html(tbl)[0]
 pre_open_stat = pre_open_stat.drop([1,2,3,4,6,7,8,9,10,11],axis=1)
@@ -93,6 +95,8 @@ selected_scrips_info = selected_scrips_info.dropna()
 selected_scrips_info = selected_scrips_info.reset_index()
 selected_scrips_info = selected_scrips_info[0:5]
 selected_scrips_info = selected_scrips_info[['Company','Token','Lot_Size']]
+selected_scrips_info['Token'] = [int(i) for i in selected_scrips_info['Token']]
+selected_scrips_info['Lot_Size'] = [int(i) for i in selected_scrips_info['Lot_Size']]
 print('Completed')
 
 
@@ -138,4 +142,4 @@ selected_scrips_info['Access_Token'] = KRT['access_token']
 selected_scrips_info['Extra'] = 0
 selected_scrips_info.to_csv('stock_list_updated.csv', index=False)
 print("Connection successful", flush=True)
-
+print("End Time: " + str(datetime.now()))

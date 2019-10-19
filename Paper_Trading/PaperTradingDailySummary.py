@@ -133,7 +133,10 @@ summary_df.to_csv(output_file_path,index= False)
 # Send csv as Mail
 print('Sending CSV as Email',flush=True)
 attachments = [file_phrase + stock_name + '.csv' for stock_name in stock_list['Company']]
-attachments = attachments.insert(output_file_path, 0)
+print(attachments, flush = True)
+print(output_file_path, flush = True)
+attachments.insert(0, output_file_path)
+print(attachments)
 
 for target_mail_id in recipients:
     send_mail(bot_mail_id, target_mail_id, 'Paper Trading Result of The Day',
@@ -150,6 +153,6 @@ pdfkit.from_file(output_html_path,output_pdf_path,configuration=config)
 pdf_summary = open(output_pdf_path, 'rb')
 requests.post("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendDocument?chat_id=-383311990",
               files={'document': pdf_summary})
-message = 'csv file of daily report is sent in email'
+message = 'Paper Trading for today is completed. CSV file of daily report is sent in email'
 requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 

@@ -26,14 +26,15 @@ def start(name, token, access_token, timeframe):
     kite.set_access_token(access_token)
     # Get previous day candle
     def prev_weekday(adate):
+        holiday_list=['2019-10-02','2019-10-08','2019-10-08','2019-11-12','2019-12-25']
         adate -= timedelta(days=1)
+        if adate.strftime('%Y-%m-%d') in holiday_list:
+            adate -= timedelta(days=1)
         while adate.weekday() > 4:
             adate -= timedelta(days=1)
         return adate
-    # date_from = prev_weekday(date.today())
-    # date_to = date_from
-    date_from = '2019-08-30'
-    date_to = '2019-08-30'
+    date_from = prev_weekday(date.today())
+    date_to = date_from
     interval = 'day'
     previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to, interval=interval)
     previous_day_data = pd.DataFrame(previous_day_data)
@@ -57,29 +58,34 @@ def start(name, token, access_token, timeframe):
     def on_ticks(ws, ticks):
         # Callback to receive ticks.
         # print(ticks)
-        start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
-        if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
-            # save the last minute
-            start.last_saved_time = start.tick_df['Timestamp'][len(start.tick_df) - 1].minute
+        # print(ticks[0]['timestamp'] >= datetime.now().replace(hour= 9,minute= 15, second = 0,microsecond = 0))
+        # print(ticks[0]['timestamp'] >= datetime.strptime('1970-01-01 00:00:00','%Y-%m-%d %H:%M:%S'))
+        if ticks[0]['timestamp'] >= datetime.now().replace(hour= 3,minute= 45, second = 0,microsecond = 0):
+        # if ticks[0]['timestamp'] >= datetime.strptime('1970-01-01 00:00:00','%Y-%m-%d %H:%M:%S'):
+            print(ticks)
+            start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
+            if (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].minute != start.last_saved_time):
+                # save the last minute
+                start.last_saved_time = start.tick_df['Timestamp'][len(start.tick_df) - 1].minute
 
-            # drop last row
-            start.tick_df.drop(start.tick_df.tail(1).index, inplace=True)
-            print(len(start.tick_df))
+                # drop last row
+                start.tick_df.drop(start.tick_df.tail(1).index, inplace=True)
+                print(len(start.tick_df))
 
-            # set timestamp as index
-            start.tick_df = start.tick_df.set_index(['Timestamp'])
-            start.tick_df['Timestamp'] = pd.to_datetime(start.tick_df.index, unit='s')
+                # set timestamp as index
+                start.tick_df = start.tick_df.set_index(['Timestamp'])
+                start.tick_df['Timestamp'] = pd.to_datetime(start.tick_df.index, unit='s')
 
-            # convert to OHLC format
-            data_ohlc = start.tick_df['LTP'].resample(timeframe).ohlc()
-            print(data_ohlc)
-            # save the dataframe to csv
-            data_ohlc.to_csv('ohlc_data_' + name +'.csv')
-            print("Printed at " + str(datetime.now()))
+                # convert to OHLC format
+                data_ohlc = start.tick_df['LTP'].resample(timeframe).ohlc()
+                print(data_ohlc)
+                # save the dataframe to csv
+                data_ohlc.to_csv('ohlc_data_' + name +'.csv')
+                print("Printed at " + str(datetime.now()))
 
-            # initialize the dataframe
-            start.tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
-            print(len(data_ohlc))
+                # initialize the dataframe
+                start.tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
+                print(len(data_ohlc))
 
     def on_connect(ws, response):
         # Callback on successful connect.
