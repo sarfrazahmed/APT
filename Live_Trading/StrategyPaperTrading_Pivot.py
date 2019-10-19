@@ -238,7 +238,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         live_order_data = live_order_data.append(live_order_data_subset)
                         live_order_data.reset_index(drop = True)
                     else:
-                        live_order_data = pd.DataFrame(index=0,
+                        live_order_data = pd.DataFrame(index=[0],
                                                        columns=['order_id', 'transaction_type', 'price', 'stoploss',
                                                                 'target',
                                                                 'status', 'semi-target_status', 'target_status',
@@ -300,7 +300,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         live_order_data = live_order_data.append(live_order_data_subset)
                         live_order_data.reset_index(drop= True)
                     else:
-                        live_order_data = pd.DataFrame(index=0,
+                        live_order_data = pd.DataFrame(index=[0],
                                                        columns=['order_id', 'transaction_type', 'price', 'stoploss',
                                                                 'target',
                                                                 'status', 'semi-target_status', 'target_status',
