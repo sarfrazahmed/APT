@@ -145,7 +145,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                            'day_high': [entry_high_target],
                                                            'day_low': [entry_low_target]})
                     live_order_data = live_order_data.append(live_order_data_subset)
-                    live_order_data.reset_index()
+                    live_order_data.reset_index(drop= True)
                     live_order_data = live_order_data[1:]
                     live_order_data.to_csv(live_order_file_name)
                     message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
@@ -174,7 +174,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     data.Order_Price[0] = order_price
                     data.Target[0] = target
                     data.Stop_Loss[0] = stop_loss
-                    live_order_data = pd.DataFrame(index=0,
+                    live_order_data = pd.DataFrame(index=[0],
                                                    columns=['order_id', 'transaction_type', 'price', 'stoploss',
                                                             'target',
                                                             'status', 'semi-target_status', 'target_status',
@@ -192,7 +192,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                            'day_high': [entry_high_target],
                                                            'day_low': [entry_low_target]})
                     live_order_data = live_order_data.append(live_order_data_subset)
-                    live_order_data.reset_index()
+                    live_order_data.reset_index(drop= True)
                     live_order_data = live_order_data[1:]
                     live_order_data.to_csv(live_order_file_name)
                     message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
@@ -236,9 +236,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                            'day_high': [entry_high_target],
                                                            'day_low': [entry_low_target]})
                         live_order_data = live_order_data.append(live_order_data_subset)
-                        live_order_data.reset_index()
+                        live_order_data.reset_index(drop = True)
                     else:
-                        live_order_data = pd.DataFrame(index=0,
+                        live_order_data = pd.DataFrame(index=[0],
                                                        columns=['order_id', 'transaction_type', 'price', 'stoploss',
                                                                 'target',
                                                                 'status', 'semi-target_status', 'target_status',
@@ -256,7 +256,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                'day_high': [entry_high_target],
                                                                'day_low': [entry_low_target]})
                         live_order_data = live_order_data.append(live_order_data_subset)
-                        live_order_data.reset_index()
+                        live_order_data.reset_index(drop=True)
                         live_order_data = live_order_data[1:]
                         live_order_data.to_csv(live_order_file_name)
                     message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
@@ -298,9 +298,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                'day_high': [entry_high_target],
                                                                'day_low': [entry_low_target]})
                         live_order_data = live_order_data.append(live_order_data_subset)
-                        live_order_data.reset_index()
+                        live_order_data.reset_index(drop= True)
                     else:
-                        live_order_data = pd.DataFrame(index=0,
+                        live_order_data = pd.DataFrame(index=[0],
                                                        columns=['order_id', 'transaction_type', 'price', 'stoploss',
                                                                 'target',
                                                                 'status', 'semi-target_status', 'target_status',
@@ -318,7 +318,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                'day_high': [entry_high_target],
                                                                'day_low': [entry_low_target]})
                         live_order_data = live_order_data.append(live_order_data_subset)
-                        live_order_data.reset_index()
+                        live_order_data.reset_index(drop= True)
                         live_order_data = live_order_data[1:]
                         live_order_data.to_csv(live_order_file_name)
                     message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
@@ -379,7 +379,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                'day_high': [entry_high_target],
                                                                'day_low': [entry_low_target]})
                         live_order_data = live_order_data.append(live_order_data_subset)
-                        live_order_data.reset_index()
+                        live_order_data.reset_index(drop= True)
                         message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
                         requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
@@ -462,7 +462,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                'day_high': [entry_high_target],
                                                                'day_low': [entry_low_target]})
                         live_order_data = live_order_data.append(live_order_data_subset)
-                        live_order_data.reset_index()
+                        live_order_data.reset_index(drop= True)
                         message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
                         requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 

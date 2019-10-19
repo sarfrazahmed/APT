@@ -98,7 +98,7 @@ def start(name, access_token, lot_size):
 
                 if len(current_order) == 1:
                     # check if status of order is complete
-                    if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']] == 'COMPLETE':
+                    if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'COMPLETE':
                         # change current order status
                         current_order = current_order.reset_index(drop=True)
                         current_order.at[0, 'status'] = 'COMPLETE'
@@ -117,7 +117,7 @@ def start(name, access_token, lot_size):
 
                 if len(current_order) == 2:
                     # cancel secondary order on execution of primary order and vice-versa
-                    if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']] == 'COMPLETE':
+                    if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'COMPLETE':
                         kite.cancel_order(variety='bo',
                                           order_id=current_order.at[1, 'order_id'].values[0])
 
@@ -142,7 +142,7 @@ def start(name, access_token, lot_size):
 
 
 
-                    elif kite_orders['status'][kite_orders['order_id'] == current_order.at[1, 'order_id']] == 'COMPLETE':
+                    elif kite_orders['status'][kite_orders['order_id'] == current_order.at[1, 'order_id']].values[0] == 'COMPLETE':
                         kite.cancel_order(variety='bo',
                                           order_id=current_order.at[0, 'order_id'].values[0])
 
@@ -166,112 +166,115 @@ def start(name, access_token, lot_size):
                         requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # if stoploss hits
-                if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']] == 'COMPLETE':
+                if len(current_order) == 3:
+                    if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][current_order['order_type'] == 'SL'].values[0]].values[0] == 'COMPLETE':
 
-                    # order transaction type
-                    primary_transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
-                    secondary_transaction_type = current_order.at[0, 'transaction_type']
+                        # order transaction type
+                        primary_transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
+                        secondary_transaction_type = current_order.at[0, 'transaction_type']
 
-                    # sl_transaction_type = kite_orders['transaction_type'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']].values[0]
+                        # entry price
+                        primary_entry_price = current_order['price'][current_order['order_type'] == 'SL']
+                        secondary_entry_price = day_high if primary_transaction_type == 'SELL' else day_low
 
-                    # entry price
-                    primary_entry_price = kite_orders['price'][kite_orders['order_id'] == current_order.at[current_order.loc[current_order['order_type'] == 'SL'].index.values.astype(int)[0], 'order_id']]
-                    secondary_entry_price = day_high if primary_transaction_type == 'SELL' else day_low
+                        # update local order id
+                        local_order = local_order + 1
 
-                    # update local order id
-                    local_order = local_order + 1
+                        # clear previous orders
+                        current_order = current_order[0:0]
 
-                    # clear previous orders
-                    current_order = current_order[0:0]
+                        # place first order at current market price
+                        order_id = kite.place_order(tradingsymbol=name,
+                                                    variety='bo',
+                                                    exchange=kite.EXCHANGE_NSE,
+                                                    transaction_type=primary_transaction_type,
+                                                    quantity=quantity,
+                                                    price=primary_entry_price,
+                                                    trigger_price=primary_entry_price,
+                                                    order_type=kite.ORDER_TYPE_SL,
+                                                    product=kite.PRODUCT_MIS,
+                                                    stoploss=(day_high - primary_entry_price) if primary_transaction_type == 'SELL' else (primary_entry_price - day_low),
+                                                    squareoff=get_target(pivots, primary_entry_price, primary_transaction_type, lot_size))
+                        current_order = current_order.append({'order_id': order_id,
+                                                              'local_order_id': local_order,
+                                                              'order_type': 'LIMIT',
+                                                              'transaction_type': primary_transaction_type,
+                                                              'parent_order_id': 'NA',
+                                                              'price': primary_entry_price,
+                                                              'status': 'OPEN'}, ignore_index=True)
 
-                    # place first order at current market price
-                    order_id = kite.place_order(tradingsymbol=name,
-                                                variety='bo',
-                                                exchange=kite.EXCHANGE_NSE,
-                                                transaction_type=primary_transaction_type,
-                                                quantity=quantity,
-                                                price=primary_entry_price,
-                                                order_type=kite.ORDER_TYPE_LIMIT,
-                                                product=kite.PRODUCT_MIS,
-                                                stoploss=(day_high - entry_price) if primary_transaction_type == 'SELL' else (entry_price - day_low),
-                                                squareoff=get_target(pivots, primary_entry_price, primary_transaction_type, lot_size))
-                    current_order = current_order.append({'order_id': order_id,
-                                                          'local_order_id': local_order,
-                                                          'order_type': 'LIMIT',
-                                                          'transaction_type': primary_transaction_type,
-                                                          'parent_order_id': 'NA',
-                                                          'price': primary_entry_price,
-                                                          'status': 'OPEN'}, ignore_index=True)
+                        # send message to telegram
+                        message = (primary_transaction_type + " order placed for " + name + " at " + str(primary_entry_price))
+                        requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
-                    # send message to telegram
-                    message = (primary_transaction_type + " order placed for " + name + " at " + str(primary_entry_price))
-                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                        # place second order at stoploss
+                        order_id = kite.place_order(tradingsymbol=name,
+                                                    variety='bo',
+                                                    exchange=kite.EXCHANGE_NSE,
+                                                    transaction_type=secondary_transaction_type,
+                                                    quantity=quantity,
+                                                    price=secondary_entry_price,
+                                                    trigger_price=secondary_entry_price,
+                                                    order_type=kite.ORDER_TYPE_SL,
+                                                    product=kite.PRODUCT_MIS,
+                                                    stoploss=(day_high - secondary_entry_price) if secondary_transaction_type == 'SELL' else (secondary_entry_price - day_low),
+                                                    squareoff=get_target(pivots, secondary_entry_price, secondary_transaction_type, lot_size))
+                        current_order = current_order.append({'order_id': order_id,
+                                                              'local_order_id': local_order+1,
+                                                              'order_type': 'LIMIT',
+                                                              'transaction_type': secondary_transaction_type,
+                                                              'parent_order_id': 'NA',
+                                                              'price': secondary_entry_price,
+                                                              'status': 'OPEN'}, ignore_index=True)
 
-                    # place second order at stoploss
-                    order_id = kite.place_order(tradingsymbol=name,
-                                                variety='bo',
-                                                exchange=kite.EXCHANGE_NSE,
-                                                transaction_type=secondary_transaction_type,
-                                                quantity=quantity,
-                                                price=secondary_entry_price,
-                                                order_type=kite.ORDER_TYPE_LIMIT,
-                                                product=kite.PRODUCT_MIS,
-                                                stoploss=(day_high - entry_price) if secondary_transaction_type == 'SELL' else (entry_price - day_low),
-                                                squareoff=get_target(pivots, secondary_entry_price, secondary_transaction_type, lot_size))
-                    current_order = current_order.append({'order_id': order_id,
-                                                          'local_order_id': local_order+1,
-                                                          'order_type': 'LIMIT',
-                                                          'transaction_type': secondary_transaction_type,
-                                                          'parent_order_id': 'NA',
-                                                          'price': secondary_entry_price,
-                                                          'status': 'OPEN'}, ignore_index=True)
+                        # send message to telegram
+                        message = (secondary_transaction_type + " order placed for " + name + " at " + str(secondary_entry_price))
+                        requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
-                    # send message to telegram
-                    message = (secondary_transaction_type + " order placed for " + name + " at " + str(secondary_entry_price))
-                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
-
-                    # update stoploss status
-                    stoploss_modified = 0
+                        # update stoploss status
+                        stoploss_modified = 0
 
                 # if target hits
-                if kite_orders['status'][kite_orders['order_id'] == current_order.at[current_order.loc[(current_order['order_type'] == 'LIMIT') & (current_order['transaction_type'] != 'BUY')].index.values.astype(int)[0], 'order_id']] == 'COMPLETE':
+                if len(current_order) == 3:
+                    if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][(current_order['order_type'] == 'LIMIT') & (current_order['transaction_type'] != current_order.at[0, 'transaction_type'])].values[0]].values[0] == 'COMPLETE':
 
-                    # order transaction type
-                    transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
+                        # order transaction type
+                        transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
 
-                    # entry price
-                    entry_price = day_low if transaction_type == 'SELL' else day_high
+                        # entry price
+                        entry_price = day_low if transaction_type == 'SELL' else day_high
 
-                    # update local order id
-                    local_order = local_order + 1
+                        # update local order id
+                        local_order = local_order + 1
 
-                    # clear previous orders
-                    current_order = current_order[0:0]
+                        # clear previous orders
+                        current_order = current_order[0:0]
 
-                    order_id = kite.place_order(tradingsymbol=name,
-                                                variety='bo',
-                                                exchange=kite.EXCHANGE_NSE,
-                                                transaction_type=transaction_type,
-                                                quantity=quantity,
-                                                price=entry_price,
-                                                order_type=kite.ORDER_TYPE_LIMIT,
-                                                product=kite.PRODUCT_MIS,
-                                                stoploss=(day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low),
-                                                squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
-                    current_order = current_order.append({'order_id': order_id,
-                                                          'local_order_id': local_order,
-                                                          'order_type': 'LIMIT',
-                                                          'transaction_type': transaction_type,
-                                                          'parent_order_id': 'NA',
-                                                          'price': entry_price,
-                                                          'status': 'OPEN'}, ignore_index=True)
+                        order_id = kite.place_order(tradingsymbol=name,
+                                                    variety='bo',
+                                                    exchange=kite.EXCHANGE_NSE,
+                                                    transaction_type=transaction_type,
+                                                    quantity=quantity,
+                                                    price=entry_price,
+                                                    trigger_price=entry_price,
+                                                    order_type=kite.ORDER_TYPE_SL,
+                                                    product=kite.PRODUCT_MIS,
+                                                    stoploss=(day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low),
+                                                    squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
+                        current_order = current_order.append({'order_id': order_id,
+                                                              'local_order_id': local_order,
+                                                              'order_type': 'LIMIT',
+                                                              'transaction_type': transaction_type,
+                                                              'parent_order_id': 'NA',
+                                                              'price': entry_price,
+                                                              'status': 'OPEN'}, ignore_index=True)
 
-                    # send message to telegram
-                    message = (transaction_type + " order placed for " + name + " at " + str(entry_price))
-                    requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                        # send message to telegram
+                        message = (transaction_type + " order placed for " + name + " at " + str(entry_price))
+                        requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
-                    # update stoploss status
-                    stoploss_modified = 0
+                        # update stoploss status
+                        stoploss_modified = 0
 
                 # copy current orders to previous orders
                 previous_kite_orders = kite_orders.copy(deep=True)
@@ -297,7 +300,8 @@ def start(name, access_token, lot_size):
                                                     transaction_type=transaction_type,
                                                     quantity=quantity,
                                                     price=entry_price,
-                                                    order_type=kite.ORDER_TYPE_LIMIT,
+                                                    trigger_price=entry_price,
+                                                    order_type=kite.ORDER_TYPE_SL,
                                                     product=kite.PRODUCT_MIS,
                                                     stoploss=(strategy_orders.at[local_order-1, 'stoploss'] - entry_price) if transaction_type == 'SELL' else ( entry_price - strategy_orders.at[local_order-1, 'stoploss']),
                                                     squareoff=(entry_price - strategy_orders.at[local_order-1, 'target']) if transaction_type == 'SELL' else (strategy_orders.at[local_order-1, 'target'] - entry_price))
@@ -322,7 +326,8 @@ def start(name, access_token, lot_size):
                                                     transaction_type=transaction_type,
                                                     quantity=quantity,
                                                     price=entry_price,
-                                                    order_type=kite.ORDER_TYPE_LIMIT,
+                                                    trigger_price=entry_price,
+                                                    order_type=kite.ORDER_TYPE_SL,
                                                     product=kite.PRODUCT_MIS,
                                                     stoploss=(day_high - entry_price) if strategy_orders.at[local_order-1, 'transaction_type'] == 'SELL' else (entry_price - day_low),
                                                     squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
@@ -346,7 +351,7 @@ def start(name, access_token, lot_size):
                     day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low']
 
                     # modify stoploss if semi-target is hit
-                    if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']] == 1 and stoploss_modified == 0:
+                    if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and stoploss_modified == 0:
                         # if order is executed
                         if current_order.at[0, 'status'] == 'COMPLETE':
                             # modify stoploss
@@ -382,7 +387,8 @@ def start(name, access_token, lot_size):
                                                         transaction_type=transaction_type,
                                                         quantity=quantity,
                                                         price=entry_price,
-                                                        order_type=kite.ORDER_TYPE_LIMIT,
+                                                        trigger_price=entry_price,
+                                                        order_type=kite.ORDER_TYPE_SL,
                                                         product=kite.PRODUCT_MIS,
                                                         stoploss=(day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low),
                                                         squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
