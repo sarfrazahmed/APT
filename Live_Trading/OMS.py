@@ -7,6 +7,7 @@ import time
 import sys
 from datetime import datetime
 import requests
+import logging
 
 
 def pivotpoints(data):
@@ -46,8 +47,18 @@ def get_target(pivots, order_price, transaction_type, lot_size):
 
 
 def start(name, access_token, lot_size):
+    logging.basicConfig(filename=name+"_OMS.log",
+                        format='%(asctime)s %(message)s',
+                        filemode='w')
+    # Creating an object
+    logger = logging.getLogger()
+
+    # Setting the threshold of logger to DEBUG
+    logger.setLevel(logging.DEBUG)
+
     # Authenticate
     time.sleep(140)
+    logger.debug("OMS started")
     path = '/home/ubuntu/APT/APT/Live_Trading'
     os.chdir(path)
     config = configparser.ConfigParser()
@@ -58,6 +69,7 @@ def start(name, access_token, lot_size):
     # Connect to kite
     kite = KiteConnect(api_key=api_key)
     kite.set_access_token(access_token)
+    logger.debug("OMS Authenticated")
 
     # Initialise variables
     first_order = 1
@@ -73,7 +85,6 @@ def start(name, access_token, lot_size):
     pivots = pivotpoints(data)
 
     # Local orders dataframes
-    strategy_orders = pd.DataFrame()
     previous_strategy_orders = pd.DataFrame()
 
     # Create current order tracker dataframe
@@ -113,6 +124,7 @@ def start(name, access_token, lot_size):
                         # send message to telegram
                         message = (str(current_order.at[0, 'transaction_type'])+" order executed for " + name + " at " + str(current_order.at[0, 'price']))
                         requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                        logger.debug("Complete status case handled successfully")
 
 
                 if len(current_order) == 2:
@@ -139,6 +151,7 @@ def start(name, access_token, lot_size):
                         # send message to telegram
                         message = (str(current_order.at[0, 'transaction_type']) + " order executed for " + name + " at " + str(current_order.at[0, 'price']))
                         requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                        logger.debug("Secondary order cancelled")
 
 
 
@@ -164,6 +177,7 @@ def start(name, access_token, lot_size):
                         # send message to telegram
                         message = (str(current_order.at[0, 'transaction_type']) + " order executed for " + name + " at " + str(current_order.at[0, 'price']))
                         requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                        logger.debug("Primary order cancelled")
 
                 # if stoploss hits
                 if len(current_order) == 3:
@@ -233,6 +247,7 @@ def start(name, access_token, lot_size):
 
                         # update stoploss status
                         stoploss_modified = 0
+                        logger.debug("Stoploss hit case handled")
 
                 # if target hits
                 if len(current_order) == 3:
@@ -275,7 +290,7 @@ def start(name, access_token, lot_size):
 
                         # update stoploss status
                         stoploss_modified = 0
-
+                        logger.debug("Target hit case handled")
                 # copy current orders to previous orders
                 previous_kite_orders = kite_orders.copy(deep=True)
             time.sleep(1)
@@ -344,11 +359,14 @@ def start(name, access_token, lot_size):
 
                         first_order = 0
                         local_order = local_order + 1
+                        logger.debug("First order placed for "+name)
 
 
                     # update day high and day low
                     day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_high']
                     day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low']
+                    logger.debug("Current day high: ", day_high)
+                    logger.debug("Current day low: ", day_low)
 
                     # modify stoploss if semi-target is hit
                     if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and stoploss_modified == 0:
@@ -366,6 +384,7 @@ def start(name, access_token, lot_size):
 
                             # update stoploss status
                             stoploss_modified = 1
+                            logger.debug("Stoploss modified to semi-target: ", modified_price)
 
                         # if order was not executed
                         elif current_order.at[0, 'status'] == 'OPEN' and current_order.at[1, 'status'] == 'OPEN':
@@ -407,10 +426,12 @@ def start(name, access_token, lot_size):
                             # update stoploss status
                             stoploss_modified = 0
                             local_order = local_order + 1
+                            logger.debug("Exception case handled")
                 previous_strategy_orders = strategy_orders.copy(deep=True)
             time.sleep(1)
         elif datetime.now().hour == 9 and datetime.now().minute >= 59:
             all_orders.to_csv('LiveTrading_Output'+name+'.csv')
+            logger.debug("Order file saved")
             # send message to telegram
             message = ("Live orders file sent to mail")
             requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
