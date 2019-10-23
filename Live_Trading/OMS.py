@@ -292,8 +292,8 @@ def start(name, access_token, lot_size):
                     if first_order == 1:
                         local_order = strategy_orders.at[0, 'order_id']
                         # place first order at current market price
-                        transaction_type = strategy_orders.at[local_order-1, 'transaction_type']
-                        entry_price = strategy_orders.at[local_order-1, 'price']
+                        transaction_type = strategy_orders.at[0, 'transaction_type']
+                        entry_price = strategy_orders.at[0, 'price']
                         order_id = kite.place_order(tradingsymbol=name,
                                                     variety='bo',
                                                     exchange=kite.EXCHANGE_NSE,
@@ -303,8 +303,8 @@ def start(name, access_token, lot_size):
                                                     trigger_price=entry_price,
                                                     order_type=kite.ORDER_TYPE_SL,
                                                     product=kite.PRODUCT_MIS,
-                                                    stoploss=(strategy_orders.at[local_order-1, 'stoploss'] - entry_price) if transaction_type == 'SELL' else ( entry_price - strategy_orders.at[local_order-1, 'stoploss']),
-                                                    squareoff=(entry_price - strategy_orders.at[local_order-1, 'target']) if transaction_type == 'SELL' else (strategy_orders.at[local_order-1, 'target'] - entry_price))
+                                                    stoploss=(strategy_orders.at[0, 'stoploss'] - entry_price) if transaction_type == 'SELL' else ( entry_price - strategy_orders.at[0, 'stoploss']),
+                                                    squareoff=(entry_price - strategy_orders.at[0, 'target']) if transaction_type == 'SELL' else (strategy_orders.at[0, 'target'] - entry_price))
                         current_order = current_order.append({'order_id': order_id,
                                                               'local_order_id': local_order,
                                                               'order_type': 'LIMIT',
@@ -318,8 +318,8 @@ def start(name, access_token, lot_size):
                         requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                         # place second order at stoploss
-                        transaction_type = 'SELL' if strategy_orders.at[local_order-1, 'transaction_type'] == 'BUY' else 'BUY'
-                        entry_price = strategy_orders.at[local_order-1, 'stoploss']
+                        transaction_type = 'SELL' if strategy_orders.at[0, 'transaction_type'] == 'BUY' else 'BUY'
+                        entry_price = strategy_orders.at[0, 'stoploss']
                         order_id = kite.place_order(tradingsymbol=name,
                                                     variety='bo',
                                                     exchange=kite.EXCHANGE_NSE,
@@ -329,7 +329,7 @@ def start(name, access_token, lot_size):
                                                     trigger_price=entry_price,
                                                     order_type=kite.ORDER_TYPE_SL,
                                                     product=kite.PRODUCT_MIS,
-                                                    stoploss=(day_high - entry_price) if strategy_orders.at[local_order-1, 'transaction_type'] == 'SELL' else (entry_price - day_low),
+                                                    stoploss=(day_high - entry_price) if strategy_orders.at[0, 'transaction_type'] == 'SELL' else (entry_price - day_low),
                                                     squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
                         current_order = current_order.append({'order_id': order_id,
                                                               'local_order_id': local_order+1,
