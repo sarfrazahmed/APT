@@ -1,4 +1,2 @@
-Close,Date,DatePart,Day_High,Day_Low,High,Hour,Long_Count,Low,Minute,Open,Order_Price,Order_Signal,Order_Status,Profit,Short_Count,Stop_Loss,Target,Trade_Count,Volume,Year
-221.0,2019-10-16 09:35:00,2019-10-16,0.0,0.0,222.0,9,0.0,220.6,35,221.45,221.0,BUY,Entry,0.0,0.0,10000.0,225.5,0.0,200063.0,2019
-220.9,2019-10-16 09:40:00,2019-10-16,0.0,0.0,221.6,9,0.0,220.65,40,221.05,10000.0,SELL,Exit,0.0,0.0,222.0,246.0,0.0,123922.0,2019
-220.55,2019-10-16 10:00:00,2019-10-16,0.0,0.0,220.95,10,0.0,219.85,0,219.85,246.0,BUY,Exit,0.0,0.0,0.0,0.0,0.0,132057.0,2019
+Close,Date,DatePart,Day_High,Day_Low,High,Hour,Long_Count,Low,Minute,Open,Order_Price,Order_Signal,Order_Status,Profit,Short_Count,Stop_Loss,Target,Trade_Count,Year
+223.3,2019-10-24 12:05:00,2019-10-24,0.0,0.0,224.25,12,0.0,222.8,5,222.95,223.3,BUY,Entry,0.0,0.0,222.2,225.3,0.0,2019
