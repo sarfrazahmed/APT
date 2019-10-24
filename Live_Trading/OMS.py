@@ -303,14 +303,11 @@ def start(name, access_token, lot_size):
                 # if orders present in strategy orders file
                 if not strategy_orders.equals(previous_strategy_orders):
 
-                    # update day high and day low
-                    day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_high']
-                    day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low']
-                    logger.debug("Day high updated")
-                    logger.debug("Day low updated")
-
                     # first order of the day
                     if first_order == 1:
+                        # get day high and day low
+                        day_high = strategy_orders.at[0, 'day_high']
+                        day_low = strategy_orders.at[0, 'day_low']
                         local_order = strategy_orders.at[0, 'order_id']
                         # place first order at current market price
                         transaction_type = strategy_orders.at[0, 'transaction_type']
@@ -366,6 +363,12 @@ def start(name, access_token, lot_size):
                         first_order = 0
                         local_order = local_order + 1
                         logger.debug("First order placed for "+name)
+
+                    # update day high and day low
+                    day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_high']
+                    day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low']
+                    logger.debug("Day high updated")
+                    logger.debug("Day low updated")
 
                     # modify stoploss if semi-target is hit
                     if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and stoploss_modified == 0:
