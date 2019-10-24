@@ -296,12 +296,18 @@ def start(name, access_token, lot_size):
             time.sleep(1)
 
 
-        elif datetime.now().minute % 5 == 0 and datetime.now().second % 15 == 0:
+        elif datetime.now().minute % 5 == 0 and datetime.now().second >= 15 and datetime.now().second <= 17 :
             if os.path.isfile('live_order_' + name + '_' + str(datetime.now().date()) + '.csv'):
                 strategy_orders = pd.read_csv('live_order_' + name + '_' + str(datetime.now().date()) + '.csv')
 
                 # if orders present in strategy orders file
                 if not strategy_orders.equals(previous_strategy_orders):
+
+                    # update day high and day low
+                    day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_high']
+                    day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low']
+                    logger.debug("Day high updated")
+                    logger.debug("Day low updated")
 
                     # first order of the day
                     if first_order == 1:
@@ -360,13 +366,6 @@ def start(name, access_token, lot_size):
                         first_order = 0
                         local_order = local_order + 1
                         logger.debug("First order placed for "+name)
-
-
-                    # update day high and day low
-                    day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_high']
-                    day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low']
-                    logger.debug("Current day high: ", day_high)
-                    logger.debug("Current day low: ", day_low)
 
                     # modify stoploss if semi-target is hit
                     if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and stoploss_modified == 0:
