@@ -26,7 +26,7 @@ def start(name, token, access_token, timeframe):
     kite.set_access_token(access_token)
     # Get previous day candle
     def prev_weekday(adate):
-        holiday_list=['2019-10-02','2019-10-08','2019-10-08','2019-11-12','2019-12-25']
+        holiday_list=['2019-10-02','2019-10-08','2019-10-28','2019-11-12','2019-12-25']
         adate -= timedelta(days=1)
         if adate.strftime('%Y-%m-%d') in holiday_list:
             adate -= timedelta(days=1)
