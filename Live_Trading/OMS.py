@@ -223,6 +223,7 @@ def start(name, access_token, lot_size):
         elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 5 and datetime.now().second <= 7) :
             if os.path.isfile('live_order_' + name + '_' + str(datetime.now().date()) + '.csv'):
                 strategy_orders = pd.read_csv('live_order_' + name + '_' + str(datetime.now().date()) + '.csv')
+                strategy_orders = strategy_orders.reset_index(drop=True)
 
                 # if orders present in strategy orders file
                 if not strategy_orders.equals(previous_strategy_orders):
@@ -276,9 +277,11 @@ def start(name, access_token, lot_size):
                             # modify stoploss
                             modified_price = strategy_orders['semi-target'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0]
                             order_id = kite.modify_order(variety='bo',
-                                                         order_id=current_order.at[0, 'order_id'],
+                                                         parent_order_id=current_order.at[0, 'order_id'],
+                                                         order_type=kite.ORDER_TYPE_SL,
                                                          quantity=quantity,
-                                                         price=modified_price)
+                                                         price=modified_price,
+                                                         trigger_price=modified_price)
                             # send message to telegram
                             message = ("Stoploss modified to " + str(modified_price) + " for " + name)
                             requests.get(bot_link + message)
