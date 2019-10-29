@@ -81,7 +81,7 @@ def start(name, access_token, lot_size):
 
     day_high = 0
     day_low = 0
-    quantity = 5
+    quantity = 10
 
     # Read previous day data file
     data = pd.read_csv(path + '/previous_day_data_' + name + '.csv')
@@ -130,7 +130,7 @@ def start(name, access_token, lot_size):
                             # send message to telegram
                             message = (str(current_order.at[0, 'transaction_type'])+" order executed for " + name + " at " + str(current_order.at[0, 'price']))
                             requests.get(bot_link + message)
-                            logger.debug("Complete status case handled successfully")
+                            logger.debug("Order executed status case handled successfully")
 
 
                     # if stoploss hits
@@ -142,6 +142,12 @@ def start(name, access_token, lot_size):
 
                             # entry price
                             entry_price = current_order['price'][current_order['order_type'] == 'SL']
+
+                            # stoploss
+                            stoploss = (day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low)
+
+                            # target
+                            target = get_target(pivots, entry_price, transaction_type, lot_size)
 
                             # update local order id
                             local_order = local_order + 1
@@ -158,8 +164,8 @@ def start(name, access_token, lot_size):
                                                         price=entry_price,
                                                         order_type=kite.ORDER_TYPE_LIMIT,
                                                         product=kite.PRODUCT_MIS,
-                                                        stoploss=(day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low),
-                                                        squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
+                                                        stoploss=stoploss,
+                                                        squareoff=target)
                             current_order = current_order.append({'order_id': order_id,
                                                                   'local_order_id': local_order,
                                                                   'order_type': 'LIMIT',
@@ -169,7 +175,7 @@ def start(name, access_token, lot_size):
                                                                   'status': 'OPEN'}, ignore_index=True)
 
                             # send message to telegram
-                            message = (transaction_type + " order placed for " + name + " at " + str(entry_price))
+                            message = (transaction_type + " order placed for " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + "and target at " + str(target))
                             requests.get(bot_link + message)
 
                             # update stoploss status
@@ -185,6 +191,12 @@ def start(name, access_token, lot_size):
                             # entry price
                             entry_price = day_low if transaction_type == 'SELL' else day_high
 
+                            # stoploss
+                            stoploss = (day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low)
+
+                            # target
+                            target = get_target(pivots, entry_price, transaction_type, lot_size)
+
                             # update local order id
                             local_order = local_order + 1
 
@@ -199,8 +211,8 @@ def start(name, access_token, lot_size):
                                                         price=entry_price,
                                                         order_type=kite.ORDER_TYPE_LIMIT,
                                                         product=kite.PRODUCT_MIS,
-                                                        stoploss=(day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low),
-                                                        squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
+                                                        stoploss=stoploss,
+                                                        squareoff=target)
                             current_order = current_order.append({'order_id': order_id,
                                                                   'local_order_id': local_order,
                                                                   'order_type': 'LIMIT',
@@ -210,7 +222,7 @@ def start(name, access_token, lot_size):
                                                                   'status': 'OPEN'}, ignore_index=True)
 
                             # send message to telegram
-                            message = (transaction_type + " order placed for " + name + " at " + str(entry_price))
+                            message = (transaction_type + " order placed for " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + "and target at " + str(target))
                             requests.get(bot_link + message)
 
                             # update stoploss status
@@ -220,7 +232,7 @@ def start(name, access_token, lot_size):
                     # copy current orders to previous orders
                     previous_kite_orders = kite_orders.copy(deep=True)
 
-        elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 5 and datetime.now().second <= 7) :
+        elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 5 and datetime.now().second <= 6) :
             if os.path.isfile('live_order_' + name + '_' + str(datetime.now().date()) + '.csv'):
                 strategy_orders = pd.read_csv('live_order_' + name + '_' + str(datetime.now().date()) + '.csv')
                 strategy_orders = strategy_orders.reset_index(drop=True)
@@ -234,8 +246,11 @@ def start(name, access_token, lot_size):
                         local_order = strategy_orders.at[0, 'order_id']
                         transaction_type = strategy_orders.at[0, 'transaction_type']
                         entry_price = strategy_orders.at[0, 'price']
-                        stoploss = strategy_orders.at[0, 'stoploss']
-                        target = strategy_orders.at[0, 'target']
+                        stoploss_price = strategy_orders.at[0, 'stoploss']
+                        target_price = strategy_orders.at[0, 'target']
+
+                        stoploss = (stoploss_price - entry_price) if transaction_type == 'SELL' else (entry_price - stoploss_price)
+                        target = (entry_price - target_price) if transaction_type == 'SELL' else (target_price - entry_price)
 
                         # place first order at current market price
                         order_id = kite.place_order(tradingsymbol=name,
@@ -246,8 +261,8 @@ def start(name, access_token, lot_size):
                                                     price=entry_price,
                                                     order_type=kite.ORDER_TYPE_LIMIT,
                                                     product=kite.PRODUCT_MIS,
-                                                    stoploss=(stoploss - entry_price) if transaction_type == 'SELL' else (entry_price - stoploss),
-                                                    squareoff=(entry_price - target) if transaction_type == 'SELL' else (target - entry_price))
+                                                    stoploss=stoploss,
+                                                    squareoff=target)
                         current_order = current_order.append({'order_id': order_id,
                                                               'local_order_id': local_order,
                                                               'order_type': 'LIMIT',
@@ -257,7 +272,7 @@ def start(name, access_token, lot_size):
                                                               'status': 'OPEN'}, ignore_index=True)
 
                         # send message to telegram
-                        message = (transaction_type + " order placed for " + name + " at " + str(entry_price))
+                        message = (transaction_type + " order placed for " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + "and target at " + str(target))
                         requests.get(bot_link + message)
 
                         first_order = 0
@@ -267,8 +282,8 @@ def start(name, access_token, lot_size):
                     # update day high and day low
                     day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_high']
                     day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low']
-                    logger.debug("Day high updated to: ", str(day_high))
-                    logger.debug("Day low updated to: ", str(day_low))
+                    message = (name + "\n Day high: " + str(day_high) + "\n Day low: " + str(day_low))
+                    requests.get(bot_link + message)
 
                     # modify stoploss if semi-target is hit
                     if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and stoploss_modified == 0:
@@ -278,6 +293,7 @@ def start(name, access_token, lot_size):
                             modified_price = strategy_orders['semi-target'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0]
                             order_id = kite.modify_order(variety='bo',
                                                          parent_order_id=current_order.at[0, 'order_id'],
+                                                         order_id=current_order['order_id'][current_order['order_type'] == 'SL'].values[0],
                                                          order_type=kite.ORDER_TYPE_SL,
                                                          quantity=quantity,
                                                          price=modified_price,
@@ -292,8 +308,18 @@ def start(name, access_token, lot_size):
 
                         # if order was not executed
                         elif current_order.at[0, 'status'] == 'OPEN':
+
+                            # transaction type
                             transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
+
+                            # entry price
                             entry_price = current_order.at[0, 'semi-target']
+
+                            # stoploss
+                            stoploss = (day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low)
+
+                            # target
+                            target = get_target(pivots, entry_price, transaction_type, lot_size)
 
                             # cancel last placed order
                             kite.cancel_order(variety='bo',
@@ -311,8 +337,8 @@ def start(name, access_token, lot_size):
                                                         price=entry_price,
                                                         order_type=kite.ORDER_TYPE_LIMIT,
                                                         product=kite.PRODUCT_MIS,
-                                                        stoploss=(day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low),
-                                                        squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
+                                                        stoploss=stoploss,
+                                                        squareoff=target)
                             current_order = current_order.append({'order_id': order_id,
                                                                   'local_order_id': local_order+1,
                                                                   'order_type': 'LIMIT',
@@ -322,7 +348,7 @@ def start(name, access_token, lot_size):
                                                                   'status': 'OPEN'}, ignore_index=True)
 
                             # send message to telegram
-                            message = (str(transaction_type) + " order placed for " + name + " at " + str(entry_price))
+                            message = (transaction_type + " order placed for " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + "and target at " + str(target))
                             requests.get(bot_link + message)
 
                             # update stoploss status
