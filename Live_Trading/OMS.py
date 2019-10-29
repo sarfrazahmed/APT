@@ -37,12 +37,12 @@ def get_target(pivots, order_price, transaction_type, lot_size):
         deltas = [indicator - order_price for indicator in pivots]
         pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
         min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
-        target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1) - order_price
+        target = round(round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1) - order_price, 1)
     else:
         deltas = [round(indicator, 1) - order_price for indicator in pivots]
         neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
         max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
-        target = order_price - round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
+        target = round(order_price - round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1), 1)
     return target
 
 
@@ -144,7 +144,7 @@ def start(name, access_token, lot_size):
                             entry_price = current_order['price'][current_order['order_type'] == 'SL']
 
                             # stoploss
-                            stoploss = (day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low)
+                            stoploss = round((day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low), 1)
 
                             # target
                             target = get_target(pivots, entry_price, transaction_type, lot_size)
@@ -192,7 +192,7 @@ def start(name, access_token, lot_size):
                             entry_price = day_low if transaction_type == 'SELL' else day_high
 
                             # stoploss
-                            stoploss = (day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low)
+                            stoploss = round((day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low), 1)
 
                             # target
                             target = get_target(pivots, entry_price, transaction_type, lot_size)
@@ -249,8 +249,8 @@ def start(name, access_token, lot_size):
                         stoploss_price = strategy_orders.at[0, 'stoploss']
                         target_price = strategy_orders.at[0, 'target']
 
-                        stoploss = (stoploss_price - entry_price) if transaction_type == 'SELL' else (entry_price - stoploss_price)
-                        target = (entry_price - target_price) if transaction_type == 'SELL' else (target_price - entry_price)
+                        stoploss = round((stoploss_price - entry_price) if transaction_type == 'SELL' else (entry_price - stoploss_price), 1)
+                        target = round((entry_price - target_price) if transaction_type == 'SELL' else (target_price - entry_price), 1)
 
                         # place first order at current market price
                         order_id = kite.place_order(tradingsymbol=name,
@@ -272,7 +272,7 @@ def start(name, access_token, lot_size):
                                                               'status': 'OPEN'}, ignore_index=True)
 
                         # send message to telegram
-                        message = (transaction_type + " order placed for " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + "and target at " + str(target))
+                        message = (transaction_type + " order placed for " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss_price) + "and target at " + str(target_price))
                         requests.get(bot_link + message)
 
                         first_order = 0
@@ -280,8 +280,8 @@ def start(name, access_token, lot_size):
                         logger.debug("First order placed for "+name)
 
                     # update day high and day low
-                    day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_high']
-                    day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low']
+                    day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_high'].values[0]
+                    day_low = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_low'].values[0]
                     message = (name + "\n Day high: " + str(day_high) + "\n Day low: " + str(day_low))
                     requests.get(bot_link + message)
 
@@ -316,7 +316,7 @@ def start(name, access_token, lot_size):
                             entry_price = current_order.at[0, 'semi-target']
 
                             # stoploss
-                            stoploss = (day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low)
+                            stoploss = round((day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low), 1)
 
                             # target
                             target = get_target(pivots, entry_price, transaction_type, lot_size)
