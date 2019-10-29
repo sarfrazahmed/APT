@@ -50,7 +50,7 @@ def start(name, lot_size):
     stop_loss = 0.0
     # entry_high_target = 0.0
     # entry_low_target = 10000.0
-    data = pd.read_csv(path + '/ohlc_data_' + name + '.csv')
+    data = pd.read_csv(path + '/previous_day_data_' + name + '.csv')
     entry_high_target = data.high[0]
     entry_low_target = data.low[0]
     long_count = 0
