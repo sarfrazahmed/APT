@@ -318,7 +318,7 @@ def start(name, access_token, lot_size):
                             transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
 
                             # entry price
-                            entry_price = current_order.at[0, 'semi-target']
+                            entry_price = strategy_orders['semi-target'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0]
 
                             # stoploss
                             stoploss = round((day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low), 1)
