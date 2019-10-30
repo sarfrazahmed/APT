@@ -92,11 +92,12 @@ def start(name, access_token, lot_size):
 
     # Create current order tracker dataframe
     current_order_parameters = ['order_id', 'order_type', 'transaction_type', 'parent_order_id', 'price', 'status']
-    current_order = pd.DataFrame(columns=current_order_parameters)
-    all_orders = pd.DataFrame(columns=current_order_parameters)
+    current_order = pd.DataFrame(columns=['order_id', 'local_order_id', 'order_type', 'transaction_type', 'parent_order_id', 'price', 'status'])
+    all_orders = pd.DataFrame(columns=['order_id', 'local_order_id', 'order_type', 'transaction_type', 'parent_order_id', 'price', 'status'])
 
     # Get order update from KITE
     previous_kite_orders = pd.DataFrame(kite.orders())
+    kite_orders = pd.DataFrame(kite.orders())
     print("Order Management Started")
     message = ("Order Management script started for: " + str(name))
     requests.get(bot_link + message)
@@ -107,7 +108,11 @@ def start(name, access_token, lot_size):
 
             # Check if first order is placed
             if first_order == 0:
-                kite_orders = pd.DataFrame(kite.orders())
+                try:
+                    kite_orders = pd.DataFrame(kite.orders())
+                except:
+                    logger.debug("Too many requests error from server")
+                    pass
                 current_order = current_order.reset_index(drop=True)
 
                 # Proceed if any new updates are there
@@ -296,8 +301,8 @@ def start(name, access_token, lot_size):
                                                          order_id=current_order['order_id'][current_order['order_type'] == 'SL'].values[0],
                                                          order_type=kite.ORDER_TYPE_SL,
                                                          quantity=quantity,
-                                                         price=modified_price,
                                                          trigger_price=modified_price)
+
                             # send message to telegram
                             message = ("Stoploss modified to " + str(modified_price) + " for " + name)
                             requests.get(bot_link + message)

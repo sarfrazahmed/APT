@@ -45,8 +45,8 @@ def get_target(pivots, order_price, transaction_type, lot_size):
     return target
 
 
-name = 'TATAMOTORS'
-access_token = 'smi03RcBoE0gs4fwOtjedYr6eDcbRjOR'
+name = 'YESBANK'
+access_token = 'si0y1PQYpV3hYgxgsI0RJppZmlq4X1XH'
 lot_size = 3000
 
 # Read previous day data file
@@ -78,7 +78,7 @@ order_id = kite.place_order(tradingsymbol=name,
                             transaction_type=transaction_type,
                             quantity=quantity,
                             price=entry_price,
-                            order_type=kite.ORDER_TYPE_LIMIT,
+                            order_type=kite.ORDER_TYPE_LIMIT ,
                             product=kite.PRODUCT_MIS,
                             stoploss=(day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low),
                             squareoff=get_target(pivots, entry_price, transaction_type, lot_size))
@@ -88,10 +88,17 @@ order_id = kite.place_order(tradingsymbol=name,
 kite.cancel_order(variety='bo',
                   order_id=order_id)
 
+parent_order_id = 191030000348338
+order_id = 191030000404983
+modified_price = 720
+quantity = 10
 #order modify
 order_id = kite.modify_order(variety='bo',
+                             parent_order_id=parent_order_id,
                              order_id=order_id,
-                             parent_order_id=order_id,
+                             order_type=kite.ORDER_TYPE_SL,
                              quantity=quantity,
                              price=modified_price,
-                             trigger_price=modified_price)
+                             trigger_price=modified_price
+                             )
+
