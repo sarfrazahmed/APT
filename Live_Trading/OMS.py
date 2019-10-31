@@ -81,7 +81,10 @@ def start(name, access_token, lot_size):
 
     day_high = 0
     day_low = 0
-    quantity = 10
+    if lot_size < 100:
+        quantity = 1
+    else:
+        quantity = round(lot_size/100)
 
     # Read previous day data file
     data = pd.read_csv(path + '/previous_day_data_' + name + '.csv')
@@ -127,6 +130,8 @@ def start(name, access_token, lot_size):
 
                             # append executed order to all orders
                             all_orders = all_orders.append(current_order)
+                            all_orders.to_csv('LiveTrading_Output' + name + '.csv')
+                            logger.debug("Order file saved")
 
                             # append stoploss and target orders
                             current_order = current_order.append(kite_orders.loc[kite_orders['parent_order_id'] == current_order.at[0, 'order_id'], current_order_parameters])
@@ -180,7 +185,7 @@ def start(name, access_token, lot_size):
                                                                   'status': 'OPEN'}, ignore_index=True)
 
                             # send message to telegram
-                            message = (transaction_type + " order placed for " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + " and target at " + str(target))
+                            message = (transaction_type + " order placed for " + str(quantity) + " stocks of " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + " and target at " + str(target))
                             requests.get(bot_link + message)
 
                             # update stoploss status
@@ -227,7 +232,7 @@ def start(name, access_token, lot_size):
                                                                   'status': 'OPEN'}, ignore_index=True)
 
                             # send message to telegram
-                            message = (transaction_type + " order placed for " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + " and target at " + str(target))
+                            message = (transaction_type + " order placed for " + str(quantity) + " stocks of " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + " and target at " + str(target))
                             requests.get(bot_link + message)
 
                             # update stoploss status
@@ -277,7 +282,7 @@ def start(name, access_token, lot_size):
                                                               'status': 'OPEN'}, ignore_index=True)
 
                         # send message to telegram
-                        message = (transaction_type + " order placed for " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss_price) + " and target at " + str(target_price))
+                        message = (transaction_type + " order placed for " + str(quantity) + " stocks of " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss_price) + " and target at " + str(target_price))
                         requests.get(bot_link + message)
 
                         first_order = 0
@@ -353,7 +358,7 @@ def start(name, access_token, lot_size):
                                                                   'status': 'OPEN'}, ignore_index=True)
 
                             # send message to telegram
-                            message = (transaction_type + " order placed for " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + " and target at " + str(target))
+                            message = (transaction_type + " order placed for " + str(quantity) + " stocks of " + name + " at " + str(entry_price) + " with stoploss at " + str(stoploss) + " and target at " + str(target))
                             requests.get(bot_link + message)
 
                             # update stoploss status
