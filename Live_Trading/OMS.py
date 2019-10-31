@@ -78,6 +78,7 @@ def start(name, access_token, lot_size):
     first_order = 1
     stoploss_modified = 0
     local_order = 0
+    semi_target_multiplier = 0.005
 
     day_high = 0
     day_low = 0
@@ -300,7 +301,9 @@ def start(name, access_token, lot_size):
                         # if order is executed
                         if current_order.at[0, 'status'] == 'COMPLETE':
                             # modify stoploss
-                            modified_price = strategy_orders['semi-target'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0]
+                            # modified_price = strategy_orders['semi-target'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0]
+                            order_price = current_order.at[0, 'price']
+                            modified_price = round(order_price + (order_price * semi_target_multiplier), 1)
                             order_id = kite.modify_order(variety='bo',
                                                          parent_order_id=current_order.at[0, 'order_id'],
                                                          order_id=current_order['order_id'][current_order['order_type'] == 'SL'].values[0],
@@ -323,7 +326,8 @@ def start(name, access_token, lot_size):
                             transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
 
                             # entry price
-                            entry_price = strategy_orders['semi-target'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0]
+                            order_price = current_order.at[0, 'price']
+                            entry_price = round(order_price + (order_price * semi_target_multiplier), 1)
 
                             # stoploss
                             stoploss = round((day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low), 1)
