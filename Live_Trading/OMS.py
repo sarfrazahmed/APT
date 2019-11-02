@@ -129,14 +129,14 @@ def start(name, access_token, lot_size):
                             current_order = current_order.reset_index(drop=True)
                             current_order.at[0, 'status'] = 'COMPLETE'
 
-                            # append executed order to all orders
-                            all_orders = all_orders.append(current_order)
-                            all_orders.to_csv('LiveTrading_Output' + name + '.csv')
-                            logger.debug("Order file saved")
-
                             # append stoploss and target orders
                             current_order = current_order.append(kite_orders.loc[kite_orders['parent_order_id'] == current_order.at[0, 'order_id'], current_order_parameters])
                             current_order = current_order.reset_index(drop=True)
+
+                            # append all orders to save
+                            all_orders = all_orders.append(current_order)
+                            all_orders.to_csv('LiveTrading_Output' + name + '.csv')
+                            logger.debug("Order file saved")
 
                             # send message to telegram
                             message = (str(current_order.at[0, 'transaction_type'])+" order executed for " + name + " at " + str(current_order.at[0, 'price']))
@@ -220,7 +220,8 @@ def start(name, access_token, lot_size):
                                                         transaction_type=transaction_type,
                                                         quantity=quantity,
                                                         price=entry_price,
-                                                        order_type=kite.ORDER_TYPE_LIMIT,
+                                                        trigger_price=entry_price,
+                                                        order_type=kite.ORDER_TYPE_SL,
                                                         product=kite.PRODUCT_MIS,
                                                         stoploss=stoploss,
                                                         squareoff=target)
