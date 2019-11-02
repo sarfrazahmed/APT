@@ -183,6 +183,7 @@ def start(name, access_token, lot_size):
                                                                   'transaction_type': transaction_type,
                                                                   'parent_order_id': 'NA',
                                                                   'price': entry_price,
+                                                                  'trigger_price': 0,
                                                                   'status': 'OPEN'}, ignore_index=True)
 
                             # send message to telegram
@@ -231,6 +232,7 @@ def start(name, access_token, lot_size):
                                                                   'transaction_type': transaction_type,
                                                                   'parent_order_id': 'NA',
                                                                   'price': entry_price,
+                                                                  'trigger_price': 0,
                                                                   'status': 'OPEN'}, ignore_index=True)
 
                             # send message to telegram
@@ -281,6 +283,7 @@ def start(name, access_token, lot_size):
                                                               'transaction_type': transaction_type,
                                                               'parent_order_id': 'NA',
                                                               'price': entry_price,
+                                                              'trigger_price': 0,
                                                               'status': 'OPEN'}, ignore_index=True)
 
                         # send message to telegram
@@ -365,6 +368,7 @@ def start(name, access_token, lot_size):
                                                                   'transaction_type': transaction_type,
                                                                   'parent_order_id': 'NA',
                                                                   'price': entry_price,
+                                                                  'trigger_price': 0,
                                                                   'status': 'OPEN'}, ignore_index=True)
 
                             # send message to telegram
