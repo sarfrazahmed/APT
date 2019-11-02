@@ -95,9 +95,9 @@ def start(name, access_token, lot_size):
     previous_strategy_orders = pd.DataFrame()
 
     # Create current order tracker dataframe
-    current_order_parameters = ['order_id', 'order_type', 'transaction_type', 'parent_order_id', 'price', 'status']
-    current_order = pd.DataFrame(columns=['order_id', 'local_order_id', 'order_type', 'transaction_type', 'parent_order_id', 'price', 'status'])
-    all_orders = pd.DataFrame(columns=['order_id', 'local_order_id', 'order_type', 'transaction_type', 'parent_order_id', 'price', 'status'])
+    current_order_parameters = ['order_id', 'order_type', 'transaction_type', 'parent_order_id', 'price', 'trigger_price', 'status']
+    current_order = pd.DataFrame(columns=['order_id', 'local_order_id', 'order_type', 'transaction_type', 'parent_order_id', 'price', 'trigger_price', 'status'])
+    all_orders = pd.DataFrame(columns=['order_id', 'local_order_id', 'order_type', 'transaction_type', 'parent_order_id', 'price', 'trigger_price', 'status'])
 
     # Get order update from KITE
     previous_kite_orders = pd.DataFrame(kite.orders())
@@ -146,13 +146,13 @@ def start(name, access_token, lot_size):
 
                     # if stoploss hits
                     if len(current_order) == 3:
-                        if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][current_order['order_type'] == 'SL'].values[0]].values[0] == 'COMPLETE':
+                        if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][(current_order['trigger_price'] != 0) & (current_order['transaction_type'] != current_order.at[0, 'transaction_type'])].values[0]].values[0] == 'COMPLETE':
 
                             # order transaction type
                             transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
 
                             # entry price
-                            entry_price = current_order['price'][current_order['order_type'] == 'SL']
+                            entry_price = current_order['trigger_price'][current_order['trigger_price'] != 0].values[0]
 
                             # stoploss
                             stoploss = round((day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low), 1)
@@ -194,7 +194,7 @@ def start(name, access_token, lot_size):
                             logger.debug("Stoploss hit case handled")
 
                         # if target hits
-                        if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][(current_order['order_type'] == 'LIMIT') & (current_order['transaction_type'] != current_order.at[0, 'transaction_type'])].values[0]].values[0] == 'COMPLETE':
+                        if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][(current_order['trigger_price'] == 0) & (current_order['transaction_type'] != current_order.at[0, 'transaction_type'])].values[0]].values[0] == 'COMPLETE':
 
                             # order transaction type
                             transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
@@ -302,7 +302,6 @@ def start(name, access_token, lot_size):
                         # if order is executed
                         if current_order.at[0, 'status'] == 'COMPLETE':
                             # modify stoploss
-                            # modified_price = strategy_orders['semi-target'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0]
                             order_price = current_order.at[0, 'price']
                             if current_order.at[0, 'transaction_type'] == 'BUY':
                                 modified_price = round(order_price + (order_price * semi_target_multiplier), 1)
@@ -310,7 +309,7 @@ def start(name, access_token, lot_size):
                                 modified_price = round(order_price - (order_price * semi_target_multiplier), 1)
                             order_id = kite.modify_order(variety='bo',
                                                          parent_order_id=current_order.at[0, 'order_id'],
-                                                         order_id=current_order['order_id'][current_order['order_type'] == 'SL'].values[0],
+                                                         order_id=current_order['order_id'][current_order['trigger_price'] != 0].values[0],
                                                          order_type=kite.ORDER_TYPE_SL,
                                                          quantity=quantity,
                                                          trigger_price=modified_price)
