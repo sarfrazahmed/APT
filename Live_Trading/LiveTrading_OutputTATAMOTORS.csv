@@ -1,1 +1,3 @@
-,order_id,order_type,transaction_type,parent_order_id,price,status
+,local_order_id,order_id,order_type,parent_order_id,price,status,transaction_type
+0,2,191101000516300,LIMIT,NA,174.9,COMPLETE,BUY
+0,4,191101000947023,LIMIT,NA,172.5,COMPLETE,SELL
