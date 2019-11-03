@@ -13,6 +13,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         semi_target_flag, profit, skip_date, prev_day_close, min_gap=0.000001,
                         semi_target_multiplier=0.005, target_buffer_multiplier=0.0, min_target=5000,
                         candle_error = 0.00075):
+
     live_order_file_name = 'live_order_' + name + '_' + str(datetime.now().date()) + '.csv'
     print('Live Oder From Strategy: '  + live_order_file_name)
 
