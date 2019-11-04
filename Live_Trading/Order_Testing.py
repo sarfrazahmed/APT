@@ -45,14 +45,6 @@ def get_target(pivots, order_price, transaction_type, lot_size):
     return target
 
 
-name = 'YESBANK'
-access_token = 'si0y1PQYpV3hYgxgsI0RJppZmlq4X1XH'
-lot_size = 3000
-
-# Read previous day data file
-data = pd.read_csv('C:/Users/Sarfraz/Desktop/previous_day_data_' + name + '.csv')
-pivots = pivotpoints(data)
-
 path = 'D:\DevAPT\APT\Live_Trading'
 os.chdir(path)
 config = configparser.ConfigParser()
@@ -60,9 +52,17 @@ config_path = path + '/config.ini'
 config.read(config_path)
 api_key = config['API']['API_KEY']
 
+name = 'YESBANK'
+access_token = 'tvWojuJfBfPwKYDSqOF3DX5H8xSwkcZ9'
+lot_size = 3000
+
 # Connect to kite
 kite = KiteConnect(api_key=api_key)
 kite.set_access_token(access_token)
+
+# Read previous day data file
+data = pd.read_csv('C:/Users/Sarfraz/Desktop/previous_day_data_' + name + '.csv')
+pivots = pivotpoints(data)
 
 transaction_type = 'BUY'
 quantity = 1
