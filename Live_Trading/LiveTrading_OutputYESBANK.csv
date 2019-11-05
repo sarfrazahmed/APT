@@ -1,1 +1,4 @@
-,order_id,local_order_id,order_type,transaction_type,parent_order_id,price,trigger_price,status
+,local_order_id,order_id,order_type,parent_order_id,price,status,transaction_type,trigger_price
+0,1,191105000921163,LIMIT,NA,68.5,COMPLETE,SELL,0
+1,,191105000921716,LIMIT,191105000921163,62.6,OPEN,BUY,0.0
+2,,191105000921717,SL,191105000921163,72.75,TRIGGER PENDING,BUY,72.0
