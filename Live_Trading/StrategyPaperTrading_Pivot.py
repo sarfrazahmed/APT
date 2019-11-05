@@ -11,7 +11,7 @@ import requests
 def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal, order_price, target, stop_loss,
                         entry_high_target, entry_low_target, long_count, short_count, trade_count,
                         semi_target_flag, profit, skip_date, prev_day_close, min_gap=0.000001,
-                        semi_target_multiplier=0.005, target_buffer_multiplier=0.0, min_target=5000,
+                        semi_target_multiplier=0.004, target_buffer_multiplier=0.0, min_target=5000,
                         candle_error = 0.00075):
 
     live_order_file_name = 'live_order_' + name + '_' + str(datetime.now().date()) + '.csv'
@@ -118,7 +118,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
                     # Calculating Target
                     deltas = [indicator - order_price for indicator in pivots]
-                    pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
+                    pos_deltas = [delta for delta in deltas if delta > (order_price * 0.004)]
                     min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
                     target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
 
@@ -165,7 +165,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
                     # Calculating Target
                     deltas = [round(indicator,1) - order_price for indicator in pivots]
-                    neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
+                    neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.004)]
                     max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
                     target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
 
@@ -213,7 +213,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
                     # Calculating Target
                     deltas = [indicator - order_price for indicator in pivots]
-                    pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
+                    pos_deltas = [delta for delta in deltas if delta > (order_price * 0.004)]
                     min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
                     target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier),1)
 
@@ -275,7 +275,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
                     # Calculating Target
                     deltas = [indicator - order_price for indicator in pivots]
-                    neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
+                    neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.004)]
                     max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
                     target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
 
@@ -360,7 +360,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
                         # Calculating Target
                         deltas = [indicator - order_price for indicator in pivots]
-                        neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.005)]
+                        neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.004)]
                         max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
                         target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier),1)
 
@@ -443,7 +443,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
                         # Calculating Target
                         deltas = [indicator - order_price for indicator in pivots]
-                        pos_deltas = [delta for delta in deltas if delta > (order_price * 0.005)]
+                        pos_deltas = [delta for delta in deltas if delta > (order_price * 0.004)]
                         min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
                         target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
 
