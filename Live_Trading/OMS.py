@@ -121,7 +121,6 @@ def start(name, access_token, lot_size):
 
                 # Proceed if any new updates are there
                 if not kite_orders.equals(previous_kite_orders):
-
                     if len(current_order) == 1:
                         # check if status of order is complete
                         if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'COMPLETE':
@@ -406,6 +405,3 @@ if __name__ == '__main__':
     lot_size = int(sys.argv[2])
     access_token = sys.argv[3]
     start(name, access_token, lot_size)
-
-
-
