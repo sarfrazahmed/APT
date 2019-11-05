@@ -1,2 +1,2 @@
 activate algotrading
-./anaconda3/bin/python ./APT/APT/Paper_Trading/PaperTradingDailySummary.py
+./anaconda3/bin/python ./APT/APT/Live_Trading/PaperTradingDailySummary.py
