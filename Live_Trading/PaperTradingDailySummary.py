@@ -102,11 +102,11 @@ for i in stock_list.index.values:
 
     trade_data['Double_Entry_Flag'] = np.where(trade_data['Order_Status'] == 'Exit',
                                                np.where(trade_data['Target'] != 0.0,1,0),0)
-    trade_data['Amount'] = np.where(trade_data['Order_Signal'] == 'Buy',
+    trade_data['Amount'] = np.where(trade_data['Order_Signal'] == 'BUY',
                                     np.where(trade_data['Double_Entry_Flag'] == 1,
                                              (-2) * trade_data['Order_Price'],
                                              (-1) * trade_data['Order_Price']),
-                                    np.where(trade_data['Order_Signal'] == 'Sell',
+                                    np.where(trade_data['Order_Signal'] == 'SELL',
                                              np.where(trade_data['Double_Entry_Flag'] == 1,
                                                       2 * trade_data['Order_Price'],
                                                       trade_data['Order_Price']),0.0))
