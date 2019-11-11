@@ -253,8 +253,9 @@ def start(name, access_token, lot_size):
 
                     # copy current orders to previous orders
                     previous_kite_orders = kite_orders.copy(deep=True)
+                    time.sleep(1)
 
-        elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 5 and datetime.now().second <= 6) :
+        elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 5 and datetime.now().second < 6) :
             if os.path.isfile('live_order_' + name + '_' + str(datetime.now().date()) + '.csv'):
                 strategy_orders = pd.read_csv('live_order_' + name + '_' + str(datetime.now().date()) + '.csv')
                 strategy_orders = strategy_orders.reset_index(drop=True)
@@ -398,6 +399,7 @@ def start(name, access_token, lot_size):
                             local_order = local_order + 1
                             logger.debug("Semi-target modification in open order case handled")
                 previous_strategy_orders = strategy_orders.copy(deep=True)
+                time.sleep(1)
 
         elif datetime.now().hour == 9 and datetime.now().minute >= 59:
             all_orders.to_csv('LiveTrading_Output'+name+'.csv')
