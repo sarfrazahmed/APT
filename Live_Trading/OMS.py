@@ -303,7 +303,6 @@ def start(name, access_token, lot_size):
                         requests.get(bot_link + message)
 
                         first_order = 0
-                        local_order = local_order + 1
                         logger.debug("First order placed for "+name)
 
                     # update day high and day low
@@ -370,6 +369,9 @@ def start(name, access_token, lot_size):
                             # empty dataframe
                             current_order = current_order[0:0]
 
+                            # update local order id
+                            local_order = local_order + 1
+
                             # place new order
                             order_id = kite.place_order(tradingsymbol=name,
                                                         variety='bo',
@@ -382,7 +384,7 @@ def start(name, access_token, lot_size):
                                                         stoploss=stoploss,
                                                         squareoff=target)
                             current_order = current_order.append({'order_id': order_id,
-                                                                  'local_order_id': local_order+1,
+                                                                  'local_order_id': local_order,
                                                                   'order_type': 'LIMIT',
                                                                   'transaction_type': transaction_type,
                                                                   'parent_order_id': 'NA',
@@ -396,7 +398,6 @@ def start(name, access_token, lot_size):
 
                             # update stoploss status
                             stoploss_modified = 0
-                            local_order = local_order + 1
                             logger.debug("Semi-target modification in open order case handled")
                 previous_strategy_orders = strategy_orders.copy(deep=True)
                 time.sleep(1)
