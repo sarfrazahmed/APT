@@ -124,6 +124,7 @@ def start(name, access_token, lot_size):
                     if len(current_order) == 1:
                         # check if status of order is complete
                         if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'COMPLETE':
+                            logger.debug("Order executed case block entered")
                             # change current order status
                             current_order = current_order.reset_index(drop=True)
                             current_order.at[0, 'status'] = 'COMPLETE'
@@ -142,10 +143,11 @@ def start(name, access_token, lot_size):
                             requests.get(bot_link + message)
                             logger.debug("Order executed status case handled successfully")
 
-
                     # if stoploss hits
                     if len(current_order) > 1:
                         if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][(current_order['trigger_price'] != 0) & (current_order['transaction_type'] != current_order.at[0, 'transaction_type'])].values[0]].values[0] == 'COMPLETE':
+
+                            logger.debug("Stoploss hit case block entered")
 
                             # order transaction type
                             transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
@@ -195,8 +197,11 @@ def start(name, access_token, lot_size):
                             stoploss_modified = 0
                             logger.debug("Stoploss hit case handled")
 
-                        # if target hits
+                    # if target hits
+                    if len(current_order) > 1:
                         if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][(current_order['trigger_price'] == 0) & (current_order['transaction_type'] != current_order.at[0, 'transaction_type'])].values[0]].values[0] == 'COMPLETE':
+
+                            logger.debug("Target hit case block entered")
 
                             # order transaction type
                             transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
@@ -248,8 +253,9 @@ def start(name, access_token, lot_size):
 
                     # copy current orders to previous orders
                     previous_kite_orders = kite_orders.copy(deep=True)
+                    time.sleep(1)
 
-        elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 5 and datetime.now().second <= 6) :
+        elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 5 and datetime.now().second < 6) :
             if os.path.isfile('live_order_' + name + '_' + str(datetime.now().date()) + '.csv'):
                 strategy_orders = pd.read_csv('live_order_' + name + '_' + str(datetime.now().date()) + '.csv')
                 strategy_orders = strategy_orders.reset_index(drop=True)
@@ -259,6 +265,9 @@ def start(name, access_token, lot_size):
 
                     # first order of the day
                     if first_order == 1:
+
+                        logger.debug("First order block entered")
+
                         # get order details
                         local_order = strategy_orders.at[0, 'order_id']
                         transaction_type = strategy_orders.at[0, 'transaction_type']
@@ -307,6 +316,9 @@ def start(name, access_token, lot_size):
                     if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and stoploss_modified == 0:
                         # if order is executed
                         if current_order.at[0, 'status'] == 'COMPLETE':
+
+                            logger.debug("Semi-target modification in executed order block entered")
+
                             # modify stoploss
                             order_price = current_order.at[0, 'price']
                             if current_order.at[0, 'transaction_type'] == 'BUY':
@@ -326,10 +338,12 @@ def start(name, access_token, lot_size):
 
                             # update stoploss status
                             stoploss_modified = 1
-                            logger.debug("Stoploss modified to semi-target: ", modified_price)
+                            logger.debug("Semi-target modification in executed order case handled")
 
                         # if order was not executed
                         elif current_order.at[0, 'status'] == 'OPEN':
+
+                            logger.debug("Semi-target modification in open order block entered")
 
                             # transaction type
                             transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
@@ -383,8 +397,9 @@ def start(name, access_token, lot_size):
                             # update stoploss status
                             stoploss_modified = 0
                             local_order = local_order + 1
-                            logger.debug("Exception case handled")
+                            logger.debug("Semi-target modification in open order case handled")
                 previous_strategy_orders = strategy_orders.copy(deep=True)
+                time.sleep(1)
 
         elif datetime.now().hour == 9 and datetime.now().minute >= 59:
             all_orders.to_csv('LiveTrading_Output'+name+'.csv')
