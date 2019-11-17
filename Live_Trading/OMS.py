@@ -362,7 +362,7 @@ def start(name, access_token, lot_size):
 
                             # target
                             target = get_target(pivots, entry_price, transaction_type, lot_size)
-                            target_price = (target + entry_price) if transaction_type == 'BUY' else (entry_price - target)
+                            target_price = round((target + entry_price) if transaction_type == 'BUY' else (entry_price - target), 1)
 
                             # cancel last placed order
                             kite.cancel_order(variety='bo',
