@@ -161,7 +161,7 @@ def start(name, access_token, lot_size):
 
                             # target
                             target = get_target(pivots, entry_price, transaction_type, lot_size)
-                            target_price = (target + entry_price) if transaction_type == 'BUY' else (entry_price - target)
+                            target_price = round((target + entry_price) if transaction_type == 'BUY' else (entry_price - target), 1)
 
                             # update local order id
                             local_order = local_order + 1
@@ -215,7 +215,7 @@ def start(name, access_token, lot_size):
 
                             # target
                             target = get_target(pivots, entry_price, transaction_type, lot_size)
-                            target_price = (target + entry_price) if transaction_type == 'BUY' else (entry_price - target)
+                            target_price = round((target + entry_price) if transaction_type == 'BUY' else (entry_price - target), 1)
 
                             # update local order id
                             local_order = local_order + 1
@@ -259,6 +259,8 @@ def start(name, access_token, lot_size):
             if os.path.isfile('live_order_' + name + '_' + str(datetime.now().date()) + '.csv'):
                 strategy_orders = pd.read_csv('live_order_' + name + '_' + str(datetime.now().date()) + '.csv')
                 strategy_orders = strategy_orders.reset_index(drop=True)
+                kite_orders.to_csv('kite_orders_' + name + '_' + str(datetime.now().date()) + '.csv')
+                current_order.to_csv('current_order_' + name + '_' + str(datetime.now().date()) + '.csv')
 
                 # if orders present in strategy orders file
                 if not strategy_orders.equals(previous_strategy_orders):
