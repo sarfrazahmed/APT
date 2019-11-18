@@ -255,6 +255,11 @@ def start(name, access_token, lot_size):
                     previous_kite_orders = kite_orders.copy(deep=True)
                     time.sleep(1)
 
+                else:
+                    time.sleep(1)
+            else:
+                time.sleep(1)
+
         elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 5 and datetime.now().second < 6) :
             if os.path.isfile('live_order_' + name + '_' + str(datetime.now().date()) + '.csv'):
                 strategy_orders = pd.read_csv('live_order_' + name + '_' + str(datetime.now().date()) + '.csv')
