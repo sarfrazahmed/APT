@@ -1,3 +1,0 @@
-Close,Date,DatePart,Day_High,Day_Low,High,Hour,Long_Count,Low,Minute,Open,Order_Price,Order_Signal,Order_Status,Profit,Short_Count,Stop_Loss,Target,Trade_Count,Year
-663.3,2019-10-30 09:40:00,2019-10-30,0.0,0.0,663.35,9,0.0,658.65,40,659.0,663.3,BUY,Entry,0.0,0.0,656.3,667.5,0.0,2019
-667.9,2019-10-30 09:45:00,2019-10-30,0.0,0.0,669.0,9,0.0,663.2,45,663.3,667.5,SELL,Exit,0.0,0.0,0.0,0.0,0.0,2019

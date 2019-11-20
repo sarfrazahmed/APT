@@ -1,5 +1,0 @@
-,Unnamed: 0,Unnamed: 0.1,Unnamed: 0.1.1,day_high,day_low,order_id,price,semi-target_status,status,stoploss,stoploss_status,target,target_status,transaction_type
-0,0.0,0.0,0.0,351.3,350.2,1.0,350.8,0,,10000.0,0,354.9,0,BUY
-1,1.0,0.0,,351.3,350.2,2.0,10000.0,0,,351.3,0,386.7,0,SELL
-2,0.0,,,351.6,350.1,,351.3,0,,350.1,0,354.9,0,BUY
-0,,,,352.4,349.7,3.0,350.1,0,,352.4,0,347.4,0,SELL
