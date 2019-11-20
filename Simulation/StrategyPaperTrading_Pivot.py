@@ -18,11 +18,14 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
     print('Live Oder From Strategy: '  + live_order_file_name)
 
     if path.exists(live_order_file_name):
-        print('Live Trading data Exists for ' + name)
         live_order_data = pd.read_csv(live_order_file_name)
+        message = 'Live Trading data Exists for ' + name + ' with ' + str(len(live_order_data)) + ' rows'
+        requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
     # Selecting Tradable Day and Reset Day High and Day Low
     if data.Date[0].hour == 9 and data.Date[0].minute == 15:
+        message = name + ': Entered into 9.15 Criteria'
+        requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
         day_flag = 'selected' if abs(data.Open[0] - prev_day_close) > (prev_day_close * min_gap) else 'not selected'
         skip_date = data.DatePart[0] if day_flag == 'not selected' else skip_date
         entry_high_target = data.High[0]
@@ -35,49 +38,52 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     (data.High[0] - data.Open[0]) <= data.Open[0] * candle_error or
                     (data.Close[0] - data.Low[0]) <= data.Open[0] * candle_error) else trade_count
             if trade_count == 1:
-                order_status = 'Entry'
-                order_signal = 'BUY'
-                trade_count = trade_count + 1
-                semi_target_flag = 0
-                order_price = round(data.Close[0], 1)
-                stop_loss = entry_low_target - round((target_buffer_multiplier * order_price), 1)
-                profit = profit - order_price
-
-                # Calculating Target
-                deltas = [indicator - order_price for indicator in pivots]
-                pos_deltas = [delta for delta in deltas if delta > (order_price * 0.004)]
-                min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
-                target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
-
-                # Print Pointers
-                data.Order_Status[0] = order_status
-                data.Order_Signal[0] = order_signal
-                data.Order_Price[0] = order_price
-                data.Target[0] = target
-                data.Stop_Loss[0] = stop_loss
-                live_order_data = pd.DataFrame(index=[0],
-                                               columns=['order_id', 'transaction_type', 'price', 'stoploss',
-                                                        'target',
-                                                        'status', 'semi-target_status', 'target_status',
-                                                        'stoploss_status',
-                                                        'day_high', 'day_low'])
-                live_order_data_subset = pd.DataFrame({'order_id': [trade_count],
-                                                       'transaction_type': [order_signal],
-                                                       'price': [order_price],
-                                                       'stoploss': [stop_loss],
-                                                       'target': [target],
-                                                       'status': [np.nan],
-                                                       'semi-target_status': [0],
-                                                       'target_status': [0],
-                                                       'stoploss_status': [0],
-                                                       'day_high': [entry_high_target],
-                                                       'day_low': [entry_low_target]})
-                live_order_data = live_order_data.append(live_order_data_subset)
-                live_order_data.reset_index(drop=True)
-                live_order_data = live_order_data[1:]
-                live_order_data.to_csv(live_order_file_name, index=False)
                 message = 'Stock Name: ' + name + '\nMarubuzu Candle Identified'
                 requests.get("https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                if ((data.Open[0] - data.Low[0]) <= data.Open[0] * candle_error or
+                    (data.High[0] - data.Close[0]) <= data.Open[0] * candle_error):
+                    order_status = 'Entry'
+                    order_signal = 'BUY'
+                    trade_count = trade_count + 1
+                    semi_target_flag = 0
+                    order_price = round(data.Close[0], 1)
+                    stop_loss = entry_low_target - round((target_buffer_multiplier * order_price), 1)
+                    profit = profit - order_price
+
+                    # Calculating Target
+                    deltas = [indicator - order_price for indicator in pivots]
+                    pos_deltas = [delta for delta in deltas if delta > (order_price * 0.004)]
+                    min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
+                    target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
+
+                    # Print Pointers
+                    data.Order_Status[0] = order_status
+                    data.Order_Signal[0] = order_signal
+                    data.Order_Price[0] = order_price
+                    data.Target[0] = target
+                    data.Stop_Loss[0] = stop_loss
+                    live_order_data = pd.DataFrame(index=[0],
+                                                   columns=['order_id', 'transaction_type', 'price', 'stoploss',
+                                                            'target',
+                                                            'status', 'semi-target_status', 'target_status',
+                                                            'stoploss_status',
+                                                            'day_high', 'day_low'])
+                    live_order_data_subset = pd.DataFrame({'order_id': [trade_count],
+                                                           'transaction_type': [order_signal],
+                                                           'price': [order_price],
+                                                           'stoploss': [stop_loss],
+                                                           'target': [target],
+                                                           'status': [np.nan],
+                                                           'semi-target_status': [0],
+                                                           'target_status': [0],
+                                                           'stoploss_status': [0],
+                                                           'day_high': [entry_high_target],
+                                                           'day_low': [entry_low_target]})
+                    live_order_data = live_order_data.append(live_order_data_subset)
+                    live_order_data.reset_index(drop=True)
+                    live_order_data = live_order_data[1:]
+                    live_order_data.to_csv(live_order_file_name, index=False)
+                else:
 
         # print('Date: ' + str(data.Date[0]))
         # print('Status: ' + day_flag)
