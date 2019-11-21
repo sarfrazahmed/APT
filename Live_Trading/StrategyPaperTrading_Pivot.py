@@ -46,7 +46,6 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         (data.High[0] - data.Close[0]) <= data.Open[0] * candle_error):
                     order_status = 'Entry'
                     order_signal = 'BUY'
-                    trade_count = trade_count + 1
                     semi_target_flag = 0
                     order_price = round(data.Close[0], 1)
                     stop_loss = entry_low_target - round((target_buffer_multiplier * order_price), 1)
@@ -85,7 +84,6 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     order_status = 'Entry'
                     order_signal = 'SELL'
                     semi_target_flag = 0
-                    trade_count = trade_count + 1
                     order_price = round(data.Close[0], 1)
                     stop_loss = entry_high_target + round((target_buffer_multiplier * order_price), 1)
                     profit = profit + order_price
