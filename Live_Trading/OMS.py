@@ -338,6 +338,9 @@ def start(name, access_token, lot_size):
                                                          quantity=quantity,
                                                          trigger_price=modified_price)
 
+                            # Replace the stoploss with the semi-target price
+                            current_order['trigger_price'][current_order['trigger_price'] != 0] = modified_price
+
                             # send message to telegram
                             message = ("Stoploss modified to " + str(modified_price) + " for " + name)
                             requests.get(bot_link + message)
