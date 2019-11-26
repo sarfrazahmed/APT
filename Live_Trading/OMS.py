@@ -78,7 +78,6 @@ def start(name, access_token, lot_size):
     first_order = 1
     stoploss_modified = 0
     local_order = 0
-    semi_target_multiplier = 0.005
 
     day_high = 0
     day_low = 0
@@ -260,7 +259,7 @@ def start(name, access_token, lot_size):
             else:
                 time.sleep(1)
 
-        elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 7 and datetime.now().second <= 12) :
+        elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 7 and datetime.now().second <= 12):
             if os.path.isfile('live_order_' + name + '_' + str(datetime.now().date()) + '.csv'):
                 strategy_orders = pd.read_csv('live_order_' + name + '_' + str(datetime.now().date()) + '.csv')
                 strategy_orders = strategy_orders.reset_index(drop=True)
@@ -326,12 +325,9 @@ def start(name, access_token, lot_size):
 
                             logger.debug("Semi-target modification in executed order block entered")
 
-                            # modify stoploss
-                            order_price = current_order.at[0, 'price']
-                            if current_order.at[0, 'transaction_type'] == 'BUY':
-                                modified_price = round(order_price + (order_price * semi_target_multiplier), 1)
-                            else:
-                                modified_price = round(order_price - (order_price * semi_target_multiplier), 1)
+                            # fetch semi-target price
+                            modified_price = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'semi_target'].values[0]
+
                             order_id = kite.modify_order(variety='bo',
                                                          parent_order_id=current_order.at[0, 'order_id'],
                                                          order_id=current_order['order_id'][current_order['trigger_price'] != 0].values[0],
@@ -358,11 +354,7 @@ def start(name, access_token, lot_size):
                             transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
 
                             # entry price
-                            order_price = current_order.at[0, 'price']
-                            if current_order.at[0, 'transaction_type'] == 'BUY':
-                                entry_price = round(order_price + (order_price * semi_target_multiplier), 1)
-                            else:
-                                entry_price = round(order_price - (order_price * semi_target_multiplier), 1)
+                            entry_price = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'semi_target'].values[0]
 
                             # stoploss
                             stoploss_price = day_high if transaction_type == 'SELL' else day_low
