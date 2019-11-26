@@ -52,9 +52,9 @@ config_path = path + '/config.ini'
 config.read(config_path)
 api_key = config['API']['API_KEY']
 
-name = 'YESBANK'
-access_token = 'tvWojuJfBfPwKYDSqOF3DX5H8xSwkcZ9'
-lot_size = 3000
+name = 'INFY'
+access_token = 'QBmEv2VUzckn3jhIWnYPiFmJZWCkyZb3'
+lot_size = 1200
 
 # Connect to kite
 kite = KiteConnect(api_key=api_key)
@@ -66,10 +66,31 @@ pivots = pivotpoints(data)
 
 transaction_type = 'BUY'
 quantity = 1
-entry_price = 166.5
-day_high = 171.4
-day_low = 151.2
-modified_price = 155
+entry_price = 701
+day_high = 707
+day_low = 698
+# modified_price = 155
+
+#place order
+order_id = kite.place_order(tradingsymbol=name,
+                            variety='bo',
+                            exchange=kite.EXCHANGE_NSE,
+                            transaction_type=transaction_type,
+                            quantity=quantity,
+                            price=entry_price,
+                            order_type=kite.ORDER_TYPE_LIMIT ,
+                            product=kite.PRODUCT_MIS,
+                            stoploss=10,
+                            squareoff=10)
+
+order_id = kite.modify_order(variety='bo',
+                             parent_order_id=order_id,
+                             order_id='191126001795912',
+                             order_type=kite.ORDER_TYPE_SL,
+                             # quantity=quantity,
+                             trigger_price=702)
+
+
 
 #place order
 order_id = kite.place_order(tradingsymbol=name,

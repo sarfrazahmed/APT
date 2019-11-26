@@ -260,7 +260,7 @@ def start(name, access_token, lot_size):
             else:
                 time.sleep(1)
 
-        elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 5 and datetime.now().second < 6) :
+        elif datetime.now().minute % 5 == 0 and (datetime.now().second >= 7 and datetime.now().second <= 12) :
             if os.path.isfile('live_order_' + name + '_' + str(datetime.now().date()) + '.csv'):
                 strategy_orders = pd.read_csv('live_order_' + name + '_' + str(datetime.now().date()) + '.csv')
                 strategy_orders = strategy_orders.reset_index(drop=True)
@@ -311,6 +311,7 @@ def start(name, access_token, lot_size):
 
                         first_order = 0
                         logger.debug("First order placed for "+name)
+                        time.sleep(6)
 
                     # update day high and day low
                     day_high = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'day_high'].values[0]
@@ -335,7 +336,6 @@ def start(name, access_token, lot_size):
                                                          parent_order_id=current_order.at[0, 'order_id'],
                                                          order_id=current_order['order_id'][current_order['trigger_price'] != 0].values[0],
                                                          order_type=kite.ORDER_TYPE_SL,
-                                                         quantity=quantity,
                                                          trigger_price=modified_price)
 
                             # Replace the stoploss with the semi-target price
@@ -410,16 +410,16 @@ def start(name, access_token, lot_size):
                             stoploss_modified = 0
                             logger.debug("Semi-target modification in open order case handled")
                 previous_strategy_orders = strategy_orders.copy(deep=True)
-                time.sleep(1)
+                time.sleep(6)
 
-        elif datetime.now().hour == 9 and datetime.now().minute >= 59:
+        elif datetime.now().hour == 9 and datetime.now().minute >= 50:
             all_orders.to_csv('LiveTrading_Output'+name+'.csv')
             logger.debug("Order file saved")
 
             # send message to telegram
             message = ("Live orders file sent to mail")
             requests.get(bot_link + message)
-            time.sleep(120)
+            time.sleep(600)
 
         else:
             time.sleep(1)
