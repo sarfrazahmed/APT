@@ -57,6 +57,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
                     target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
 
+                    # Calculating Semi Target
+                    semi_target = order_price + order_price * semi_target_multiplier
+
                     # Print Pointers
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
@@ -69,6 +72,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                     'price': [order_price],
                                                     'stoploss': [stop_loss],
                                                     'target': [target],
+                                                    'semi_target': [semi_target],
                                                     'status': [np.nan],
                                                     'semi-target_status': [0],
                                                     'target_status': [0],
@@ -94,6 +98,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
                     target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
 
+                    # Calculating Semi Target
+                    semi_target = order_price - order_price * semi_target_multiplier
+
                     # Print Pointers
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
@@ -106,6 +113,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                     'price': [order_price],
                                                     'stoploss': [stop_loss],
                                                     'target': [target],
+                                                    'semi_target': [semi_target],
                                                     'status': [np.nan],
                                                     'semi-target_status': [0],
                                                     'target_status': [0],
@@ -177,7 +185,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
     # Reset Pointers at 3:30 PM
     elif data.Date[0].hour == 15 and data.Date[0].minute == 25:
-        prev_day_close = data.Close[0]
+        # prev_day_close = data.Close[0]
         long_count = 0
         short_count = 0
         trade_count = 0
@@ -211,6 +219,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
                     target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
 
+                    # Calculating Semi Target
+                    semi_target = order_price + order_price * semi_target_multiplier
+
                     # Print Pointers
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
@@ -223,6 +234,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                     'price': [order_price],
                                                     'stoploss': [stop_loss],
                                                     'target': [target],
+                                                    'semi_target': [semi_target],
                                                     'status': [np.nan],
                                                     'semi-target_status': [0],
                                                     'target_status': [0],
@@ -252,6 +264,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
                     target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
 
+                    # Calculating Semi Target
+                    semi_target = order_price - order_price * semi_target_multiplier
+
                     # Print Pointers
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
@@ -264,6 +279,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                     'price': [order_price],
                                                     'stoploss': [stop_loss],
                                                     'target': [target],
+                                                    'semi_target': [semi_target],
                                                     'status': [np.nan],
                                                     'semi-target_status': [0],
                                                     'target_status': [0],
@@ -294,6 +310,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
                     target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
 
+                    # Calculating Semi Target
+                    semi_target = order_price + order_price * semi_target_multiplier
+
                     # Print Pointers
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
@@ -309,6 +328,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                'price': [order_price],
                                                                'stoploss': [stop_loss],
                                                                'target': [target],
+                                                               'semi_target': [semi_target],
                                                                'status': [np.nan],
                                                                'semi-target_status': [0],
                                                                'target_status': [0],
@@ -323,6 +343,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                         'price': [order_price],
                                                         'stoploss': [stop_loss],
                                                         'target': [target],
+                                                        'semi_target': [semi_target],
                                                         'status': [np.nan],
                                                         'semi-target_status': [0],
                                                         'target_status': [0],
@@ -352,6 +373,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
                     target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
 
+                    # Calculating Semi Target
+                    semi_target = order_price - order_price * semi_target_multiplier
+
                     # Print Pointers
                     data.Order_Status[0] = order_status
                     data.Order_Signal[0] = order_signal
@@ -367,6 +391,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                'price': [order_price],
                                                                'stoploss': [stop_loss],
                                                                'target': [target],
+                                                               'semi_target': [semi_target],
                                                                'status': [np.nan],
                                                                'semi-target_status': [0],
                                                                'target_status': [0],
@@ -381,6 +406,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                         'price': [order_price],
                                                         'stoploss': [stop_loss],
                                                         'target': [target],
+                                                        'semi_target': [semi_target],
                                                         'status': [np.nan],
                                                         'semi-target_status': [0],
                                                         'target_status': [0],
@@ -436,6 +462,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
                         target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
 
+                        # Calculating Semi Target
+                        semi_target = order_price - order_price * semi_target_multiplier
+
                         # Print Pointers
                         data.Target[0] = target
                         data.Stop_Loss[0] = stop_loss
@@ -445,6 +474,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                'price': [order_price],
                                                                'stoploss': [stop_loss],
                                                                'target': [target],
+                                                               'semi_target': [semi_target],
                                                                'status': [np.nan],
                                                                'semi-target_status': [0],
                                                                'target_status': [0],
@@ -535,6 +565,9 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
                         target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
 
+                        # Calculating Semi Target
+                        semi_target = order_price + order_price * semi_target_multiplier
+
                         # Print Pointers
                         data.Target[0] = target
                         data.Stop_Loss[0] = stop_loss
@@ -544,6 +577,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                                                                'price': [order_price],
                                                                'stoploss': [stop_loss],
                                                                'target': [target],
+                                                               'semi_target': [semi_target],
                                                                'status': [np.nan],
                                                                'semi-target_status': [0],
                                                                'target_status': [0],
@@ -596,6 +630,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
     entry_high_target = round(max(entry_high_target, data.High[0]), 1)
     entry_low_target = round(min(entry_low_target, data.Low[0]), 1)
+
     if path.exists(live_order_file_name):
         live_order_data = pd.read_csv(live_order_file_name)
         live_order_data['day_high'][len(live_order_data) - 1] = entry_high_target
