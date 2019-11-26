@@ -1,0 +1,2 @@
+,local_order_id,order_id,order_type,parent_order_id,price,status,transaction_type,trigger_price
+0,3,191122002190310,LIMIT,NA,231.8,OPEN,SELL,0

@@ -80,7 +80,7 @@ def start(name, lot_size):
 
             # data.columns = ['Close', 'Date', 'High', 'Low', 'Open','Volume']
             data.columns = ['Date', 'Open', 'High', 'Low', 'Close']
-            # data.columns = ['Close','Date','High','Low','Open','Volume']
+            # data.columns = ['Close','Dat bcd # e','High','Low','Open','Volume']
 
             # Date Column Handling
             # data['Date'] = [datetime.strptime(i[:i.find('+')], '%Y-%m-%d %H:%M:%S') for i in data['Date']]
@@ -97,7 +97,7 @@ def start(name, lot_size):
             data['Day_High'] = 0.0
             data['Day_Low'] = 0.0
             data['Long_Count'] = 0
-            data['Short_Count'] = 0
+-+          data['Short_Count'] = 0
             data['Trade_Count'] = 0
             data['Profit'] = 0
 
