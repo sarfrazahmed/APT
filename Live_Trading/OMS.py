@@ -396,6 +396,7 @@ def start(name, access_token, lot_size):
                                                              order_id=order_id,
                                                              order_type=kite.ORDER_TYPE_SL,
                                                              trigger_price=modified_price)
+                                time.sleep(2)
 
                             # Replace the stoploss with the semi-target price
                             current_order['trigger_price'][current_order['trigger_price'] != 0] = modified_price
