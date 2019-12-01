@@ -12,7 +12,6 @@ import StrategyPaperTrading_Pivot as strategy
 ###############################################################
 def pivotpoints(data):
     pivotpoint = (data['High'][0] + data['Low'][0] + data['Close'][0]) / 3
-
     s1_simple = (pivotpoint * 2) - data['High'][0]
     s1_fibonacci = pivotpoint - (0.382 * (data['High'][0] - data['Low'][0]))
     s2_simple = pivotpoint - (data['High'][0] - data['Low'][0])
