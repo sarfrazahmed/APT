@@ -352,8 +352,9 @@ def start(name, access_token, lot_size):
                     # modify stoploss if semi-target is hit
                     if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 \
                             and stoploss_modified == 0:
+
                         # if order is executed
-                        if current_order.at[0, 'status'] == 'COMPLETE':
+                        if current_order.at[0, 'status'] == 'COMPLETE' and len(current_order) <= 3:
 
                             logger.debug("Semi-target modification in executed order block entered")
 
@@ -376,6 +377,37 @@ def start(name, access_token, lot_size):
                             # update stoploss status
                             stoploss_modified = 1
                             logger.debug("Semi-target modification in executed order case handled")
+
+                        # if order is executed in partial chunks
+                        elif current_order.at[0, 'status'] == 'COMPLETE' and len(current_order) > 3:
+
+                            logger.debug("Semi-target modification in partially filled orders block entered")
+
+                            # get all order ids' list of stoploss orders
+                            order_list = current_order['order_id'][current_order['trigger_price'] != 0].tolist()
+
+                            # fetch semi-target price
+                            modified_price = strategy_orders.loc[(strategy_orders['order_id'] == current_order.at[0, 'local_order_id']), 'semi_target'].values[0]
+
+                            # iterate over all order ids
+                            for order_id in order_list:
+                                order_id = kite.modify_order(variety='bo',
+                                                             parent_order_id=current_order.at[0, 'order_id'],
+                                                             order_id=order_id,
+                                                             order_type=kite.ORDER_TYPE_SL,
+                                                             trigger_price=modified_price)
+
+                            # Replace the stoploss with the semi-target price
+                            current_order['trigger_price'][current_order['trigger_price'] != 0] = modified_price
+
+                            # send message to telegram
+                            message = ("Stoploss modified to " + str(modified_price) + " for " + name)
+                            requests.get(bot_link + message)
+
+                            # update stoploss status
+                            stoploss_modified = 1
+                            logger.debug("Semi-target modification in executed order case handled")
+
 
                         # if order was not executed
                         elif current_order.at[0, 'status'] == 'OPEN':
