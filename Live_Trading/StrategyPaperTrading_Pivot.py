@@ -58,7 +58,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
 
                     # Calculating Semi Target
-                    semi_target = order_price + order_price * semi_target_multiplier
+                    semi_target = round(order_price + order_price * semi_target_multiplier,1)
 
                     # Print Pointers
                     data.Order_Status[0] = order_status
@@ -99,7 +99,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
 
                     # Calculating Semi Target
-                    semi_target = order_price - order_price * semi_target_multiplier
+                    semi_target = round(order_price - order_price * semi_target_multiplier,1)
 
                     # Print Pointers
                     data.Order_Status[0] = order_status
@@ -220,7 +220,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
 
                     # Calculating Semi Target
-                    semi_target = order_price + order_price * semi_target_multiplier
+                    semi_target = round(order_price + order_price * semi_target_multiplier, 1)
 
                     # Print Pointers
                     data.Order_Status[0] = order_status
@@ -265,7 +265,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
 
                     # Calculating Semi Target
-                    semi_target = order_price - order_price * semi_target_multiplier
+                    semi_target = round(order_price - order_price * semi_target_multiplier,1)
 
                     # Print Pointers
                     data.Order_Status[0] = order_status
@@ -311,7 +311,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
 
                     # Calculating Semi Target
-                    semi_target = order_price + order_price * semi_target_multiplier
+                    semi_target = round(order_price + order_price * semi_target_multiplier,1)
 
                     # Print Pointers
                     data.Order_Status[0] = order_status
@@ -374,7 +374,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                     target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
 
                     # Calculating Semi Target
-                    semi_target = order_price - order_price * semi_target_multiplier
+                    semi_target = round(order_price - order_price * semi_target_multiplier,1)
 
                     # Print Pointers
                     data.Order_Status[0] = order_status
@@ -463,7 +463,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
 
                         # Calculating Semi Target
-                        semi_target = order_price - order_price * semi_target_multiplier
+                        semi_target = round(order_price - order_price * semi_target_multiplier, 1)
 
                         # Print Pointers
                         data.Target[0] = target
@@ -513,7 +513,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Action on Semi Target
-                elif data.Close[0] >= (order_price + (order_price * semi_target_multiplier)):
+                elif data.Close[0] >= (order_price + (order_price * (semi_target_multiplier + 0.001))):
                     stop_loss = round(order_price + (order_price * semi_target_multiplier), 1)
                     # semi_target_flag = 1
 
@@ -566,7 +566,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
 
                         # Calculating Semi Target
-                        semi_target = order_price + order_price * semi_target_multiplier
+                        semi_target = round(order_price + order_price * semi_target_multiplier, 1)
 
                         # Print Pointers
                         data.Target[0] = target
@@ -616,7 +616,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
                         "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
 
                 # Action on Semi Target
-                elif data.Close[0] <= (order_price - (order_price * semi_target_multiplier)):
+                elif data.Close[0] <= (order_price - (order_price * (semi_target_multiplier + 0.001))):
                     stop_loss = round(order_price - (order_price * semi_target_multiplier), 1)
                     # semi_target_flag = 1
 
