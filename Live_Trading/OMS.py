@@ -368,16 +368,9 @@ def start(name, access_token, lot_size):
                                                              order_type=kite.ORDER_TYPE_SL,
                                                              trigger_price=modified_price)
                             except Exception:
-                                message = ("Stoploss cannot be modified to " + str(modified_price) + " for " + name + " , trying again...")
+                                message = ("Stoploss cannot be modified to " + str(modified_price) + " for " + name + " , trying again in 5 minutes...")
                                 requests.get(bot_link + message)
-                                time.sleep(2)
-                                order_id = kite.modify_order(variety='bo',
-                                                             parent_order_id=current_order.at[0, 'order_id'],
-                                                             order_id=current_order['order_id'][current_order['trigger_price'] != 0].values[0],
-                                                             order_type=kite.ORDER_TYPE_SL,
-                                                             trigger_price=modified_price)
-                                pass
-
+                                continue
 
                             # Replace the stoploss with the semi-target price
                             current_order['trigger_price'][current_order['trigger_price'] != 0] = modified_price
