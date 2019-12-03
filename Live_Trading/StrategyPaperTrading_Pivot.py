@@ -24,7 +24,7 @@ def GapUpStrategy_Pivot(data, name, lot_size, pivots, order_status, order_signal
 
     # Selecting Tradable Day and Reset Day High and Day Low
     if data.Date[0].hour == 9 and data.Date[0].minute == 15:
-        message = name + ': Entered into 9.15 Criteria'
+        message = name + ': Entered into 9.15 Criteria\nOpen: ' + str(data.Open[0]) + '\nHigh: ' + str(data.High[0]) + '\nLow: ' + str(data.Low[0]) + '\nClose: ' + str(data.Close[0])
         requests.get(
             "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
         day_flag = 'selected' if abs(data.Open[0] - prev_day_close) > (prev_day_close * min_gap) else 'not selected'
