@@ -373,8 +373,7 @@ def start(name, access_token, lot_size):
                                 time.sleep(2)
                                 order_id = kite.modify_order(variety='bo',
                                                              parent_order_id=current_order.at[0, 'order_id'],
-                                                             order_id=current_order['order_id'][
-                                                                 current_order['trigger_price'] != 0].values[0],
+                                                             order_id=current_order['order_id'][current_order['trigger_price'] != 0].values[0],
                                                              order_type=kite.ORDER_TYPE_SL,
                                                              trigger_price=modified_price)
                                 pass
