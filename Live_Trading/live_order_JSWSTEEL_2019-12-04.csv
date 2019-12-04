@@ -1,0 +1,5 @@
+order_id,transaction_type,price,stoploss,target,semi_target,status,semi-target_status,target_status,stoploss_status,day_high,day_low
+1,SELL,250.7,253.7,237.1,249.7,,1,0,1,253.7,247.8
+2,BUY,249.7,247.8,255.0,250.7,,1,0,1,253.7,247.8
+3,SELL,250.7,253.7,237.1,249.7,,0,0,1,253.7,247.8
+4,BUY,253.7,247.8,255.0,254.7,,0,1,0,264.0,247.8
