@@ -191,17 +191,23 @@ def start(name, access_token, lot_size):
                             # clear previous orders
                             current_order = current_order[0:0]
 
-                            # place first order at current market price
-                            order_id = kite.place_order(tradingsymbol=name,
-                                                        variety='bo',
-                                                        exchange=kite.EXCHANGE_NSE,
-                                                        transaction_type=transaction_type,
-                                                        quantity=quantity,
-                                                        price=entry_price,
-                                                        order_type=kite.ORDER_TYPE_LIMIT,
-                                                        product=kite.PRODUCT_MIS,
-                                                        stoploss=stoploss,
-                                                        squareoff=target)
+                            try:
+                                # place first order at current market price
+                                order_id = kite.place_order(tradingsymbol=name,
+                                                            variety='bo',
+                                                            exchange=kite.EXCHANGE_NSE,
+                                                            transaction_type=transaction_type,
+                                                            quantity=quantity,
+                                                            price=entry_price,
+                                                            order_type=kite.ORDER_TYPE_LIMIT,
+                                                            product=kite.PRODUCT_MIS,
+                                                            stoploss=stoploss,
+                                                            squareoff=target)
+                            except Exception:
+                                message = "STOPLOSS HIT: Order cannot be placed."
+                                requests.get(bot_link + message)
+                                pass
+
                             current_order = current_order.append({'order_id': order_id,
                                                                   'local_order_id': local_order,
                                                                   'order_type': 'LIMIT',
@@ -247,17 +253,24 @@ def start(name, access_token, lot_size):
                             # clear previous orders
                             current_order = current_order[0:0]
 
-                            order_id = kite.place_order(tradingsymbol=name,
-                                                        variety='bo',
-                                                        exchange=kite.EXCHANGE_NSE,
-                                                        transaction_type=transaction_type,
-                                                        quantity=quantity,
-                                                        price=entry_price,
-                                                        trigger_price=entry_price,
-                                                        order_type=kite.ORDER_TYPE_SL,
-                                                        product=kite.PRODUCT_MIS,
-                                                        stoploss=stoploss,
-                                                        squareoff=target)
+                            try:
+                                order_id = kite.place_order(tradingsymbol=name,
+                                                            variety='bo',
+                                                            exchange=kite.EXCHANGE_NSE,
+                                                            transaction_type=transaction_type,
+                                                            quantity=quantity,
+                                                            price=entry_price,
+                                                            trigger_price=entry_price,
+                                                            order_type=kite.ORDER_TYPE_SL,
+                                                            product=kite.PRODUCT_MIS,
+                                                            stoploss=stoploss,
+                                                            squareoff=target)
+
+                            except Exception:
+                                message = "TARGET HIT: Order cannnot be placed."
+                                requests.get(bot_link + message)
+                                pass
+
                             current_order = current_order.append({'order_id': order_id,
                                                                   'local_order_id': local_order,
                                                                   'order_type': 'LIMIT',
@@ -314,16 +327,22 @@ def start(name, access_token, lot_size):
                                        else (target_price - entry_price), 1)
 
                         # place first order at current market price
-                        order_id = kite.place_order(tradingsymbol=name,
-                                                    variety='bo',
-                                                    exchange=kite.EXCHANGE_NSE,
-                                                    transaction_type=transaction_type,
-                                                    quantity=quantity,
-                                                    price=entry_price,
-                                                    order_type=kite.ORDER_TYPE_LIMIT,
-                                                    product=kite.PRODUCT_MIS,
-                                                    stoploss=stoploss,
-                                                    squareoff=target)
+                        try:
+                            order_id = kite.place_order(tradingsymbol=name,
+                                                        variety='bo',
+                                                        exchange=kite.EXCHANGE_NSE,
+                                                        transaction_type=transaction_type,
+                                                        quantity=quantity,
+                                                        price=entry_price,
+                                                        order_type=kite.ORDER_TYPE_LIMIT,
+                                                        product=kite.PRODUCT_MIS,
+                                                        stoploss=stoploss,
+                                                        squareoff=target)
+                        except Exception:
+                            message = "First order cannot be placed."
+                            requests.get(bot_link + message)
+                            pass
+
                         current_order = current_order.append({'order_id': order_id,
                                                               'local_order_id': local_order,
                                                               'order_type': 'LIMIT',
@@ -350,8 +369,7 @@ def start(name, access_token, lot_size):
                     requests.get(bot_link + message)
 
                     # modify stoploss if semi-target is hit
-                    if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 \
-                            and stoploss_modified == 0:
+                    if strategy_orders['semi-target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and stoploss_modified == 0:
 
                         # if order is executed
                         if current_order.at[0, 'status'] == 'COMPLETE' and len(current_order) <= 3:
@@ -424,6 +442,8 @@ def start(name, access_token, lot_size):
                             kite.cancel_order(variety='bo',
                                               order_id=current_order.at[0, 'order_id'].values[0])
 
+                            logger.debug("Order cancelled")
+
                             # transaction type
                             transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
 
@@ -446,17 +466,22 @@ def start(name, access_token, lot_size):
                             # update local order id
                             local_order = local_order + 1
 
-                            # place new order
-                            order_id = kite.place_order(tradingsymbol=name,
-                                                        variety='bo',
-                                                        exchange=kite.EXCHANGE_NSE,
-                                                        transaction_type=transaction_type,
-                                                        quantity=quantity,
-                                                        price=entry_price,
-                                                        order_type=kite.ORDER_TYPE_LIMIT,
-                                                        product=kite.PRODUCT_MIS,
-                                                        stoploss=stoploss,
-                                                        squareoff=target)
+                            try:
+                                # place new order
+                                order_id = kite.place_order(tradingsymbol=name,
+                                                            variety='bo',
+                                                            exchange=kite.EXCHANGE_NSE,
+                                                            transaction_type=transaction_type,
+                                                            quantity=quantity,
+                                                            price=entry_price,
+                                                            order_type=kite.ORDER_TYPE_LIMIT,
+                                                            product=kite.PRODUCT_MIS,
+                                                            stoploss=stoploss,
+                                                            squareoff=target)
+                            except Exception:
+                                message = "SEMI-TARGET HIT IN OPEN ORDER: Order cannot be placed."
+                                requests.get(bot_link + message)
+                                pass
                             current_order = current_order.append({'order_id': order_id,
                                                                   'local_order_id': local_order,
                                                                   'order_type': 'LIMIT',
@@ -467,7 +492,7 @@ def start(name, access_token, lot_size):
                                                                   'status': 'OPEN'}, ignore_index=True)
 
                             # send message to telegram
-                            message = (transaction_type + " order placed for " + str(quantity) + " stocks of "
+                            message = ("SEMI-TARGET HIT IN OPEN ORDER: " + transaction_type + " order placed for " + str(quantity) + " stocks of "
                                        + name + " at " + str(entry_price) + " with stoploss at "
                                        + str(stoploss_price) + " and target at " + str(target_price))
                             requests.get(bot_link + message)
@@ -477,14 +502,15 @@ def start(name, access_token, lot_size):
                             logger.debug("Semi-target modification in open order case handled")
 
                     # if target is hit while order is open
-                    if strategy_orders['target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and \
-                            current_order.at[0, 'status'] == 'OPEN':
+                    if strategy_orders['target_status'][strategy_orders['order_id'] == current_order.at[0, 'local_order_id']].values[0] == 1 and current_order.at[0, 'status'] == 'OPEN':
 
-                        logger.debug("Target hit in open order case enetered")
+                        logger.debug("Target hit in open order case entered")
 
                         # cancel last placed order
                         kite.cancel_order(variety='bo',
                                           order_id=current_order.at[0, 'order_id'].values[0])
+
+                        logger.debug("Order cancelled")
 
                         # order transaction type
                         transaction_type = 'SELL' if current_order.at[0, 'transaction_type'] == 'BUY' else 'BUY'
@@ -494,13 +520,11 @@ def start(name, access_token, lot_size):
 
                         # stoploss
                         stoploss_price = day_high if transaction_type == 'SELL' else day_low
-                        stoploss = round(
-                            (day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low), 1)
+                        stoploss = round((day_high - entry_price) if transaction_type == 'SELL' else (entry_price - day_low), 1)
 
                         # target
                         target = get_target(pivots, entry_price, transaction_type, lot_size)
-                        target_price = round(
-                            (target + entry_price) if transaction_type == 'BUY' else (entry_price - target), 1)
+                        target_price = round((target + entry_price) if transaction_type == 'BUY' else (entry_price - target), 1)
 
                         # update local order id
                         local_order = local_order + 1
@@ -508,18 +532,24 @@ def start(name, access_token, lot_size):
                         # clear previous orders
                         current_order = current_order[0:0]
 
-                        # place new order at day's high/low
-                        order_id = kite.place_order(tradingsymbol=name,
-                                                    variety='bo',
-                                                    exchange=kite.EXCHANGE_NSE,
-                                                    transaction_type=transaction_type,
-                                                    quantity=quantity,
-                                                    price=entry_price,
-                                                    trigger_price=entry_price,
-                                                    order_type=kite.ORDER_TYPE_SL,
-                                                    product=kite.PRODUCT_MIS,
-                                                    stoploss=stoploss,
-                                                    squareoff=target)
+                        try:
+                            # place new order at day's high/low
+                            order_id = kite.place_order(tradingsymbol=name,
+                                                        variety='bo',
+                                                        exchange=kite.EXCHANGE_NSE,
+                                                        transaction_type=transaction_type,
+                                                        quantity=quantity,
+                                                        price=entry_price,
+                                                        trigger_price=entry_price,
+                                                        order_type=kite.ORDER_TYPE_SL,
+                                                        product=kite.PRODUCT_MIS,
+                                                        stoploss=stoploss,
+                                                        squareoff=target)
+                        except Exception:
+                            message = "TARGET HIT IN OPEN ORDER: Order cannot be placed."
+                            requests.get(bot_link + message)
+                            pass
+
                         current_order = current_order.append({'order_id': order_id,
                                                               'local_order_id': local_order,
                                                               'order_type': 'LIMIT',
@@ -549,12 +579,10 @@ def start(name, access_token, lot_size):
             # send message to telegram
             message = ("Live orders file sent to mail")
             requests.get(bot_link + message)
-            time.sleep(600)
+            time.sleep(700)
 
         else:
             time.sleep(1)
-
-
 
 if __name__ == '__main__':
     name = sys.argv[1]
