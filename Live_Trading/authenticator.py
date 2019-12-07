@@ -30,7 +30,7 @@ exception_stocks = ['IDEA','BOSCHLTD','CASTROLIND','IDBI','MRF','NBCC','DISHTV',
 info_data_path = 'nifty50_stocks_token.csv'
 nsepage = 'https://www.nseindia.com/live_market/dynaContent/live_watch/pre_open_market/pre_open_market.htm'
 kitepage = 'https://kite.zerodha.com/'
-
+print("Initial inputs read")
 
 
 ## Main Body
@@ -44,15 +44,21 @@ api_secret = config['API']['API_SECRET']
 username = config['USER']['USERNAME']
 password = config['USER']['PASSWORD']
 pin = config['USER']['PIN']
-
+print("Details read")
 
 ## Selenium for ubuntu
 chrome_options = webdriver.ChromeOptions()
+print(1)
 chrome_options.add_argument('--headless')
+print(2)
 chrome_options.add_argument('--no-sandbox')
+print(3)
 chrome_options.add_argument('--disable-dev-shm-usage')
-driver = webdriver.Chrome(chrome_options=chrome_options)
+print(4)
+driver = webdriver.Chrome(options=chrome_options)
+print(5)
 page = driver.get(nsepage)
+print(6)
 time.sleep(5)
 
 # Selenium for windows
