@@ -109,7 +109,12 @@ months = [
           'March',
           'April',
           'May',
-          'June'
+          'June',
+          'July',
+          'August',
+          'September',
+          'October',
+          'November'
 ]
 print('Initial Inputs Stored')
 ###############################################################
@@ -456,7 +461,7 @@ for month in months:
                             print('Remarks: Profit')
 
                         # Action on Semi Target
-                        elif ads_iteration.High[i] >= (order_price + (order_price * semi_target_multiplier)):
+                        elif ads_iteration.Close[i] >= (order_price + (order_price * (semi_target_multiplier + 0.001))):
                             stop_loss = (order_price + ((order_price * semi_target_multiplier)))
                             # semi_target_flag = 1
 
@@ -522,7 +527,7 @@ for month in months:
                             print('Remarks: Profit')
 
                         # Action on Semi Target
-                        elif ads_iteration.Low[i] <= (order_price - (order_price * semi_target_multiplier)):
+                        elif ads_iteration.Close[i] <= (order_price - (order_price * (semi_target_multiplier + 0.001))):
                             stop_loss = (order_price - ((order_price * semi_target_multiplier)))
                             # semi_target_flag = 1
 

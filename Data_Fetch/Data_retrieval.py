@@ -25,7 +25,15 @@ password = config['USER']['PASSWORD']
 pin = config['USER']['PIN']
 homepage = 'https://kite.zerodha.com/'
 
-driver = webdriver.Chrome()
+## Selenium for ubuntu
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+driver = webdriver.Chrome(options=chrome_options)
+time.sleep(5)
+
+
 page = driver.get(homepage)
 
 print("Authenticating...")
@@ -153,7 +161,12 @@ date_list = [
              ['2019-03-01', '2019-03-31', 'March'],
              ['2019-04-01', '2019-04-30', 'April'],
              ['2019-05-01', '2019-05-31', 'May'],
-             ['2019-06-01', '2019-05-30', 'June']
+             ['2019-06-01', '2019-06-30', 'June'],
+             ['2019-07-01', '2019-07-31', 'July'],
+             ['2019-08-01', '2019-08-31', 'August'],
+             ['2019-09-01', '2019-09-30', 'September'],
+             ['2019-10-01', '2019-10-31', 'October'],
+             ['2019-11-01', '2019-11-30', 'November']
              ]
 for item in date_list:
     in_path = path + "/" + item[2]

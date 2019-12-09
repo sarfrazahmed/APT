@@ -48,17 +48,11 @@ print("Details read")
 
 ## Selenium for ubuntu
 chrome_options = webdriver.ChromeOptions()
-print(1)
 chrome_options.add_argument('--headless')
-print(2)
 chrome_options.add_argument('--no-sandbox')
-print(3)
 chrome_options.add_argument('--disable-dev-shm-usage')
-print(4)
 driver = webdriver.Chrome(options=chrome_options)
-print(5)
 page = driver.get(nsepage)
-print(6)
 time.sleep(5)
 
 # Selenium for windows
