@@ -51,7 +51,8 @@ chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
-driver = webdriver.Chrome(options=chrome_options)
+driver = webdriver.Chrome('/home/ubuntu/APT/APT/chromedriver.exe', options=chrome_options)
+# driver = webdriver.Chrome(options=chrome_options)
 page = driver.get(nsepage)
 time.sleep(5)
 
@@ -93,7 +94,7 @@ selected_scrips_info = pd.merge(selected_scrips,info_data,
                                 how='left')
 selected_scrips_info = selected_scrips_info.dropna()
 selected_scrips_info = selected_scrips_info.reset_index()
-selected_scrips_info = selected_scrips_info[0:3]
+selected_scrips_info = selected_scrips_info[0:5]
 selected_scrips_info = selected_scrips_info[['Company','Token','Lot_Size']]
 print('Completed')
 
@@ -126,12 +127,17 @@ continue_box.click()
 time.sleep(3)
 
 # Redirecting to Kiteconnect
+print(api_key)
 kite = KiteConnect(api_key=api_key)
 url = kite.login_url()
+print(url)
 page = driver.get(url)
 current_url = driver.current_url
+print(current_url)
 request_token = re.search('request_token=(.*)', current_url).group(1)[:32]
+print(request_token)
 KRT = kite.generate_session(request_token, api_secret)
+print(KRT['access_token'])
 print("Connection Successful")
 driver.close()
 
