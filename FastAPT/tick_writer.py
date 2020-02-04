@@ -12,6 +12,7 @@ import configparser
 import re
 import sys
 import requests
+import shutil
 
 def start(name, token, access_token, timeframe):
     # print("Starting Trading Engine...", flush=True)
@@ -51,41 +52,68 @@ def start(name, token, access_token, timeframe):
     # Initialise
     print("Initialising Kite Ticker")
     kws = KiteTicker(api_key, access_token)
+    file_path = "D:\\DevAPT\\APT\\FastAPT\\ohlc_data_" + name +"_w.csv"
     start.tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
+    start.data_ohlc = pd.DataFrame(columns=['Timestamp', 'open', 'high', 'low', 'close'])
     start.last_saved_time = 10
-
 
     def on_ticks(ws, ticks):
         # Callback to receive ticks.
-        # print(ticks)
-        # print(ticks[0]['timestamp'] >= datetime.now().replace(hour= 9,minute= 15, second = 0,microsecond = 0))
-        # print(ticks[0]['timestamp'] >= datetime.strptime('1970-01-01 00:00:00','%Y-%m-%d %H:%M:%S'))
-        if ticks[0]['timestamp'] >= datetime.now().replace(hour= 3,minute= 45, second = 0,microsecond = 0):
-        # if ticks[0]['timestamp'] >= datetime.strptime('1970-01-01 00:00:00','%Y-%m-%d %H:%M:%S'):
-            # print(ticks)
-            start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'], 'Timestamp': ticks[0]['timestamp'], 'LTP': ticks[0]['last_price']}, ignore_index=True)
-            if (start.tick_df['Timestamp'][len(start.tick_df) - 1].second % 5 == 0) and (start.tick_df['Timestamp'][len(start.tick_df) - 1].second != start.last_saved_time):
-                # save the last second
-                start.last_saved_time = start.tick_df['Timestamp'][len(start.tick_df) - 1].second
+        if ticks[0]['timestamp'] >= datetime.now().replace(hour=3, minute=45, second=0, microsecond=0):
 
-                # # drop last row
-                # start.tick_df.drop(start.tick_df.tail(1).index, inplace=True)
-                # print(len(start.tick_df))
+            start.tick_df = start.tick_df.append({'Token': ticks[0]['instrument_token'],
+                                                  'Timestamp': ticks[0]['timestamp'],
+                                                  'LTP': ticks[0]['last_price']},
+                                                 ignore_index=True)
+
+            if (start.tick_df['Timestamp'].iloc[-1].minute % 5 == 0) and (start.tick_df['Timestamp'].iloc[-1].minute != start.last_saved_time):
+
+                # save the last second
+                start.last_saved_time = start.tick_df['Timestamp'].iloc[-1].second
+
+                # drop last row
+                start.tick_df.drop(start.tick_df.tail(1).index, inplace=True)
 
                 # set timestamp as index
                 start.tick_df = start.tick_df.set_index(['Timestamp'])
                 start.tick_df['Timestamp'] = pd.to_datetime(start.tick_df.index, unit='s')
 
                 # convert to OHLC format
-                data_ohlc = start.tick_df['LTP'].resample(timeframe).ohlc()
-                print(data_ohlc)
+                start.data_ohlc = start.tick_df['LTP'].resample(timeframe).ohlc()
+
                 # save the dataframe to csv
-                data_ohlc.to_csv('ohlc_data_' + name +'.csv')
-                print("Printed at " + str(datetime.now()))
+                start.data_ohlc.to_csv('ohlc_data_' + name +'_w.csv')
 
                 # initialize the dataframe
                 start.tick_df = pd.DataFrame(columns=['Token', 'Timestamp', 'LTP'], index=pd.to_datetime([]))
-                print(len(data_ohlc))
+
+            else:
+                # get current timestamp and tick value
+                timestamp = start.tick_df['Timestamp'].iloc[-1]
+                close = start.tick_df['LTP'].iloc[-1]
+
+                # get the first tick value
+                open = start.tick_df['LTP'].iloc[0]
+                high = open
+                low = open
+
+                # update high
+                if close > high:
+                    high = close
+
+                # update low
+                if close < low:
+                    low = close
+
+                # update candle
+                start.data_ohlc.iloc[0] = timestamp, open, high, low, close
+
+                # write date to csv
+                start.data_ohlc.to_csv('ohlc_data_' + name + '.csv')
+
+                # make a copy of the file
+                shutil.copy(file_path, file_path.replace('_w', '_r'))
+
 
     def on_connect(ws, response):
         # Callback on successful connect.
