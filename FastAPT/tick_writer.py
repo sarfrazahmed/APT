@@ -1,5 +1,5 @@
 # Import dependencies
- 0import datetime
+import datetime
 import logging
 from kiteconnect import KiteTicker
 from kiteconnect import KiteConnect
@@ -34,6 +34,7 @@ def start(name, token, access_token, timeframe):
         while adate.weekday() > 4:
             adate -= timedelta(days=1)
         return adate
+
     date_from = prev_weekday(date.today())
     date_to = date_from
     interval = 'day'
