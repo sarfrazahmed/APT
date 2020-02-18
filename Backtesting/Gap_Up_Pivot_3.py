@@ -201,20 +201,20 @@ for month in months:
 
                 # Check if Marubuzu Candle
                 if day_flag == 'selected':
-                    # trade_count = 1 if (ads_iteration.Open[i] > prev_day_close) and \
-                    #                    ((ads_iteration.Open[i] - ads_iteration.Low[i]) <=  ads_iteration.Open[i] * 0.001
-                    #                     or (ads_iteration.High[i] - ads_iteration.Close[i]) <=
-                    #                     ads_iteration.Open[i] * 0.001) else trade_count
-                    # trade_count = 1 if (ads_iteration.Open[i] < prev_day_close) and \
-                    #                    ((ads_iteration.High[i] - ads_iteration.Open[i]) <= ads_iteration.Open[i] * 0.001
-                    #                     or (ads_iteration.Close[i] - ads_iteration.Low[i]) <=
-                    #                     ads_iteration.Open[i] * 0.001) else trade_count
-                    trade_count = 1 if ((ads_iteration.Open[i] - ads_iteration.Low[i]) <=  ads_iteration.Open[i] * candle_error
-                                        and (ads_iteration.High[i] - ads_iteration.Close[i]) <=  ads_iteration.Open[i] *
-                                        candle_error) or ((ads_iteration.High[i] - ads_iteration.Open[i]) <=
-                                        ads_iteration.Open[i] * candle_error and (ads_iteration.Close[i] -
-                                                                             ads_iteration.Low[i]) <=
-                                       ads_iteration.Open[i] * candle_error) else trade_count
+                    trade_count = 1 if (ads_iteration.Open[i] > prev_day_close) and \
+                                       ((ads_iteration.Open[i] - ads_iteration.Low[i]) <=  ads_iteration.Open[i] * 0.001
+                                        or (ads_iteration.High[i] - ads_iteration.Close[i]) <=
+                                        ads_iteration.Open[i] * 0.001) else trade_count
+                    trade_count = 1 if (ads_iteration.Open[i] < prev_day_close) and \
+                                       ((ads_iteration.High[i] - ads_iteration.Open[i]) <= ads_iteration.Open[i] * 0.001
+                                        or (ads_iteration.Close[i] - ads_iteration.Low[i]) <=
+                                        ads_iteration.Open[i] * 0.001) else trade_count
+                    # trade_count = 1 if ((ads_iteration.Open[i] - ads_iteration.Low[i]) <=  ads_iteration.Open[i] * candle_error
+                    #                     and (ads_iteration.High[i] - ads_iteration.Close[i]) <=  ads_iteration.Open[i] *
+                    #                     candle_error) or ((ads_iteration.High[i] - ads_iteration.Open[i]) <=
+                    #                     ads_iteration.Open[i] * candle_error and (ads_iteration.Close[i] -
+                    #                                                          ads_iteration.Low[i]) <=
+                    #                    ads_iteration.Open[i] * candle_error) else trade_count
                     if trade_count == 1:
                         print('Marubuzu Candle Identified')
 
@@ -461,7 +461,7 @@ for month in months:
                             print('Remarks: Profit')
 
                         # Action on Semi Target
-                        elif ads_iteration.Close[i] >= (order_price + (order_price * (semi_target_multiplier + 0.001))):
+                        elif ads_iteration.High[i] >= (order_price + (order_price * (semi_target_multiplier + 0.001))):
                             stop_loss = (order_price + ((order_price * semi_target_multiplier)))
                             # semi_target_flag = 1
 
@@ -527,7 +527,7 @@ for month in months:
                             print('Remarks: Profit')
 
                         # Action on Semi Target
-                        elif ads_iteration.Close[i] <= (order_price - (order_price * (semi_target_multiplier + 0.001))):
+                        elif ads_iteration.Low[i] <= (order_price - (order_price * (semi_target_multiplier + 0.001))):
                             stop_loss = (order_price - ((order_price * semi_target_multiplier)))
                             # semi_target_flag = 1
 
