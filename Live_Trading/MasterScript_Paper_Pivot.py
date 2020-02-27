@@ -32,6 +32,7 @@ def pivotpoints(data):
 ## Initial Inputs
 ###############################################################
 def start(name, lot_size):
+
     # time.sleep(14)
     time.sleep(130)
     message = ("Stock selected for today: " + str(name))

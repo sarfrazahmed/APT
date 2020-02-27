@@ -144,7 +144,7 @@ if __name__ == '__main__':
     # access_token = sys.argv[3]
     name = 'IBULHSGFIN'
     token = [7712001]
-    access_token = 't6C3VvBafs9mSmi8sztGBauhIouPNW1h'
+    access_token = 'EMdxCWdH4VwO6wS6xdyUQ2jayMOWrnWp'
     stock_name_string = 'Stock Name: ' + name
     requests.get(
         "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + \
@@ -160,7 +160,7 @@ if __name__ == '__main__':
 
     # Extract Last day's daily level ohlc data
     date_from = prev_weekday(date.today())
-    date_to = date_from + timedelta(days=1)
+    date_to = date_from
     interval = 'day'
     previous_day_data = kite.historical_data(instrument_token=token[0], from_date=date_from, to_date=date_to,
                                              interval=interval)
