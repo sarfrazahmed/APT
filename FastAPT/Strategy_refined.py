@@ -56,6 +56,9 @@ def start(name, token, access_token, lot_size):
     kite = KiteConnect(api_key=api_key)
     kite.set_access_token(access_token)
 
+    # Bot API Link
+    bot_link = "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text="
+
     # Extract Last day's daily level ohlc data
     today = date.today()
     date_from = prev_weekday(today)
@@ -73,12 +76,10 @@ def start(name, token, access_token, lot_size):
     time.sleep(sleep_time)
     time_now = datetime.now()
     script_start_string = 'Master Script Started at ' + str(time_now)
-    requests.get(
-        "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + \
-        script_start_string)
+    requests.get(bot_link + script_start_string)
     print(script_start_string, flush=True)
 
-    ## Decision Engine Starts
+    # Decision Engine Starts
 
     # Set Initial Pointers Value
     order_status = 'Exit'
@@ -107,6 +108,24 @@ def start(name, token, access_token, lot_size):
     skip_date = datetime.strptime('2019-08-06', '%Y-%m-%d').date()
     pivots = pivotpoints(previous_day_data)
 
+    # Initialising variables for Order Management
+    current_order_parameters = ['order_id',
+                                'order_type',
+                                'transaction_type',
+                                'parent_order_id',
+                                'price',
+                                'trigger_price',
+                                'status']
+    current_order = pd.DataFrame(columns=['order_id',
+                                          'local_order_id',
+                                          'order_type',
+                                          'transaction_type',
+                                          'parent_order_id',
+                                          'price',
+                                          'trigger_price',
+                                          'status'])
+    kite_orders = pd.DataFrame(kite.orders())
+
     result_list = [order_status, order_signal, order_price, target, stop_loss,
                    entry_high_target, entry_low_target, long_count, short_count, trade_count,
                    semi_target_flag, profit, skip_date]
@@ -122,7 +141,7 @@ def start(name, token, access_token, lot_size):
 
         if datetime.now() >= datetime.now().replace(hour=9, minute=15, second=5):
 
-            #Get Live OHLC data from Kite from 9:20:05
+            # Get Live OHLC data from Kite from 9:20:05
             try:
                 master_data = kite.historical_data(instrument_token=token[0], from_date=today, to_date=today,
                                              interval=interval)
@@ -132,7 +151,7 @@ def start(name, token, access_token, lot_size):
                 time.sleep(1)
                 continue
 
-            #Datetime manipulation in data
+            # Datetime manipulation in data
             master_data['Date'] = [datetime.strptime(datetime.strftime(i, '%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S')
                             for i in data['Date']]
 
@@ -147,8 +166,7 @@ def start(name, token, access_token, lot_size):
                 if data.Date[0].hour == 9 and data.Date[0].minute == 15:
                     message = name + ': Entered into 9.15 Criteria\nOpen: ' + str(data.Open[0]) + '\nHigh: ' + str(
                         data.High[0]) + '\nLow: ' + str(data.Low[0]) + '\nClose: ' + str(data.Close[0])
-                    requests.get(
-                        "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                    requests.get(bot_link + message)
                     day_flag = 'selected' if abs(data.Open[0] - prev_day_close) > (
                                 prev_day_close * min_gap) else 'not selected'
                     skip_date = data.DatePart[0] if day_flag == 'not selected' else skip_date
@@ -164,8 +182,7 @@ def start(name, token, access_token, lot_size):
                                                 0] * candle_error) else trade_count
                         if trade_count == 1:
                             message = 'Stock Name: ' + name + '\nMarubuzu Candle Identified'
-                            requests.get(
-                                "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                            requests.get(bot_link + message)
                             if ((data.Open[0] - data.Low[0]) <= data.Open[0] * candle_error or
                                     (data.High[0] - data.Close[0]) <= data.Open[0] * candle_error):
                                 order_status = 'Sub - Entry'
@@ -219,8 +236,7 @@ def start(name, token, access_token, lot_size):
 
                                 message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(
                                     order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
-                                requests.get(
-                                    "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                                requests.get(bot_link + message)
                             else:
                                 order_status = 'Sub - Entry'
                                 order_signal = 'SELL'
@@ -272,8 +288,7 @@ def start(name, token, access_token, lot_size):
                                                             squareoff=target)
                                 message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(
                                     order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
-                                requests.get(
-                                    "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                                requests.get(bot_link + message)
 
                 elif data.Date[0].hour == 15 and data.Date[0].minute == 20:
 
@@ -304,8 +319,7 @@ def start(name, token, access_token, lot_size):
                             # No Action is taken as Kite handles it
                             message = 'Stock Name: ' + name + '\n Long Exit ---' + '\nOrder Price: ' + str(
                                 order_price) + '\nRemarks: Exit At 3:25 PM'
-                            requests.get(
-                                "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                            requests.get(bot_link + message)
 
                         # Check If the open order is a short entry
                         elif order_signal == 'SELL':
@@ -329,8 +343,7 @@ def start(name, token, access_token, lot_size):
                             live_order_data.to_csv(live_order_file_name, index=False)
                             message = 'Stock Name: ' + name + '\n Short Exit ---' + '\nOrder Price: ' + str(
                                 order_price) + '\nRemarks: Exit At 3:25 PM'
-                            requests.get(
-                                "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                            requests.get(bot_link + message)
                             print('Stock Name: ' + name + '\n Short Exit ---')
                             print('Order Price: ' + str(order_price))
                             print('Remarks: Exit At 3:25 PM')
@@ -343,8 +356,7 @@ def start(name, token, access_token, lot_size):
                     trade_count = 0
                     skip_date = data.DatePart[0]
                     message = 'Stock Name: ' + name + '\nRemarks: Enough For Today'
-                    requests.get(
-                        "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                    requests.get(bot_link + message)
 
                 # Iterate over all the data points for the dates that have been selected by Gap Up/Down Condition
                 elif data.DatePart[0] != skip_date:
@@ -409,8 +421,7 @@ def start(name, token, access_token, lot_size):
                                                             squareoff=target)
                                 message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(
                                     order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
-                                requests.get(
-                                    "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                                requests.get(bot_link + message)
 
 
                             # Short Entry Action
@@ -467,8 +478,7 @@ def start(name, token, access_token, lot_size):
                                                             squareoff=target)
                                 message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(
                                     order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
-                                requests.get(
-                                    "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                                requests.get(bot_link + message)
 
                 entry_high_target = round(max(entry_high_target, data.High[0]), 1)
                 entry_low_target = round(min(entry_low_target, data.Low[0]), 1)
@@ -551,8 +561,7 @@ def start(name, token, access_token, lot_size):
                                                 squareoff=target)
                     message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(
                         order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
-                    requests.get(
-                        "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                    requests.get(bot_link + message)
 
                 # Short Entry
                 elif (data.Close[0] < entry_low_target) and (short_count == 0):
@@ -626,8 +635,7 @@ def start(name, token, access_token, lot_size):
                                                 squareoff=target)
                     message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(
                         order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
-                    requests.get(
-                        "https://api.telegram.org/bot823468101:AAEqDCOXI3zBxxURkTgtleUvFvQ0S9a4TXA/sendMessage?chat_id=-383311990&text=" + message)
+                    requests.get(bot_link + message)
 
             elif order_status == 'Sub - Entry':
 
@@ -636,7 +644,16 @@ def start(name, token, access_token, lot_size):
 
             elif order_status == 'Entry':
 
-                # Check if Stoploss/ Traget is hit
+                # check if stoploss is hit
+                if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][(current_order['trigger_price'] != 0) &
+                                                                                              (current_order['transaction_type'] != current_order.at[0, 'transaction_type'])].values[0]].values[0] == 'COMPLETE':
+                    order_status = 'Exit'
+
+                # check if target is hit
+                if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][(current_order['trigger_price'] == 0) &
+                                                                                              (current_order['transaction_type'] != current_order.at[0, 'transaction_type'])].values[0]].values[0] == 'COMPLETE':
+                    order_status = 'Exit'
+
 
                 # check if Semi target is hit
                 data = master_data.loc[len(master_data) - 1, :]
@@ -646,6 +663,11 @@ def start(name, token, access_token, lot_size):
                     semi_target_flag == 0:
 
                     # modify stoploss
+                    order_id = kite.modify_order(variety='bo',
+                                                 parent_order_id=current_order.at[0, 'order_id'],
+                                                 order_id=current_order['order_id'][current_order['trigger_price'] != 0].values[0],
+                                                 order_type=kite.ORDER_TYPE_SL,
+                                                 trigger_price=semi_target)
 
                     semi_target_flag = 1
                     continue
