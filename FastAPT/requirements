@@ -1,0 +1,5 @@
+pandas==0.24.2
+numpy==1.16.4
+selenium==3.141.0
+kiteconnect==3.7.7
+requests==2.22.0
