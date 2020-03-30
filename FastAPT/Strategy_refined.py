@@ -72,9 +72,6 @@ def start(name, token, access_token, lot_size):
 
     # Sleep till 9:15
     time_now = datetime.now()
-    sleep_time = 60 - time_now.second
-    time.sleep(sleep_time)
-    time_now = datetime.now()
     script_start_string = 'Master Script Started at ' + str(time_now)
     requests.get(bot_link + script_start_string)
     print(script_start_string, flush=True)
@@ -87,11 +84,21 @@ def start(name, token, access_token, lot_size):
     order_price = 0.0
     target = 0.0
     stop_loss = 0.0
-    # entry_high_target = 0.0
-    # entry_low_target = 10000.0
-    # data = pd.read_csv(path + '/previous_day_data_' + name + '.csv')
-    entry_high_target = previous_day_data.High[0]
-    entry_low_target = previous_day_data.Low[0]
+
+    if datetime.now()>= datetime.now().replace(hour=9, minute=20, second=5):
+        master_data = kite.historical_data(instrument_token=token[0], from_date=today, to_date=today,
+                                           interval=interval)
+        master_data = pd.DataFrame(master_data)
+        master_data.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
+        entry_high_target = round(max(master_data.High),1)
+        entry_low_target = round(min(master_data.Low),1)
+
+    else:
+
+        entry_high_target = previous_day_data.High[0]
+        entry_low_target = previous_day_data.Low[0]
+
+
     prev_day_close = previous_day_data.Close[0]
     long_count = 0
     short_count = 0
@@ -125,15 +132,14 @@ def start(name, token, access_token, lot_size):
                                           'status'])
     kite_orders = pd.DataFrame(kite.orders())
 
-    result_list = [order_status, order_signal, order_price, target, stop_loss,
-                   entry_high_target, entry_low_target, long_count, short_count, trade_count,
-                   semi_target_flag, profit, skip_date]
     Trade_Dataset = pd.DataFrame(columns=['Date', 'Open', 'High', 'Low', 'Close', 'Year', 'DatePart',
                                           'Order_Status', 'Order_Signal', 'Order_Price', 'Target', 'Stop_Loss',
                                           'Hour', 'Minute'])
     count = 0
     counter = 0
     temp_count = 0
+    message = 'Entering into the Strategy'
+    requests.get(bot_link + message)
 
 
     while True:
@@ -152,12 +158,12 @@ def start(name, token, access_token, lot_size):
 
             # Datetime manipulation in data
             master_data['Date'] = [datetime.strptime(datetime.strftime(i, '%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S')
-                            for i in data['Date']]
+                            for i in master_data['Date']]
 
             if master_data['Date'][len(master_data) - 1] != last_saved_time:
 
                 # Get the last full candle into strategy
-                data = master_data.loc[len(master_data) - 2, :]
+                data = master_data.iloc[[- 2]]
                 data = data.reset_index(drop=True)
                 last_saved_time = master_data['Date'][len(master_data) - 1]
 
@@ -374,144 +380,97 @@ def start(name, token, access_token, lot_size):
                     requests.get(bot_link + message)
 
                 # Iterate over all the data points for the dates that have been selected by Gap Up/Down Condition
-                elif data.DatePart[0] != skip_date:
+                elif order_status == 'Exit' and trade_count == 0:
 
-                    # If No Open Order
-                    if order_status == 'Exit':
+                    # Long Entry Action
+                    if data.Close[0] > entry_high_target:
+                        order_status = 'Sub - Entry'
+                        order_signal = 'BUY'
+                        trade_count = trade_count + 1
+                        semi_target_flag = 0
+                        order_price = round(data.Close[0], 1)
+                        stop_loss = entry_low_target - round((target_buffer_multiplier * order_price), 1)
+                        profit = profit - order_price
 
-                        # First Trade
-                        if trade_count == 0:
+                        # Calculating Target
+                        deltas = [indicator - order_price for indicator in pivots]
+                        pos_deltas = [delta for delta in deltas if delta > (order_price * 0.004)]
+                        min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
+                        target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier),
+                                       1)
 
-                            # Long Entry Action
-                            if data.Close[0] > entry_high_target:
-                                order_status = 'Sub - Entry'
-                                order_signal = 'BUY'
-                                trade_count = trade_count + 1
-                                semi_target_flag = 0
-                                order_price = round(data.Close[0], 1)
-                                stop_loss = entry_low_target - round((target_buffer_multiplier * order_price), 1)
-                                profit = profit - order_price
+                        # Calculating Semi Target
+                        semi_target = round(order_price + order_price * semi_target_multiplier, 1)
 
-                                # Calculating Target
-                                deltas = [indicator - order_price for indicator in pivots]
-                                pos_deltas = [delta for delta in deltas if delta > (order_price * 0.004)]
-                                min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
-                                target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier),
-                                               1)
+                        # Place the order
+                        order_id = kite.place_order(tradingsymbol=name,
+                                                    variety='bo',
+                                                    exchange=kite.EXCHANGE_NSE,
+                                                    transaction_type=order_signal,
+                                                    quantity=quantity,
+                                                    price=order_price,
+                                                    order_type=kite.ORDER_TYPE_LIMIT,
+                                                    product=kite.PRODUCT_MIS,
+                                                    stoploss=stop_loss,
+                                                    squareoff=target)
 
-                                # Calculating Semi Target
-                                semi_target = round(order_price + order_price * semi_target_multiplier, 1)
+                        current_order = current_order.append({'order_id': order_id,
+                                                              'order_type': 'LIMIT',
+                                                              'transaction_type': order_signal,
+                                                              'parent_order_id': 'NA',
+                                                              'price': order_price,
+                                                              'trigger_price': 0,
+                                                              'status': 'OPEN'}, ignore_index=True)
 
-                                # Print Pointers
-                                # data.Order_Status[0] = order_status
-                                # data.Order_Signal[0] = order_signal
-                                # data.Order_Price[0] = order_price
-                                # data.Target[0] = target
-                                # data.Stop_Loss[0] = stop_loss
-                                #
-                                # live_order_data = pd.DataFrame({'order_id': [trade_count],
-                                #                                 'transaction_type': [order_signal],
-                                #                                 'price': [order_price],
-                                #                                 'stoploss': [stop_loss],
-                                #                                 'target': [target],
-                                #                                 'semi_target': [semi_target],
-                                #                                 'status': [np.nan],
-                                #                                 'semi-target_status': [0],
-                                #                                 'target_status': [0],
-                                #                                 'stoploss_status': [0],
-                                #                                 'day_high': [entry_high_target],
-                                #                                 'day_low': [entry_low_target]})
-                                # live_order_data.to_csv(live_order_file_name, index=False)
-
-                                #Place the order
-                                order_id = kite.place_order(tradingsymbol=name,
-                                                            variety='bo',
-                                                            exchange=kite.EXCHANGE_NSE,
-                                                            transaction_type=order_signal,
-                                                            quantity=quantity,
-                                                            price=order_price,
-                                                            order_type=kite.ORDER_TYPE_LIMIT,
-                                                            product=kite.PRODUCT_MIS,
-                                                            stoploss=stop_loss,
-                                                            squareoff=target)
-
-                                current_order = current_order.append({'order_id': order_id,
-                                                                      'order_type': 'LIMIT',
-                                                                      'transaction_type': order_signal,
-                                                                      'parent_order_id': 'NA',
-                                                                      'price': order_price,
-                                                                      'trigger_price': 0,
-                                                                      'status': 'OPEN'}, ignore_index=True)
-
-                                message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(
-                                    order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
-                                requests.get(bot_link + message)
+                        message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(
+                            order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                        requests.get(bot_link + message)
 
 
-                            # Short Entry Action
-                            elif data.Close[0] < entry_low_target:
-                                order_status = 'Sub - Entry'
-                                order_signal = 'SELL'
-                                semi_target_flag = 0
-                                trade_count = trade_count + 1
-                                order_price = round(data.Close[0], 1)
-                                stop_loss = entry_high_target + round((target_buffer_multiplier * order_price), 1)
-                                profit = profit + order_price
+                    # Short Entry Action
+                    elif data.Close[0] < entry_low_target:
+                        order_status = 'Sub - Entry'
+                        order_signal = 'SELL'
+                        semi_target_flag = 0
+                        trade_count = trade_count + 1
+                        order_price = round(data.Close[0], 1)
+                        stop_loss = entry_high_target + round((target_buffer_multiplier * order_price), 1)
+                        profit = profit + order_price
 
-                                # Calculating Target
-                                deltas = [round(indicator, 1) - order_price for indicator in pivots]
-                                neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.004)]
-                                max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
-                                target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier),
-                                               1)
+                        # Calculating Target
+                        deltas = [round(indicator, 1) - order_price for indicator in pivots]
+                        neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.004)]
+                        max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
+                        target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier),
+                                       1)
 
-                                # Calculating Semi Target
-                                semi_target = round(order_price - order_price * semi_target_multiplier, 1)
+                        # Calculating Semi Target
+                        semi_target = round(order_price - order_price * semi_target_multiplier, 1)
 
-                                # Print Pointers
-                                # data.Order_Status[0] = order_status
-                                # data.Order_Signal[0] = order_signal
-                                # data.Order_Price[0] = order_price
-                                # data.Target[0] = target
-                                # data.Stop_Loss[0] = stop_loss
-                                #
-                                # live_order_data = pd.DataFrame({'order_id': [trade_count],
-                                #                                 'transaction_type': [order_signal],
-                                #                                 'price': [order_price],
-                                #                                 'stoploss': [stop_loss],
-                                #                                 'target': [target],
-                                #                                 'semi_target': [semi_target],
-                                #                                 'status': [np.nan],
-                                #                                 'semi-target_status': [0],
-                                #                                 'target_status': [0],
-                                #                                 'stoploss_status': [0],
-                                #                                 'day_high': [entry_high_target],
-                                #                                 'day_low': [entry_low_target]})
-                                # live_order_data.to_csv(live_order_file_name, index=False)
+                        # Place an Order
+                        order_id = kite.place_order(tradingsymbol=name,
+                                                    variety='bo',
+                                                    exchange=kite.EXCHANGE_NSE,
+                                                    transaction_type=order_signal,
+                                                    quantity=quantity,
+                                                    price=order_price,
+                                                    order_type=kite.ORDER_TYPE_LIMIT,
+                                                    product=kite.PRODUCT_MIS,
+                                                    stoploss=stop_loss,
+                                                    squareoff=target)
 
-                                #Place an Order
-                                order_id = kite.place_order(tradingsymbol=name,
-                                                            variety='bo',
-                                                            exchange=kite.EXCHANGE_NSE,
-                                                            transaction_type=order_signal,
-                                                            quantity=quantity,
-                                                            price=order_price,
-                                                            order_type=kite.ORDER_TYPE_LIMIT,
-                                                            product=kite.PRODUCT_MIS,
-                                                            stoploss=stop_loss,
-                                                            squareoff=target)
+                        current_order = current_order.append({'order_id': order_id,
+                                                              'order_type': 'LIMIT',
+                                                              'transaction_type': order_signal,
+                                                              'parent_order_id': 'NA',
+                                                              'price': order_price,
+                                                              'trigger_price': 0,
+                                                              'status': 'OPEN'}, ignore_index=True)
 
-                                current_order = current_order.append({'order_id': order_id,
-                                                                      'order_type': 'LIMIT',
-                                                                      'transaction_type': order_signal,
-                                                                      'parent_order_id': 'NA',
-                                                                      'price': order_price,
-                                                                      'trigger_price': 0,
-                                                                      'status': 'OPEN'}, ignore_index=True)
+                        message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(
+                            order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                        requests.get(bot_link + message)
 
-                                message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(
-                                    order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
-                                requests.get(bot_link + message)
 
                 entry_high_target = round(max(entry_high_target, data.High[0]), 1)
                 entry_low_target = round(min(entry_low_target, data.Low[0]), 1)
@@ -624,46 +583,6 @@ def start(name, token, access_token, lot_size):
                     # Calculating Semi Target
                     semi_target = round(order_price - order_price * semi_target_multiplier, 1)
 
-                    # Print Pointers
-                    # data.Order_Status[0] = order_status
-                    # data.Order_Signal[0] = order_signal
-                    # data.Order_Price[0] = order_price
-                    # data.Target[0] = target
-                    # data.Stop_Loss[0] = stop_loss
-                    #
-                    # # Update Live Order Data
-                    # if path.exists(live_order_file_name):
-                    #     live_order_data = pd.read_csv(live_order_file_name)
-                    #     live_order_data_subset = pd.DataFrame({'order_id': [trade_count],
-                    #                                            'transaction_type': [order_signal],
-                    #                                            'price': [order_price],
-                    #                                            'stoploss': [stop_loss],
-                    #                                            'target': [target],
-                    #                                            'semi_target': [semi_target],
-                    #                                            'status': [np.nan],
-                    #                                            'semi-target_status': [0],
-                    #                                            'target_status': [0],
-                    #                                            'stoploss_status': [0],
-                    #                                            'day_high': [entry_high_target],
-                    #                                            'day_low': [entry_low_target]})
-                    #     live_order_data = live_order_data.append(live_order_data_subset)
-                    #     live_order_data.reset_index(drop=True)
-                    # else:
-                    #     live_order_data = pd.DataFrame({'order_id': [trade_count],
-                    #                                     'transaction_type': [order_signal],
-                    #                                     'price': [order_price],
-                    #                                     'stoploss': [stop_loss],
-                    #                                     'target': [target],
-                    #                                     'semi_target': [semi_target],
-                    #                                     'status': [np.nan],
-                    #                                     'semi-target_status': [0],
-                    #                                     'target_status': [0],
-                    #                                     'stoploss_status': [0],
-                    #                                     'day_high': [entry_high_target],
-                    #                                     'day_low': [entry_low_target]})
-                    #
-                    # live_order_data.to_csv(live_order_file_name, index=False)
-
                     # Place the order
                     order_id = kite.place_order(tradingsymbol=name,
                                                 variety='bo',
@@ -690,7 +609,13 @@ def start(name, token, access_token, lot_size):
 
             elif order_status == 'Sub - Entry':
 
-                if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'COMPLETE':
+                kite_orders = pd.DataFrame(kite.orders())
+                if kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'REJECTED':
+                    message = name + ': Insufficient Fund'
+                    requests.get(bot_link + message)
+                    break
+
+                elif kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'COMPLETE':
 
                     # change current order status
                     current_order = current_order.reset_index(drop=True)
@@ -699,16 +624,20 @@ def start(name, token, access_token, lot_size):
                     # append stoploss and target orders
                     current_order = current_order.append(kite_orders.loc[kite_orders['parent_order_id'] == current_order.at[0, 'order_id'], current_order_parameters])
                     current_order = current_order.reset_index(drop=True)
+                    order_status = 'Entry'
 
                     # send message to telegram
                     message = (str(current_order.at[0, 'transaction_type']) + " order executed for "
                                + name + " at " + str(current_order.at[0, 'price']))
                     requests.get(bot_link + message)
 
-                elif current_order.at[0, 'status'] == 'OPEN':
+                elif kite_orders['status'][kite_orders['order_id'] == current_order.at[0, 'order_id']].values[0] == 'OPEN':
 
                     if semi_target_flag == 0:
 
+                        # Cancel Existing Order and take reverse order if order is open in SL
+
+                        # Cancel Long Entry & Place reverse order
                         if order_signal == 'BUY' and data.Close[0] <= stop_loss:
                             # cancel last placed order
                             kite.cancel_order(variety='bo',
@@ -717,78 +646,8 @@ def start(name, token, access_token, lot_size):
                             # clear previous orders
                             current_order = current_order[0:0]
 
+                            ## Take Reverse Entry
                             # set pointers
-                            order_status = 'Exit'
-                            long_count = 1
-                            short_count = 0
-                            semi_target_flag = 0
-
-                        elif order_signal == 'SELL' and data.Close[0] >= stop_loss:
-                            # cancel last placed order
-                            kite.cancel_order(variety='bo',
-                                              order_id=current_order.at[0, 'order_id'].values[0])
-
-                            # clear previous orders
-                            current_order = current_order[0:0]
-
-                            # set pointers
-                            order_status = 'Exit'
-                            long_count = 0
-                            short_count = 1
-                            semi_target_flag = 0
-
-                        elif order_signal == 'BUY' and data.Close[0] >= semi_target:
-                            # modify stoploss
-                            stop_loss = semi_target
-                            # set pointers
-                            semi_target_flag = 1
-
-                        elif order_signal == 'SELL' and data.Close[0] <= semi_target:
-                            # modify stoploss
-                            stop_loss = semi_target
-                            # set pointers
-                            semi_target_flag = 1
-
-                    elif semi_target_flag == 1:
-
-                        if order_signal == 'BUY' and data.Close[0] >= target:
-                            # cancel last placed order
-                            kite.cancel_order(variety='bo',
-                                              order_id=current_order.at[0, 'order_id'].values[0])
-
-                            # clear previous orders
-                            current_order = current_order[0:0]
-
-                            # set pointers
-                            order_status = 'Exit'
-                            long_count = 1
-                            short_count = 0
-                            semi_target_flag = 0
-
-                        elif order_signal == 'SELL' and data.Close[0] <= target:
-                            # cancel last placed order
-                            kite.cancel_order(variety='bo',
-                                              order_id=current_order.at[0, 'order_id'].values[0])
-
-                            # clear previous orders
-                            current_order = current_order[0:0]
-
-                            # set pointers
-                            order_status = 'Exit'
-                            long_count = 0
-                            short_count = 1
-                            semi_target_flag = 0
-
-                        elif order_signal == 'BUY' and data.Close[0] <= stop_loss:
-                            # cancel last placed order
-                            kite.cancel_order(variety='bo',
-                                              order_id=current_order.at[0, 'order_id'].values[0])
-
-                            # clear previous orders
-                            current_order = current_order[0:0]
-
-                            # set pointers
-                            order_status = 'Exit'
                             long_count = 1
                             short_count = 0
                             order_status = 'Sub - Entry'
@@ -832,7 +691,82 @@ def start(name, token, access_token, lot_size):
                                 order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
                             requests.get(bot_link + message)
 
+                        # Cancel Short Entry & Place reverse order
                         elif order_signal == 'SELL' and data.Close[0] >= stop_loss:
+                            # cancel last placed order
+                            kite.cancel_order(variety='bo',
+                                              order_id=current_order.at[0, 'order_id'].values[0])
+
+                            # clear previous orders
+                            current_order = current_order[0:0]
+
+                            ## Take Reverse Entry
+                            # set pointers
+                            long_count = 0
+                            short_count = 1
+                            order_status = 'Sub - Entry'
+                            order_signal = 'BUY'
+                            semi_target_flag = 0
+                            trade_count = trade_count + 1
+                            order_price = entry_high_target
+                            stop_loss = entry_low_target - round((target_buffer_multiplier * order_price), 1)
+                            profit = profit - order_price
+
+                            # Calculating Target
+                            deltas = [indicator - order_price for indicator in pivots]
+                            pos_deltas = [delta for delta in deltas if delta > (order_price * 0.004)]
+                            min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
+                            target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
+
+                            # Calculating Semi Target
+                            semi_target = round(order_price + order_price * semi_target_multiplier, 1)
+
+                            # Place the order
+                            order_id = kite.place_order(tradingsymbol=name,
+                                                        variety='bo',
+                                                                 exchange=kite.EXCHANGE_NSE,
+                                                        transaction_type=order_signal,
+                                                        quantity=quantity,
+                                                        price=order_price,
+                                                        order_type=kite.ORDER_TYPE_LIMIT,
+                                                        product=kite.PRODUCT_MIS,
+                                                        stoploss=stop_loss,
+                                                        squareoff=target)
+
+                            current_order = current_order.append({'order_id': order_id,
+                                                                  'order_type': 'LIMIT',
+                                                                  'transaction_type': order_signal,
+                                                                  'parent_order_id': 'NA',
+                                                                  'price': order_price,
+                                                                  'trigger_price': 0,
+                                                                  'status': 'OPEN'}, ignore_index=True)
+
+                            message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(
+                                order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                            requests.get(bot_link + message)
+
+                        # Modify SL in case of Semi Target is hit
+
+                        # Modify SL in Long Entry
+                        elif order_signal == 'BUY' and data.Close[0] >= (semi_target + (order_price * 0.0005)):
+                            # modify stoploss
+                            stop_loss = semi_target
+                            # set pointers
+                            semi_target_flag = 1
+
+                        # Modify SL in Short Entry
+                        elif order_signal == 'SELL' and data.Close[0] <= (semi_target - (order_price * 0.0005)):
+                            # modify stoploss
+                            stop_loss = semi_target
+                            # set pointers
+                            semi_target_flag = 1
+
+                    elif semi_target_flag == 1:
+
+                        # Cancel existing order if target is hit while Open
+
+                        # Cancel Long Entry
+                        if order_signal == 'BUY' and data.Close[0] >= target:
                             # cancel last placed order
                             kite.cancel_order(variety='bo',
                                               order_id=current_order.at[0, 'order_id'].values[0])
@@ -842,6 +776,90 @@ def start(name, token, access_token, lot_size):
 
                             # set pointers
                             order_status = 'Exit'
+                            long_count = 1
+                            short_count = 0
+                            semi_target_flag = 0
+
+                        # Cancel Short Entry
+                        elif order_signal == 'SELL' and data.Close[0] <= target:
+                            # cancel last placed order
+                            kite.cancel_order(variety='bo',
+                                              order_id=current_order.at[0, 'order_id'].values[0])
+
+                            # clear previous orders
+                            current_order = current_order[0:0]
+
+                            # set pointers
+                            order_status = 'Exit'
+                            long_count = 0
+                            short_count = 1
+                            semi_target_flag = 0
+
+                        # Cancel the existing order and place reverse order in case of SL(semi target) is hit
+
+                        # Cancel Long Entry and place reverse entry
+                        elif order_signal == 'BUY' and data.Close[0] <= stop_loss:
+                            # cancel last placed order
+                            kite.cancel_order(variety='bo',
+                                              order_id=current_order.at[0, 'order_id'].values[0])
+
+                            # clear previous orders
+                            current_order = current_order[0:0]
+
+                            # set pointers
+                            long_count = 1
+                            short_count = 0
+                            order_status = 'Sub - Entry'
+                            order_signal = 'SELL'
+                            semi_target_flag = 0
+                            trade_count = trade_count + 1
+                            order_price = stop_loss
+                            stop_loss = entry_high_target + round((target_buffer_multiplier * order_price), 1)
+                            profit = profit + order_price
+
+                            # Calculating Target
+                            deltas = [indicator - order_price for indicator in pivots]
+                            neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.004)]
+                            max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
+                            target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
+
+                            # Calculating Semi Target
+                            semi_target = round(order_price - order_price * semi_target_multiplier, 1)
+
+                            # Place the order
+                            order_id = kite.place_order(tradingsymbol=name,
+                                                        variety='bo',
+                                                        exchange=kite.EXCHANGE_NSE,
+                                                        transaction_type=order_signal,
+                                                        quantity=quantity,
+                                                        price=order_price,
+                                                        order_type=kite.ORDER_TYPE_LIMIT,
+                                                        product=kite.PRODUCT_MIS,
+                                                        stoploss=stop_loss,
+                                                        squareoff=target)
+
+                            current_order = current_order.append({'order_id': order_id,
+                                                                  'order_type': 'LIMIT',
+                                                                  'transaction_type': order_signal,
+                                                                  'parent_order_id': 'NA',
+                                                                  'price': order_price,
+                                                                  'trigger_price': 0,
+                                                                  'status': 'OPEN'}, ignore_index=True)
+
+                            message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(
+                                order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                            requests.get(bot_link + message)
+
+                        # Cancel Short Entry and place reverse entry
+                        elif order_signal == 'SELL' and data.Close[0] >= stop_loss:
+                            # cancel last placed order
+                            kite.cancel_order(variety='bo',
+                                              order_id=current_order.at[0, 'order_id'].values[0])
+
+                            # clear previous orders
+                            current_order = current_order[0:0]
+
+                            # set pointers
                             long_count = 0
                             short_count = 1
                             order_status = 'Sub - Entry'
@@ -886,15 +904,119 @@ def start(name, token, access_token, lot_size):
 
             elif order_status == 'Entry':
 
+                kite_orders = pd.DataFrame(kite.orders())
                 # check if stoploss is hit
                 if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][(current_order['trigger_price'] != 0) &
                                                                                               (current_order['transaction_type'] != current_order.at[0, 'transaction_type'])].values[0]].values[0] == 'COMPLETE':
-                    order_status = 'Exit'
+
+                    # Place reverse entry
+
+                    # In case of Long Entry
+                    if order_signal == 'BUY':
+
+                        #Set pointers
+                        long_count = 1
+                        short_count = 0
+                        order_status = 'Sub - Entry'
+                        order_signal = 'SELL'
+                        semi_target_flag = 0
+                        trade_count = trade_count + 1
+                        order_price = stop_loss
+                        stop_loss = entry_high_target + round((target_buffer_multiplier * order_price), 1)
+                        profit = profit + order_price
+
+                        # Calculating Target
+                        deltas = [indicator - order_price for indicator in pivots]
+                        neg_deltas = [delta for delta in deltas if delta < -(order_price * 0.004)]
+                        max_neg_delta = max(neg_deltas) if len(neg_deltas) != 0 else -(min_target / lot_size)
+                        target = round(order_price + max_neg_delta - (order_price * target_buffer_multiplier), 1)
+
+                        # Calculating Semi Target
+                        semi_target = round(order_price - order_price * semi_target_multiplier, 1)
+
+                        # Place the order
+                        order_id = kite.place_order(tradingsymbol=name,
+                                                    variety='bo',
+                                                    exchange=kite.EXCHANGE_NSE,
+                                                    transaction_type=order_signal,
+                                                    quantity=quantity,
+                                                    price=order_price,
+                                                    order_type=kite.ORDER_TYPE_LIMIT,
+                                                    product=kite.PRODUCT_MIS,
+                                                    stoploss=stop_loss,
+                                                    squareoff=target)
+
+                        current_order = current_order.append({'order_id': order_id,
+                                                              'order_type': 'LIMIT',
+                                                              'transaction_type': order_signal,
+                                                              'parent_order_id': 'NA',
+                                                              'price': order_price,
+                                                              'trigger_price': 0,
+                                                              'status': 'OPEN'}, ignore_index=True)
+
+                        message = 'Stock Name: ' + name + '\n Short Entry ---' + '\nOrder Price: ' + str(
+                            order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                        requests.get(bot_link + message)
+
+                    # In case of Short Entry
+                    elif order_signal == 'SELL':
+
+                        # Set Pointers
+                        long_count = 0
+                        short_count = 1
+                        order_status = 'Sub - Entry'
+                        order_signal = 'BUY'
+                        semi_target_flag = 0
+                        trade_count = trade_count + 1
+                        order_price = stop_loss
+                        stop_loss = entry_low_target - round((target_buffer_multiplier * order_price), 1)
+                        profit = profit - order_price
+
+                        # Calculating Target
+                        deltas = [indicator - order_price for indicator in pivots]
+                        pos_deltas = [delta for delta in deltas if delta > (order_price * 0.004)]
+                        min_pos_delta = min(pos_deltas) if len(pos_deltas) != 0 else (min_target / lot_size)
+                        target = round(min_pos_delta + order_price + (order_price * target_buffer_multiplier), 1)
+
+                        # Calculating Semi Target
+                        semi_target = round(order_price + order_price * semi_target_multiplier, 1)
+
+                        # Place the order
+                        order_id = kite.place_order(tradingsymbol=name,
+                                                    variety='bo',
+                                                    exchange=kite.EXCHANGE_NSE,
+                                                    transaction_type=order_signal,
+                                                    quantity=quantity,
+                                                    price=order_price,
+                                                    order_type=kite.ORDER_TYPE_LIMIT,
+                                                    product=kite.PRODUCT_MIS,
+                                                    stoploss=stop_loss,
+                                                    squareoff=target)
+
+                        current_order = current_order.append({'order_id': order_id,
+                                                              'order_type': 'LIMIT',
+                                                              'transaction_type': order_signal,
+                                                              'parent_order_id': 'NA',
+                                                              'price': order_price,
+                                                              'trigger_price': 0,
+                                                              'status': 'OPEN'}, ignore_index=True)
+                        message = 'Stock Name: ' + name + '\n Long Entry ---' + '\nOrder Price: ' + str(
+                            order_price) + '\nTarget: ' + str(target) + '\nStop Loss: ' + str(stop_loss)
+                        requests.get(bot_link + message)
+
 
                 # check if target is hit
                 if kite_orders['status'][kite_orders['order_id'] == current_order['order_id'][(current_order['trigger_price'] == 0) &
                                                                                               (current_order['transaction_type'] != current_order.at[0, 'transaction_type'])].values[0]].values[0] == 'COMPLETE':
                     order_status = 'Exit'
+
+                    if order_signal == 'BUY':
+                        long_count = 1
+                        short_count = 0
+
+                    elif order_signal == 'SELL':
+                        long_count = 0
+                        short_count = 1
 
 
                 # check if Semi target is hit
@@ -912,7 +1034,6 @@ def start(name, token, access_token, lot_size):
                                                  trigger_price=semi_target)
 
                     semi_target_flag = 1
-                    continue
 
 if __name__ == '__main__':
 
@@ -927,7 +1048,7 @@ if __name__ == '__main__':
     # lot_size = [int(sys.argv[4])]
     name = 'IBULHSGFIN'
     token = [7712001]
-    access_token = 'mzPHpQbsGiuP7HoqrtxEcWIRorYr2Jrk'
+    access_token = 'AW9FrgcgU5SpgxBwxNkC7FjGbdlTwaVL'
     lot_size = 1200
     stock_name_string = 'Stock Name: ' + name
     requests.get(
