@@ -20,10 +20,10 @@ config = configparser.ConfigParser()
 # path = 'F:/DevAPT/APT/Live_Trading'
 
 # For Ubuntu
-path = './APT/Live_Trading'
+# path = './APT/Live_Trading'
 
 # For Windows
-# path = 'F:/DevAPT/APT/Live_Trading'
+path = 'F:/DevAPT/APT/Live_Trading'
 
 exception_stocks = ['IDEA','BOSCHLTD','CASTROLIND','IDBI','MRF','NBCC','DISHTV',
                     'GMRINFRA','RELINFRA']
@@ -48,19 +48,19 @@ print("Details read")
 
 try:
     ## Selenium for ubuntu
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome('/home/ubuntu/APT/APT/chromedriver.exe', options=chrome_options)
-    driver = webdriver.Chrome(options=chrome_options)
-    page = driver.get(nsepage)
-    time.sleep(5)
-
-    # Selenium for windows
-    # driver = webdriver.Chrome(executable_path='F:\\DevAPT\\APT\\chromedriver.exe')
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.add_argument('--headless')
+    # chrome_options.add_argument('--no-sandbox')
+    # chrome_options.add_argument('--disable-dev-shm-usage')
+    # driver = webdriver.Chrome('/home/ubuntu/APT/APT/chromedriver.exe', options=chrome_options)
+    # driver = webdriver.Chrome(options=chrome_options)
     # page = driver.get(nsepage)
     # time.sleep(5)
+
+    # Selenium for windows
+    driver = webdriver.Chrome(executable_path='F:\\DevAPT\\APT\\chromedriver.exe')
+    page = driver.get(nsepage)
+    time.sleep(5)
 
     # Choose All FO stocks From Option
     print('Getting All Gap Up/ Down Stocks From Pre Market...')
