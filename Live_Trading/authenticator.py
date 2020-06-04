@@ -20,10 +20,10 @@ config = configparser.ConfigParser()
 # path = 'F:/DevAPT/APT/Live_Trading'
 
 # For Ubuntu
-# path = './APT/Live_Trading'
+path = './APT/APT/Live_Trading'
 
 # For Windows
-path = 'F:/DevAPT/APT/Live_Trading'
+# path = 'F:/DevAPT/APT/Live_Trading'
 
 exception_stocks = ['IDEA','BOSCHLTD','CASTROLIND','IDBI','MRF','NBCC','DISHTV',
                     'GMRINFRA','RELINFRA']
@@ -38,7 +38,8 @@ print("Initial inputs read")
 os.chdir(path)
 info_data = pd.read_csv(info_data_path)
 config_path = path + '/config.ini'
-config.read(config_path)
+config.read('config.ini')
+print(config)
 api_key = config['API']['API_KEY']
 api_secret = config['API']['API_SECRET']
 username = config['USER']['USERNAME']
@@ -46,61 +47,61 @@ password = config['USER']['PASSWORD']
 pin = config['USER']['PIN']
 print("Details read")
 
-try:
-    ## Selenium for ubuntu
-    # chrome_options = webdriver.ChromeOptions()
-    # chrome_options.add_argument('--headless')
-    # chrome_options.add_argument('--no-sandbox')
-    # chrome_options.add_argument('--disable-dev-shm-usage')
-    # driver = webdriver.Chrome('/home/ubuntu/APT/APT/chromedriver.exe', options=chrome_options)
-    # driver = webdriver.Chrome(options=chrome_options)
-    # page = driver.get(nsepage)
-    # time.sleep(5)
+# try:
+# Selenium for ubuntu
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+driver = webdriver.Chrome('/home/ubuntu/APT/APT/chromedriver.exe', options=chrome_options)
+page = driver.get(nsepage)
+time.sleep(5)
 
-    # Selenium for windows
-    driver = webdriver.Chrome(executable_path='F:\\DevAPT\\APT\\chromedriver.exe')
-    page = driver.get(nsepage)
-    time.sleep(5)
+# Selenium for windows
+# driver = webdriver.Chrome(executable_path='F:\\DevAPT\\APT\\chromedriver.exe')
+# driver = webdriver.Chrome()
+# page = driver.get(nsepage)
+# time.sleep(5)
 
-    # Choose All FO stocks From Option
-    print('Getting All Gap Up/ Down Stocks From Pre Market...')
-    x = driver.find_element_by_xpath('//*[@id="selId"]/option[2]')
-    x.click()
-    time.sleep(3)
+# Choose All FO stocks From Option
+print('Getting All Gap Up/ Down Stocks From Pre Market...')
+x = driver.find_element_by_xpath('//*[@id="selId"]/option[2]')
+x.click()
+time.sleep(3)
 
-    # Get Pre-market data as DataFrame
-    table = driver.find_element_by_xpath('//*[@id="preOpenNiftyTab"]')
-    print(table, flush=True)
-    tbl = table.get_attribute('outerHTML')
-    pre_open_stat = pd.read_html(tbl)[0]
-    pre_open_stat = pre_open_stat.drop([1, 2, 3, 4, 6, 7, 8, 9, 10, 11], axis=1)
-    pre_open_stat.columns = pre_open_stat.iloc[1]
-    pre_open_stat = pre_open_stat[2:]
-    pre_open_stat['% Chng'] = [float(i) for i in pre_open_stat['% Chng']]
+# Get Pre-market data as DataFrame
+table = driver.find_element_by_xpath('//*[@id="preOpenNiftyTab"]')
+print(table, flush=True)
+tbl = table.get_attribute('outerHTML')
+pre_open_stat = pd.read_html(tbl)[0]
+pre_open_stat = pre_open_stat.drop([1, 2, 3, 4, 6, 7, 8, 9, 10, 11], axis=1)
+pre_open_stat.columns = pre_open_stat.iloc[1]
+pre_open_stat = pre_open_stat[2:]
+pre_open_stat['% Chng'] = [float(i) for i in pre_open_stat['% Chng']]
 
-    # Select Stocks From Pre-Open Scenario
-    pre_open_stat['Abs_Change'] = abs(pre_open_stat['% Chng'])
-    pre_open_stat = pre_open_stat[~pre_open_stat.Symbol.isin(exception_stocks)]
+# Select Stocks From Pre-Open Scenario
+pre_open_stat['Abs_Change'] = abs(pre_open_stat['% Chng'])
+pre_open_stat = pre_open_stat[~pre_open_stat.Symbol.isin(exception_stocks)]
 
-    # Scenario 1
-    selected_scrips = pre_open_stat[pre_open_stat['Abs_Change'] >= 0.9]
-    selected_scrips = selected_scrips.sort_values(['Abs_Change'], ascending=False)
-    selected_scrips = selected_scrips[['Symbol', '% Chng', 'Abs_Change']]
+# Scenario 1
+selected_scrips = pre_open_stat[pre_open_stat['Abs_Change'] >= 0.9]
+selected_scrips = selected_scrips.sort_values(['Abs_Change'], ascending=False)
+selected_scrips = selected_scrips[['Symbol', '% Chng', 'Abs_Change']]
 
-    # Include Token & Lot_Size
-    selected_scrips_info = pd.merge(selected_scrips, info_data,
-                                    left_on='Symbol',
-                                    right_on='Company',
-                                    how='left')
-    selected_scrips_info = selected_scrips_info.dropna()
-    selected_scrips_info = selected_scrips_info.reset_index()
-    selected_scrips_info = selected_scrips_info[0:5]
-    selected_scrips_info = selected_scrips_info[['Company', 'Token', 'Lot_Size']]
-    print('Stock List Updated from NSE Page')
+# Include Token & Lot_Size
+selected_scrips_info = pd.merge(selected_scrips, info_data,
+                                left_on='Symbol',
+                                right_on='Company',
+                                how='left')
+selected_scrips_info = selected_scrips_info.dropna()
+selected_scrips_info = selected_scrips_info.reset_index()
+selected_scrips_info = selected_scrips_info[0:2]
+selected_scrips_info = selected_scrips_info[['Company', 'Token', 'Lot_Size']]
+print('Stock List Updated from NSE Page')
 
-except:
-    selected_scrips_info = pd.read_csv('stock_list_reserved.csv')
-    print('Stock List Updated from Reserved List')
+# except:
+    # selected_scrips_info = pd.read_csv('stock_list_reserved.csv')
+    # print('Stock List Updated from Reserved List')
 
 print('Completed')
 
